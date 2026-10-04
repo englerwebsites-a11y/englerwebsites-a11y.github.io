@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The collection — Sillage</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M12 2c2.5 3.5 5 7 5 10.5A5 5 0 0 1 7 12.5C7 9 9.5 5.5 12 2z" stroke="#c1440e" stroke-width="1.6"/></svg>
+      Sillage
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">About</a></li>
+      <li><a href="products.html" class="active">The collection</a></li>
+      <li><a href="checkout.html">Checkout</a></li>
+      <li><a href="cancel.html">Cancel subscription</a></li>
+    </ul>
+    <a href="checkout.html" class="nav-cta">Go to checkout</a>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">The collection</p>
+    <h1>Eight fragrances. One monthly bottle.</h1>
+    <p>Every subscription ships one full-size bottle a month. Pricing depends on the fragrance — see it update as you pick below.</p>
+  </div>
+</header>
+
+<div class="mode-select">
+  <div class="wrap">
+    <div class="mode-toggle" role="group" aria-label="Subscription mode">
+      <button id="mode-random" class="active" type="button">Surprise me</button>
+      <button id="mode-chosen" type="button">Choose my own</button>
+    </div>
+    <p class="mode-caption" id="mode-caption">Click any fragrance below to include or leave it out of your surprise rotation — we'll only ever send you one from that group.</p>
+  </div>
+</div>
+
+<section style="padding-top:56px;">
+  <div class="wrap">
+
+    <div class="mystery-banner" id="mystery-banner">
+      <div class="glass-wrap" id="mystery-glass"></div>
+      <div>
+        <strong id="mystery-heading">Your rotation: 8 of 8 fragrances</strong>
+        <p>We'll pick a bottle from whichever fragrances you've included below. Uncheck any you'd rather not receive — you'll need at least one in the rotation.</p>
+      </div>
+    </div>
+
+    <div class="product-grid" id="product-grid"></div>
+  </div>
+</section>
+
+<div class="sticky-bar">
+  <div class="wrap">
+    <p class="sel-summary" id="sel-summary">Mode: <span>Surprise me</span></p>
+    <a href="checkout.html" class="btn btn-primary" id="continue-btn">Continue to checkout</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span>Demo site — no real orders are placed</span>
+      <span>Sillage</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/products.js"></script>
+</body>
+</html>

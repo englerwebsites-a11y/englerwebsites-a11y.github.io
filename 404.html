@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Page not found | Engler</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F7F8FB;
+    --tab: #16233B;
+    --tab-deep: #0D1729;
+    --ink: #16233B;
+    --ink-soft: #5F6776;
+    --silver-dark: #6F7A8A;
+    --silver-line: #DDE2EA;
+    --accent: #2F6BFF;
+    --paper: #FFFDF6;
+    --rule: rgba(90,140,210,0.32);
+    --margin-line: rgba(224,96,96,0.4);
+    --shadow-md: 0 22px 50px rgba(13, 23, 41, 0.1);
+    --font-display: 'Archivo', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-hand: 'Caveat', cursive;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  body{
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(90deg, transparent 68px, var(--margin-line) 69px, var(--margin-line) 70px, transparent 71px),
+      repeating-linear-gradient(to bottom, transparent 0px, transparent 35px, var(--rule) 36px);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  a{ color: inherit; text-decoration: none; }
+  .wrap{ max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+  header{
+    position: sticky; top:0; z-index: 50;
+    background: rgba(22,35,59,0.96);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+  }
+  nav{
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 18px 32px;
+    max-width: 1180px; margin: 0 auto;
+  }
+  .logo{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    display:flex; align-items:center; gap:10px;
+    color: #FFFFFF;
+  }
+  .logo .mark{
+    width: 33px; height:33px;
+    flex-shrink:0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border-radius: 8px;
+  }
+  .nav-links{ display:flex; gap: 28px; align-items:center; font-size: 0.92rem; }
+  .nav-links a,
+  .nav-links a:visited,
+  .nav-links a:focus-visible,
+  .nav-links a:active{
+    text-decoration:none;
+    color: #FFFFFF;
+    opacity:0.78;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .nav-links a:hover{ opacity:1; transform: translateY(-1px); }
+  .nav-cta{
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    background: linear-gradient(135deg, #E5EBF5, #CBD4E1);
+    color: var(--tab-deep) !important;
+    padding: 9px 16px;
+    text-decoration:none;
+    font-weight: 600;
+    opacity: 1 !important;
+    transition: transform .15s ease, box-shadow .15s ease;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(255,255,255,0.12);
+  }
+  .nav-cta:hover{ transform: translateY(-1px); box-shadow: 0 12px 28px rgba(255,255,255,0.18); }
+  @media (max-width: 720px){
+    .nav-links a:not(.nav-cta){ display:none; }
+  }
+
+  .error-stage{
+    padding: 64px 32px 90px;
+    display:flex;
+    justify-content:center;
+  }
+  .note-card{
+    position: relative;
+    max-width: 620px;
+    width: 100%;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(90,140,210,0.28);
+    border-radius: 6px;
+    padding: 44px 40px 36px;
+    text-align:center;
+    box-shadow: var(--shadow-md);
+    transform: rotate(-0.6deg);
+  }
+  .tape{
+    position:absolute;
+    top: -18px; left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    width: 110px; height: 34px;
+    background: rgba(255, 224, 102, 0.55);
+    border: 1px solid rgba(200,170,60,0.35);
+  }
+  .code-tag{
+    display:inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--silver-dark);
+    border: 1px dashed var(--silver-line);
+    border-radius: 999px;
+    padding: 5px 14px;
+    margin-bottom: 18px;
+  }
+  .error-code{
+    position: relative;
+    display:inline-block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(4rem, 14vw, 6.5rem);
+    letter-spacing: -0.03em;
+    color: var(--tab);
+    line-height: 1;
+  }
+  .error-code svg{
+    position:absolute;
+    left: -6%;
+    bottom: -14px;
+    width: 112%;
+    height: auto;
+  }
+  .error-heading{
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: clamp(1.8rem, 4.5vw, 2.3rem);
+    color: var(--tab);
+    margin-top: 18px;
+    transform: rotate(-0.4deg);
+  }
+  .error-sub{
+    color: var(--ink-soft);
+    font-size: 0.96rem;
+    margin: 10px auto 6px;
+    max-width: 40ch;
+  }
+
+  .buddy-wrap{
+    position: relative;
+    margin: 18px auto 8px;
+    max-width: 340px;
+  }
+  .buddy-wrap img{
+    width: 100%;
+    height: auto;
+    display:block;
+  }
+  .buddy-caption{
+    font-family: var(--font-hand);
+    font-size: 1.35rem;
+    color: var(--margin-line);
+    transform: rotate(-3deg);
+    margin-top: -6px;
+  }
+
+  .back-btn{
+    display:inline-block;
+    margin-top: 26px;
+    background: linear-gradient(135deg, var(--tab), var(--accent));
+    color: #FFFFFF;
+    padding: 12px 26px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    border-radius: 999px;
+    box-shadow: 0 14px 24px rgba(22,35,59,0.16);
+    transition: transform .15s ease;
+  }
+  .back-btn:hover{ transform: translateY(-1px); }
+
+  .doodle{
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.8;
+  }
+  .doodle.star-a{ top: 26px; left: 22px; width: 26px; }
+  .doodle.star-b{ bottom: 30px; right: 26px; width: 20px; }
+  .doodle.arrow{ top: 8px; right: -46px; width: 90px; display:none; }
+  @media (min-width: 720px){
+    .doodle.arrow{ display:block; }
+  }
+
+  footer{
+    padding: 40px 32px;
+    border-top: 1px solid var(--silver-line);
+    background: rgba(255,255,255,0.6);
+  }
+  .footer-inner{
+    max-width: 1180px; margin: 0 auto;
+    display:flex; justify-content: space-between; align-items:center;
+    flex-wrap: wrap; gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--silver-dark);
+  }
+  .footer-inner a{ color: var(--silver-dark); }
+
+  ::selection{ background: var(--accent); color: #FFFFFF; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a class="logo" href="index.html" style="text-decoration:none;"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="showcase.html">Showcase</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html" class="nav-cta">Contact us</a>
+    </div>
+  </nav>
+</header>
+
+<section class="error-stage">
+  <div class="note-card">
+    <div class="tape"></div>
+
+    <svg class="doodle star-a" viewBox="0 0 24 24" fill="none" stroke="var(--margin-line)" stroke-width="1.6" stroke-linecap="round">
+      <path d="M12 2 L12 22 M2 12 L22 12 M5 5 L19 19 M19 5 L5 19"/>
+    </svg>
+    <svg class="doodle star-b" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round">
+      <path d="M12 2 L12 22 M2 12 L22 12 M5 5 L19 19 M19 5 L5 19"/>
+    </svg>
+
+    <div class="code-tag">Status: 404</div>
+
+    <div class="error-code">
+      404
+      <svg viewBox="0 0 200 20" preserveAspectRatio="none">
+        <path d="M4 12 C 40 4, 70 18, 100 10 S 160 4, 196 12" fill="none" stroke="var(--margin-line)" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <p class="error-heading">Sorry, we haven't coded that part yet.</p>
+    <p class="error-sub">This page is still sitting on the drawing board somewhere. Here's how it's going so far:</p>
+
+    <div class="buddy-wrap">
+      <img src="assets/404-buddy.png" alt="A frustrated developer throwing a game controller after a bug in the code" loading="lazy">
+      <div class="buddy-caption">our dev, moments ago</div>
+    </div>
+
+    <a href="index.html" class="back-btn">Take me back home →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
+    <span>© 2026, built by three friends</span>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+</footer>
+
+</body>
+</html>

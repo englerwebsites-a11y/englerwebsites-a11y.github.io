@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engler — Contact us</title>
+<meta name="description" content="Call, text, email, or fill out a quick form to get in touch with Engler about your website.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Engler — Contact us">
+<meta property="og:description" content="Call, text, email, or fill out a quick form to get in touch with Engler about your website.">
+<meta property="og:image" content="assets/og-image.png">
+<meta property="og:url" content="contact.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Engler — Contact us">
+<meta name="twitter:description" content="Call, text, email, or fill out a quick form to get in touch with Engler about your website.">
+<meta name="twitter:image" content="assets/og-image.png">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F7F8FB;
+    --bg-soft: #F0F3F8;
+    --tab: #16233B;
+    --tab-deep: #0D1729;
+    --ink: #16233B;
+    --ink-soft: #5F6776;
+    --silver: #9BA3B0;
+    --silver-dark: #6F7A8A;
+    --silver-line: #DDE2EA;
+    --accent: #2F6BFF;
+    --accent-soft: #E9F0FF;
+    --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+    --shadow-md: 0 22px 50px rgba(13, 23, 41, 0.08);
+    --font-display: 'Archivo', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  body{
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+  a{ color: inherit; text-decoration: none; }
+  .wrap{ max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+  .crop{
+    position: absolute;
+    width: 22px; height: 22px;
+    pointer-events: none;
+  }
+  .crop::before, .crop::after{
+    content:'';
+    position:absolute;
+    background: rgba(47,107,255,0.4);
+  }
+  .crop::before{ width:100%; height:1px; top:50%; }
+  .crop::after{ width:1px; height:100%; left:50%; }
+  .crop.tl{ top:16px; left:16px; }
+  .crop.tr{ top:16px; right:16px; }
+  .crop.bl{ bottom:16px; left:16px; }
+  .crop.br{ bottom:16px; right:16px; }
+
+  header{
+    position: sticky; top:0; z-index: 50;
+    background: rgba(22,35,59,0.96);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+  }
+  nav{
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 18px 32px;
+    max-width: 1180px; margin: 0 auto;
+  }
+  .logo{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    display:flex; align-items:center; gap:10px;
+    color: #FFFFFF;
+  }
+  .logo .mark{
+    width: 33px; height:33px;
+    flex-shrink:0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border-radius: 8px;
+  }
+  .nav-links{ display:flex; gap: 28px; align-items:center; font-size: 0.92rem; }
+  .nav-links a,
+  .nav-links a:visited,
+  .nav-links a:focus-visible,
+  .nav-links a:active{
+    text-decoration:none;
+    color: #FFFFFF;
+    opacity:0.78;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .nav-links a:hover{ opacity:1; transform: translateY(-1px); }
+  .nav-cta{
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    background: linear-gradient(135deg, #E5EBF5, #CBD4E1);
+    color: var(--tab-deep) !important;
+    padding: 9px 16px;
+    text-decoration:none;
+    font-weight: 600;
+    opacity: 1 !important;
+    transition: transform .15s ease, box-shadow .15s ease;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(255,255,255,0.12);
+  }
+  .nav-cta:hover{ transform: translateY(-1px); box-shadow: 0 12px 28px rgba(255,255,255,0.18); }
+  @media (max-width: 720px){
+    .nav-links a:not(.nav-cta){ display:none; }
+  }
+
+  .page-head{
+    padding: 70px 32px 44px;
+    text-align:center;
+    background:
+      radial-gradient(circle at 78% 8%, rgba(47,107,255,0.24), transparent 42%),
+      linear-gradient(rgba(47,107,255,0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,107,255,0.12) 1px, transparent 1px);
+    background-size: auto, 40px 40px, 40px 40px;
+    mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+  }
+  .page-head .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--silver-dark);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .page-head h1{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 4.5vw, 2.8rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+  .page-head p{
+    color: var(--ink-soft);
+    max-width: 46ch;
+    margin: 0 auto;
+  }
+
+  .contact-grid{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 18px;
+    padding-bottom: 20px;
+  }
+  @media (max-width: 800px){
+    .contact-grid{ grid-template-columns: 1fr; }
+  }
+  .contact-card{
+    background: #FFFFFF;
+    border: 1px solid var(--silver-line);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: var(--shadow-sm);
+    text-align:center;
+  }
+  .contact-card .icon{ font-size: 1.6rem; margin-bottom: 10px; }
+  .contact-card h3{
+    font-family: var(--font-display);
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-size: 1.05rem;
+  }
+  .contact-card p{
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .contact-card .action-link{
+    display:inline-block;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 0.86rem;
+    color: var(--accent);
+  }
+
+  .form-section{ padding: 30px 32px 80px; }
+  .form-panel{
+    max-width: 620px;
+    margin: 0 auto;
+    background: linear-gradient(145deg, #FFFFFF 0%, #F8FAFD 100%);
+    border: 1px solid var(--silver-line);
+    border-radius: 24px;
+    padding: 34px 30px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .form-panel::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background: linear-gradient(120deg, rgba(47,107,255,0.06), transparent 44%);
+    pointer-events:none;
+  }
+  .form-panel h2{
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .form-panel .sub{
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+  }
+  .field{ margin-bottom: 14px; }
+  .field label{
+    display:block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--silver-dark);
+    margin-bottom: 6px;
+  }
+  .field input, .field select, .field textarea{
+    width: 100%;
+    border: 1px solid var(--silver-line);
+    background: var(--bg-soft);
+    padding: 11px 12px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--ink);
+    border-radius: 12px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+    resize: vertical;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(47,107,255,0.12);
+  }
+  .row-2{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 520px){ .row-2{ grid-template-columns: 1fr; } }
+  .submit-btn{
+    width: 100%;
+    background: linear-gradient(135deg, var(--tab), var(--accent));
+    color: #FFFFFF;
+    border: none;
+    padding: 13px 16px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: transform .15s ease, box-shadow .15s ease;
+    border-radius: 999px;
+    box-shadow: 0 14px 24px rgba(22,35,59,0.16);
+  }
+  .submit-btn:hover{ transform: translateY(-1px); box-shadow: 0 16px 28px rgba(22,35,59,0.2); }
+  .consent-field{ margin-bottom: 16px; }
+  .consent-label{
+    display:flex;
+    align-items:flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+  .consent-label input[type="checkbox"]{
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .consent-label a{
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .fine-print{
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--silver-dark);
+    margin-top: 12px;
+  }
+
+  .game-panel{
+    max-width: 640px;
+    margin: 28px auto 0;
+    background: var(--tab);
+    border-radius: 20px;
+    padding: 16px 16px 14px;
+    box-shadow: var(--shadow-md);
+  }
+  .game-topbar{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap: 14px;
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+  }
+  .give-up-btn{
+    background: rgba(255,255,255,0.1);
+    color: #FFFFFF;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    cursor: pointer;
+    transition: background .15s ease;
+  }
+  .give-up-btn:hover{ background: rgba(255,255,255,0.2); }
+  .score-display{
+    color: #FFFFFF;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+  }
+  .game-canvas-wrap{
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background:
+      linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px),
+      linear-gradient(180deg, #101B30 0%, #0B1424 100%);
+    background-size: 32px 32px, 32px 32px, auto;
+  }
+  #gameCanvas{
+    display:block;
+    width: 100%;
+    height: auto;
+    touch-action: none;
+  }
+  .game-overlay{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(11,20,36,0.86);
+    backdrop-filter: blur(2px);
+  }
+  .game-overlay.hidden{ display:none; }
+  .overlay-inner{ text-align:center; padding: 20px; }
+  .overlay-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .overlay-inner h3{
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: #FFFFFF;
+    margin-bottom: 8px;
+  }
+  .overlay-sub{
+    font-size: 0.84rem;
+    color: rgba(255,255,255,0.65);
+    max-width: 34ch;
+    margin: 0 auto 18px;
+  }
+  .overlay-score{ margin-bottom: 18px; }
+  .overlay-score-num{
+    display:block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2.6rem;
+    color: #FFFFFF;
+    line-height: 1;
+  }
+  .overlay-score-label{
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .overlay-btn{
+    background: linear-gradient(135deg, var(--tab), var(--accent));
+    color: #FFFFFF;
+    border: none;
+    padding: 11px 26px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    border-radius: 999px;
+    box-shadow: 0 14px 24px rgba(0,0,0,0.3);
+    transition: transform .15s ease;
+  }
+  .overlay-btn:hover{ transform: translateY(-1px); }
+  .game-controls{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .ctrl-btn{
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #FFFFFF;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 10px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select:none;
+    -webkit-user-select:none;
+    touch-action: manipulation;
+  }
+  .ctrl-btn:active{ background: rgba(255,255,255,0.22); }
+  .ctrl-btn.shoot{
+    background: linear-gradient(135deg, var(--accent), #5B8CFF);
+    border-color: transparent;
+    font-weight:600;
+  }
+  .game-caption{
+    text-align:center;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--silver-dark);
+    margin-top: 10px;
+  }
+  @media (min-width: 620px){
+    .game-controls{ display:none; }
+  }
+
+  footer{
+    padding: 40px 32px;
+    border-top: 1px solid var(--silver-line);
+    background: rgba(255,255,255,0.7);
+  }
+  .footer-inner{
+    max-width: 1180px; margin: 0 auto;
+    display:flex; justify-content: space-between; align-items:center;
+    flex-wrap: wrap; gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--silver-dark);
+  }
+  .footer-inner a{ color: var(--silver-dark); }
+
+  ::selection{ background: var(--accent); color: #FFFFFF; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a class="logo" href="index.html" style="text-decoration:none;"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="showcase.html">Showcase</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html" class="nav-cta">Contact us</a>
+    </div>
+  </nav>
+</header>
+
+<section class="page-head">
+  <p class="eyebrow">Get in touch</p>
+  <h1>Call, text, or send us the details.</h1>
+  <p>Whatever's easiest for you — pick an option below and a real person on the team will get back to you.</p>
+</section>
+
+<section class="wrap">
+  <div class="contact-grid">
+    <div class="contact-card">
+      <div class="icon">📞</div>
+      <h3>Call us</h3>
+      <p>Mon–Fri, 9am–5pm</p>
+      <a class="action-link" href="tel:+10000000000">(000) 000-0000</a>
+    </div>
+    <div class="contact-card">
+      <div class="icon">💬</div>
+      <h3>Text us</h3>
+      <p>Usually the fastest way to reach us</p>
+      <a class="action-link" href="sms:+10000000000">(000) 000-0000</a>
+    </div>
+    <div class="contact-card">
+      <div class="icon">✉️</div>
+      <h3>Email us directly</h3>
+      <p>Skip the form below and just email</p>
+      <a class="action-link" href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<section class="form-section" id="client-form">
+  <div class="form-panel">
+    <span class="crop tl"></span><span class="crop br"></span>
+    <form id="contactForm">
+      <h2>Or fill this out</h2>
+      <p class="sub">Tell us about the business. Submitting opens your email app with these details already filled in — just hit send from there to reach us.</p>
+      <div class="field">
+        <label for="cf-name">Your name</label>
+        <input id="cf-name" type="text" required placeholder="Jordan Lee">
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label for="cf-email">Email</label>
+          <input id="cf-email" type="email" required placeholder="you@business.com">
+        </div>
+        <div class="field">
+          <label for="cf-phone">Phone (optional)</label>
+          <input id="cf-phone" type="tel" placeholder="(555) 123-4567">
+        </div>
+      </div>
+      <div class="field">
+        <label for="cf-biztype">Business type</label>
+        <select id="cf-biztype">
+          <option>Local service</option>
+          <option>Retail / e-commerce</option>
+          <option>Restaurant / hospitality</option>
+          <option>Professional services</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="cf-details">What do you need?</label>
+        <textarea id="cf-details" rows="4" placeholder="Tell us about the business and what you're picturing"></textarea>
+      </div>
+      <div class="field consent-field">
+        <label class="consent-label" for="cf-consent">
+          <input type="checkbox" id="cf-consent" required>
+          <span>I've read and agree to the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</span>
+        </label>
+      </div>
+      <button type="submit" class="submit-btn">Send →</button>
+      <p class="fine-print">No spam. Just a reply from an actual person on the team.</p>
+    </form>
+  </div>
+
+  <div class="game-panel">
+    <div class="game-topbar">
+      <button class="give-up-btn" id="giveUpBtn">Give up</button>
+      <div class="score-display">Score: <span id="scoreVal">0</span></div>
+    </div>
+    <div class="game-canvas-wrap">
+      <canvas id="gameCanvas" width="640" height="380"></canvas>
+      <div class="game-overlay" id="gameOverlay">
+        <div class="overlay-inner">
+          <p class="overlay-eyebrow" id="overlayEyebrow">Ready?</p>
+          <h3 id="overlayHeading">Squash the bug</h3>
+          <p class="overlay-sub" id="overlaySub">Move the ship, shoot the bug before it reaches the site.</p>
+          <div class="overlay-score" id="overlayScoreBlock" style="display:none;">
+            <span class="overlay-score-num" id="overlayScoreNum">0</span>
+            <span class="overlay-score-label">points</span>
+          </div>
+          <button class="overlay-btn" id="overlayBtn">Start</button>
+        </div>
+      </div>
+    </div>
+    <div class="game-controls">
+      <button class="ctrl-btn" id="leftBtn">◀</button>
+      <button class="ctrl-btn shoot" id="shootBtn">FIRE</button>
+      <button class="ctrl-btn" id="rightBtn">▶</button>
+    </div>
+    <p class="game-caption">Arrow keys or ◀ ▶ to move — space or FIRE to shoot.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
+    <span>© 2026, built by three friends</span>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+</footer>
+
+<script>
+  const contactForm = document.getElementById('contactForm');
+  contactForm.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    const name = document.getElementById('cf-name').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const phone = document.getElementById('cf-phone').value.trim();
+    const biztype = document.getElementById('cf-biztype').value;
+    const details = document.getElementById('cf-details').value.trim();
+
+    const subject = `Website inquiry from ${name || 'a visitor'}`;
+    const bodyLines = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      phone ? `Phone: ${phone}` : null,
+      `Business type: ${biztype}`,
+      '',
+      'What they need:',
+      details
+    ].filter(Boolean).join('\n');
+
+    const mailtoUrl = `mailto:EnglerWebsites@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines)}`;
+    window.location.href = mailtoUrl;
+  });
+</script>
+
+<script>
+(function(){
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const overlay = document.getElementById('gameOverlay');
+  const overlayEyebrow = document.getElementById('overlayEyebrow');
+  const overlayHeading = document.getElementById('overlayHeading');
+  const overlaySub = document.getElementById('overlaySub');
+  const overlayScoreBlock = document.getElementById('overlayScoreBlock');
+  const overlayScoreNum = document.getElementById('overlayScoreNum');
+  const overlayBtn = document.getElementById('overlayBtn');
+  const scoreVal = document.getElementById('scoreVal');
+  const giveUpBtn = document.getElementById('giveUpBtn');
+  const leftBtn = document.getElementById('leftBtn');
+  const rightBtn = document.getElementById('rightBtn');
+  const shootBtn = document.getElementById('shootBtn');
+
+  const TARGET_Y = 78;
+  const TARGETS = [90, 250, 410, 570].map(x => ({ x, y: TARGET_Y }));
+  const SHIP_Y = H - 46;
+  const SHIP_HALF_W = 26;
+  const SHIP_SPEED = 300; // px/sec
+  const BULLET_SPEED = 420; // px/sec
+  const BUG_DURATION = 3000; // ms, per spec
+  const SHOOT_COOLDOWN = 260; // ms
+
+  let state = 'idle'; // 'idle' | 'playing' | 'ended'
+  let score = 0;
+  let shipX = W / 2;
+  let movingLeft = false, movingRight = false;
+  let bullets = [];
+  let activeBug = null; // { targetIndex, spawnTime }
+  let nextSpawnAt = 0;
+  let lastShotAt = -Infinity;
+  let lastFrameTime = 0;
+  let rafId = null;
+  let bugFlashUntil = 0; // brief red flash on a target when a bug expires unhit
+  let flashTargetIndex = -1;
+
+  function isTypingInForm(){
+    const el = document.activeElement;
+    return el && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
+  }
+
+  function drawShip(x, y){
+    ctx.strokeStyle = '#EAF0FF';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    // body
+    ctx.beginPath();
+    ctx.moveTo(x, y - 22);
+    ctx.lineTo(x - 7, y + 14);
+    ctx.lineTo(x + 7, y + 14);
+    ctx.closePath();
+    ctx.stroke();
+    // wings
+    ctx.beginPath();
+    ctx.moveTo(x - 7, y);
+    ctx.lineTo(x - 26, y + 16);
+    ctx.lineTo(x - 7, y + 14);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + 7, y);
+    ctx.lineTo(x + 26, y + 16);
+    ctx.lineTo(x + 7, y + 14);
+    ctx.stroke();
+  }
+
+  function drawWebsiteTarget(t, flashed){
+    ctx.save();
+    ctx.strokeStyle = flashed ? '#FF6B6B' : 'rgba(234,240,255,0.55)';
+    ctx.fillStyle = flashed ? 'rgba(255,107,107,0.12)' : 'rgba(234,240,255,0.06)';
+    ctx.lineWidth = 1.6;
+    roundRect(ctx, t.x - 46, t.y - 16, 92, 32, 16);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = flashed ? '#FF6B6B' : 'rgba(234,240,255,0.8)';
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('WEBSITE', t.x, t.y + 1);
+    ctx.restore();
+  }
+
+  function roundRect(c, x, y, w, h, r){
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  function drawBug(t, progress){
+    // progress: 0 = just spawned, 1 = about to expire
+    const bob = Math.sin(progress * Math.PI * 6) * 2;
+    const bx = t.x, by = t.y + 26 + bob;
+    ctx.save();
+    ctx.strokeStyle = '#FF6B6B';
+    ctx.fillStyle = '#FF6B6B';
+    ctx.lineWidth = 1.8;
+    // legs
+    for (let i = -1; i <= 1; i++){
+      ctx.beginPath();
+      ctx.moveTo(bx - 8, by + i * 5);
+      ctx.lineTo(bx - 15, by + i * 8);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(bx + 8, by + i * 5);
+      ctx.lineTo(bx + 15, by + i * 8);
+      ctx.stroke();
+    }
+    // body
+    ctx.beginPath();
+    ctx.ellipse(bx, by, 8, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // head
+    ctx.beginPath();
+    ctx.ellipse(bx, by - 12, 5, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // antennae
+    ctx.beginPath();
+    ctx.moveTo(bx - 3, by - 16); ctx.lineTo(bx - 8, by - 23);
+    ctx.moveTo(bx + 3, by - 16); ctx.lineTo(bx + 8, by - 23);
+    ctx.stroke();
+    // countdown bar
+    const barW = 30;
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(bx - barW/2, by + 16, barW, 3);
+    ctx.fillStyle = '#FF6B6B';
+    ctx.fillRect(bx - barW/2, by + 16, barW * (1 - progress), 3);
+    ctx.restore();
+    return { x: bx, y: by };
+  }
+
+  function fireBullet(){
+    if (state !== 'playing') return;
+    const now = performance.now();
+    if (now - lastShotAt < SHOOT_COOLDOWN) return;
+    lastShotAt = now;
+    bullets.push({ x: shipX, y: SHIP_Y - 22 });
+  }
+
+  function resetRun(){
+    score = 0;
+    bullets = [];
+    activeBug = null;
+    shipX = W / 2;
+    movingLeft = movingRight = false;
+    scoreVal.textContent = '0';
+    nextSpawnAt = performance.now() + 1200;
+  }
+
+  function showIdleOverlay(){
+    state = 'idle';
+    overlayEyebrow.textContent = 'Ready?';
+    overlayHeading.textContent = 'Squash the bug';
+    overlaySub.style.display = 'block';
+    overlaySub.textContent = 'Move the ship, shoot the bug before it reaches the site.';
+    overlayScoreBlock.style.display = 'none';
+    overlayBtn.textContent = 'Start';
+    overlay.classList.remove('hidden');
+  }
+
+  function showEndOverlay(){
+    state = 'ended';
+    overlayEyebrow.textContent = 'Game over';
+    overlayHeading.textContent = 'Final score';
+    overlaySub.style.display = 'none';
+    overlayScoreBlock.style.display = 'block';
+    overlayScoreNum.textContent = String(score);
+    overlayBtn.textContent = 'Try again';
+    overlay.classList.remove('hidden');
+  }
+
+  function startRun(){
+    resetRun();
+    state = 'playing';
+    overlay.classList.add('hidden');
+    lastFrameTime = performance.now();
+    if (!rafId) rafId = requestAnimationFrame(loop);
+  }
+
+  overlayBtn.addEventListener('click', startRun);
+  giveUpBtn.addEventListener('click', function(){
+    if (state !== 'playing') return;
+    showEndOverlay();
+  });
+
+  // Keyboard controls
+  window.addEventListener('keydown', function(e){
+    if (isTypingInForm()) return;
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA'){ movingLeft = true; e.preventDefault(); }
+    if (e.code === 'ArrowRight' || e.code === 'KeyD'){ movingRight = true; e.preventDefault(); }
+    if (e.code === 'Space'){ fireBullet(); e.preventDefault(); }
+  });
+  window.addEventListener('keyup', function(e){
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') movingLeft = false;
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') movingRight = false;
+  });
+
+  // On-screen touch/click controls
+  function bindHold(el, onDown, onUp){
+    el.addEventListener('mousedown', onDown);
+    el.addEventListener('touchstart', function(e){ e.preventDefault(); onDown(); }, { passive: false });
+    ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(evt => el.addEventListener(evt, onUp));
+  }
+  bindHold(leftBtn, () => movingLeft = true, () => movingLeft = false);
+  bindHold(rightBtn, () => movingRight = true, () => movingRight = false);
+  shootBtn.addEventListener('click', fireBullet);
+  shootBtn.addEventListener('touchstart', function(e){ e.preventDefault(); fireBullet(); }, { passive: false });
+
+  function update(dt, now){
+    if (movingLeft) shipX -= SHIP_SPEED * dt;
+    if (movingRight) shipX += SHIP_SPEED * dt;
+    shipX = Math.max(SHIP_HALF_W, Math.min(W - SHIP_HALF_W, shipX));
+
+    bullets.forEach(b => b.y -= BULLET_SPEED * dt);
+    bullets = bullets.filter(b => b.y > -10);
+
+    if (!activeBug && now >= nextSpawnAt){
+      const idx = Math.floor(Math.random() * TARGETS.length);
+      activeBug = { targetIndex: idx, spawnTime: now };
+    }
+
+    if (activeBug){
+      const elapsed = now - activeBug.spawnTime;
+      if (elapsed >= BUG_DURATION){
+        flashTargetIndex = activeBug.targetIndex;
+        bugFlashUntil = now + 350;
+        activeBug = null;
+        nextSpawnAt = now + 1500 + Math.random() * 1000;
+      }
+    }
+  }
+
+  function checkHits(now){
+    if (!activeBug) return;
+    const t = TARGETS[activeBug.targetIndex];
+    const bugX = t.x, bugY = t.y + 26;
+    for (let i = bullets.length - 1; i >= 0; i--){
+      const b = bullets[i];
+      if (Math.abs(b.x - bugX) <= 22 && b.y <= bugY + 14 && b.y >= bugY - 30){
+        score += 1;
+        scoreVal.textContent = String(score);
+        bullets.splice(i, 1);
+        activeBug = null;
+        nextSpawnAt = now + 1500 + Math.random() * 1000;
+        break;
+      }
+    }
+  }
+
+  function draw(now){
+    ctx.clearRect(0, 0, W, H);
+
+    TARGETS.forEach((t, i) => {
+      const flashed = i === flashTargetIndex && now < bugFlashUntil;
+      drawWebsiteTarget(t, flashed);
+    });
+
+    if (activeBug){
+      const t = TARGETS[activeBug.targetIndex];
+      const progress = Math.min(1, (now - activeBug.spawnTime) / BUG_DURATION);
+      drawBug(t, progress);
+    }
+
+    ctx.fillStyle = '#EAF0FF';
+    bullets.forEach(b => {
+      ctx.fillRect(b.x - 1.5, b.y, 3, 14);
+    });
+
+    drawShip(shipX, SHIP_Y);
+  }
+
+  function loop(now){
+    const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
+    lastFrameTime = now;
+
+    if (state === 'playing'){
+      update(dt, now);
+      checkHits(now);
+    }
+    draw(now);
+
+    rafId = requestAnimationFrame(loop);
+  }
+
+  // Idle preview render behind the start overlay
+  draw(performance.now());
+  showIdleOverlay();
+  rafId = requestAnimationFrame(loop);
+})();
+</script>
+
+</body>
+</html>

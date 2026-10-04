@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engler — FAQ</title>
+<meta name="description" content="Answers to the most common questions about pricing, ownership, timelines, and getting started with Engler.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Engler — FAQ">
+<meta property="og:description" content="Answers to the most common questions about pricing, ownership, timelines, and getting started with Engler.">
+<meta property="og:image" content="assets/og-image.png">
+<meta property="og:url" content="faq.html">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Engler — FAQ">
+<meta name="twitter:description" content="Answers to the most common questions about pricing, ownership, timelines, and getting started with Engler.">
+<meta name="twitter:image" content="assets/og-image.png">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F7F8FB;
+    --bg-soft: #F0F3F8;
+    --tab: #16233B;
+    --tab-deep: #0D1729;
+    --ink: #16233B;
+    --ink-soft: #5F6776;
+    --silver: #9BA3B0;
+    --silver-dark: #6F7A8A;
+    --silver-line: #DDE2EA;
+    --accent: #2F6BFF;
+    --accent-soft: #E9F0FF;
+    --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+    --shadow-md: 0 22px 50px rgba(13, 23, 41, 0.08);
+    --font-display: 'Archivo', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  body{
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+  a{ color: inherit; text-decoration: none; }
+  .wrap{ max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+  .crop{
+    position: absolute;
+    width: 22px; height: 22px;
+    pointer-events: none;
+  }
+  .crop::before, .crop::after{
+    content:'';
+    position:absolute;
+    background: rgba(47,107,255,0.4);
+  }
+  .crop::before{ width:100%; height:1px; top:50%; }
+  .crop::after{ width:1px; height:100%; left:50%; }
+  .crop.tl{ top:16px; left:16px; }
+  .crop.tr{ top:16px; right:16px; }
+  .crop.bl{ bottom:16px; left:16px; }
+  .crop.br{ bottom:16px; right:16px; }
+
+  header{
+    position: sticky; top:0; z-index: 50;
+    background: rgba(22,35,59,0.96);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+  }
+  nav{
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 18px 32px;
+    max-width: 1180px; margin: 0 auto;
+  }
+  .logo{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    display:flex; align-items:center; gap:10px;
+    color: #FFFFFF;
+  }
+  .logo .mark{
+    width: 33px; height:33px;
+    flex-shrink:0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border-radius: 8px;
+  }
+  .nav-links{ display:flex; gap: 28px; align-items:center; font-size: 0.92rem; }
+  .nav-links a,
+  .nav-links a:visited,
+  .nav-links a:focus-visible,
+  .nav-links a:active{
+    text-decoration:none;
+    color: #FFFFFF;
+    opacity:0.78;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .nav-links a:hover{ opacity:1; transform: translateY(-1px); }
+  .nav-cta{
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    background: linear-gradient(135deg, #E5EBF5, #CBD4E1);
+    color: var(--tab-deep) !important;
+    padding: 9px 16px;
+    text-decoration:none;
+    font-weight: 600;
+    opacity: 1 !important;
+    transition: transform .15s ease, box-shadow .15s ease;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(255,255,255,0.12);
+  }
+  .nav-cta:hover{ transform: translateY(-1px); box-shadow: 0 12px 28px rgba(255,255,255,0.18); }
+  @media (max-width: 720px){
+    .nav-links a:not(.nav-cta){ display:none; }
+  }
+
+  .page-head{
+    padding: 70px 32px 44px;
+    text-align:center;
+    background:
+      radial-gradient(circle at 78% 8%, rgba(47,107,255,0.24), transparent 42%),
+      linear-gradient(rgba(47,107,255,0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,107,255,0.12) 1px, transparent 1px);
+    background-size: auto, 40px 40px, 40px 40px;
+    mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+  }
+  .page-head .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .page-head h1{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(3.2rem, 9vw, 5.6rem);
+    letter-spacing: -0.03em;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, var(--tab) 0%, var(--accent) 55%, #7CA6FF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+  }
+  .page-head .heading-rule{
+    width: 64px;
+    height: 4px;
+    margin: 0 auto 18px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--tab), var(--accent), #7CA6FF);
+  }
+  .page-head p{
+    color: var(--ink-soft);
+    max-width: 46ch;
+    margin: 0 auto;
+  }
+
+  .faq-section{ padding: 10px 32px 80px; }
+  .faq-card{
+    max-width: 760px;
+    margin: 0 auto;
+    background: #FFFFFF;
+    border: 1px solid var(--silver-line);
+    border-radius: 24px;
+    padding: 40px 36px;
+    position: relative;
+    box-shadow: var(--shadow-md);
+  }
+  .faq-list{
+    list-style: none;
+    counter-reset: faq-counter;
+  }
+  .faq-item{
+    counter-increment: faq-counter;
+    display: flex;
+    gap: 18px;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--silver-line);
+  }
+  .faq-item:first-child{ padding-top: 0; }
+  .faq-item:last-child{ border-bottom: none; padding-bottom: 0; }
+  .faq-num{
+    flex-shrink: 0;
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.86rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .faq-num::before{ content: counter(faq-counter, decimal-leading-zero); }
+  .faq-body{ flex: 1; }
+  .faq-question{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.02rem;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .faq-answer{
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+  .faq-placeholder{
+    color: var(--silver);
+    font-style: italic;
+  }
+
+  footer{
+    padding: 40px 32px;
+    border-top: 1px solid var(--silver-line);
+    background: rgba(255,255,255,0.7);
+  }
+  .footer-inner{
+    max-width: 1180px; margin: 0 auto;
+    display:flex; justify-content: space-between; align-items:center;
+    flex-wrap: wrap; gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--silver-dark);
+  }
+  .footer-inner a{ color: var(--silver-dark); }
+
+  ::selection{ background: var(--accent); color: #FFFFFF; }
+</style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a class="logo" href="index.html" style="text-decoration:none;"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="showcase.html">Showcase</a>
+      <a href="faq.html">FAQ</a>
+      <a href="contact.html" class="nav-cta">Contact us</a>
+    </div>
+  </nav>
+</header>
+
+<section class="page-head">
+  <p class="eyebrow">Before you reach out</p>
+  <h1>FAQ</h1>
+  <div class="heading-rule"></div>
+  <p>The questions we hear most — answered up front, no email required.</p>
+</section>
+
+<section class="faq-section">
+  <div class="wrap">
+    <div class="faq-card">
+      <span class="crop tl"></span><span class="crop br"></span>
+      <ul class="faq-list">
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">How much does a website cost?</div>
+            <div class="faq-answer">Website pricing depends on the number of pages, the level of design detail, and how much time the project takes. Rather than posting a generic quote, we prefer to walk through the details with you on an initial call — by the end, we'll agree on a set price together.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">What's included in the $15 offer?</div>
+            <div class="faq-answer">As a newer business building our portfolio, we're offering to build a website for our first three customers for just $15. This includes a site of up to 5 pages and guidance on getting it live on the web. Any additional details can be worked out over a call or text.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">Do I have to pay anything up front?</div>
+            <div class="faq-answer">Nothing is due up front, and an initial consultation to talk through your website is completely free. Payment is due once the site is complete — after that, we publish it live and hand everything over to you.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">You're a new business — why should I trust you with this?</div>
+            <div class="faq-answer">Being new doesn't mean we don't know what we're doing — take a look at our demo websites to see the quality of work we produce. We're also especially invested in doing right by early clients, since every project helps us build our reputation and prove what we can do.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">Do I own the website once it's finished?</div>
+            <div class="faq-answer">Yes — once your site is complete, we can transfer full ownership to you, or continue managing it if you'd like ongoing maintenance and support.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">Can I update the site myself after it launches?</div>
+            <div class="faq-answer">Yes. Once your site is complete, you'll have access to make your own updates and changes whenever you'd like.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">How long does a build take?</div>
+            <div class="faq-answer">Build time depends on the size of the site and how many revisions you'd like along the way — we build at your pace and welcome your input throughout. As a general guide, a 5-page site has typically taken us 2–3 days to complete.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">What if I don't like the design?</div>
+            <div class="faq-answer">We're happy to make revisions until you're satisfied with the result.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">What if my business needs more than 5 pages?</div>
+            <div class="faq-answer">Absolutely — we can build sites larger than 5 pages. They just won't qualify for the $15 launch offer and will be priced a bit higher depending on scope.</div>
+          </div>
+        </li>
+        <li class="faq-item">
+          <div class="faq-num"></div>
+          <div class="faq-body">
+            <div class="faq-question">How do I get started?</div>
+            <div class="faq-answer">Head to our contact page and reach out however's easiest — email, text, phone, or the contact form. Email, text, and the form are best if you're not sure we'll be free to pick up right away. We typically reply within a day.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
+    <span>© 2026, built by three friends</span>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+</footer>
+
+</body>
+</html>

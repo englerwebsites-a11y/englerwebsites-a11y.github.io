@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Sillage</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M12 2c2.5 3.5 5 7 5 10.5A5 5 0 0 1 7 12.5C7 9 9.5 5.5 12 2z" stroke="#c1440e" stroke-width="1.6"/></svg>
+      Sillage
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">About</a></li>
+      <li><a href="products.html">The collection</a></li>
+      <li><a href="checkout.html" class="active">Checkout</a></li>
+      <li><a href="cancel.html">Cancel subscription</a></li>
+    </ul>
+    <a href="products.html" class="nav-cta">Edit selection</a>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Checkout</p>
+    <h1>Confirm your subscription.</h1>
+    <p>This is a demo checkout — the payment section below is disabled and no order is ever placed.</p>
+  </div>
+</header>
+
+<section style="padding-top:56px;">
+  <div class="wrap">
+    <div class="checkout-layout">
+
+      <div class="checkout-form">
+        <div class="form-block">
+          <h2>Shipping address</h2>
+          <div class="field-row">
+            <div class="field">
+              <label for="fname">First name</label>
+              <input type="text" id="fname" placeholder="Jordan">
+            </div>
+            <div class="field">
+              <label for="lname">Last name</label>
+              <input type="text" id="lname" placeholder="Reyes">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:16px;">
+            <label for="addr">Street address</label>
+            <input type="text" id="addr" placeholder="128 Amberwood Lane">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="city">City</label>
+              <input type="text" id="city" placeholder="Portland">
+            </div>
+            <div class="field">
+              <label for="zip">Postal code</label>
+              <input type="text" id="zip" placeholder="97201">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <h2>Payment</h2>
+          <div class="demo-flag">Payment disabled in this demo</div>
+          <div class="payment-block locked">
+            <div class="field-row">
+              <div class="field">
+                <label for="card">Card number</label>
+                <input type="text" id="card" value="4242 4242 4242 4242" disabled>
+              </div>
+              <div class="field">
+                <label for="name-card">Name on card</label>
+                <input type="text" id="name-card" value="Jordan Reyes" disabled>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="exp">Expiry</label>
+                <input type="text" id="exp" value="04 / 29" disabled>
+              </div>
+              <div class="field">
+                <label for="cvc">CVC</label>
+                <input type="text" id="cvc" value="123" disabled>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary place-order" type="button" disabled>Payment disabled in demo</button>
+      </div>
+
+      <div class="checkout-summary">
+        <h2 style="font-size:20px;margin-bottom:24px;">Order summary</h2>
+        <div class="summary-item" id="summary-item"></div>
+        <div class="summary-line"><span id="price-label">Subscription</span><span id="price-value">$34.00</span></div>
+        <div class="summary-line"><span>Shipping</span><span>Free</span></div>
+        <div class="summary-line total"><span>Due today</span><span id="price-total">$34.00</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span>Demo site — no real orders are placed</span>
+      <span>Sillage</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/checkout.js"></script>
+</body>
+</html>

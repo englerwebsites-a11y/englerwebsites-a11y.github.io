@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engler — Website showcase</title>
+  <meta name="description" content="See example website concepts built by Engler — from a neighborhood cafe to a perfume subscription storefront — before you commit to a project.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Engler — Website showcase">
+  <meta property="og:description" content="Example website concepts built by Engler, from a neighborhood cafe to a perfume subscription storefront.">
+  <meta property="og:image" content="assets/og-image.png">
+  <meta property="og:url" content="showcase.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Engler — Website showcase">
+  <meta name="twitter:description" content="Example website concepts built by Engler, from a neighborhood cafe to a perfume subscription storefront.">
+  <meta name="twitter:image" content="assets/og-image.png">
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --bg-soft: #F0F3F8;
+      --tab: #16233B;
+      --tab-deep: #0D1729;
+      --ink: #16233B;
+      --ink-soft: #5F6776;
+      --silver: #9BA3B0;
+      --silver-dark: #6F7A8A;
+      --silver-line: #DDE2EA;
+      --accent: #2F6BFF;
+      --accent-soft: #E9F0FF;
+      --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+      --shadow-md: 0 22px 50px rgba(13, 23, 41, 0.08);
+      --font-display: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(22,35,59,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+    }
+    nav {
+      max-width: 1180px; margin: 0 auto;
+      padding: 18px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      color: #FFF;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo .mark {
+      width: 33px; height: 33px; border-radius: 8px;
+      image-rendering: pixelated; image-rendering: crisp-edges;
+    }
+    .nav-links { display: flex; gap: 24px; align-items: center; font-size: 0.92rem; color: #FFF; opacity: 0.82; }
+    .nav-links a:hover { opacity: 1; }
+    .nav-cta {
+      padding: 8px 14px; border-radius: 999px;
+      background: linear-gradient(135deg, #E5EBF5, #CBD4E1);
+      color: var(--tab-deep) !important;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      opacity: 1 !important;
+    }
+
+    .hero {
+      padding: 88px 32px 60px;
+      background: radial-gradient(circle at top right, rgba(47,107,255,0.26), transparent 30%),
+                  linear-gradient(rgba(47,107,255,0.12) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(47,107,255,0.12) 1px, transparent 1px),
+                  linear-gradient(180deg, #FFFFFF 0%, #F8FAFD 100%);
+      background-size: auto, 40px 40px, 40px 40px, auto;
+      mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+    }
+    .hero-inner {
+      max-width: 960px; margin: 0 auto; text-align: center;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.74rem; color: var(--silver-dark);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .eyebrow::before {
+      content: ''; width: 28px; height: 1px; background: var(--silver);
+    }
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      line-height: 1.05; margin-bottom: 16px; letter-spacing: -0.02em;
+    }
+    .hero p {
+      max-width: 720px; margin: 0 auto 28px;
+      font-size: 1rem; color: var(--ink-soft);
+    }
+
+    .showcase-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; padding: 8px 0 70px;
+    }
+    @media (max-width: 820px) {
+      .showcase-grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #FFFFFF;
+      border: 1px solid var(--silver-line);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .mockup {
+      padding: 18px; background: linear-gradient(180deg, #F7F9FC 0%, #EEF2F7 100%);
+      border-bottom: 1px solid var(--silver-line);
+    }
+    .browser-bar {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+    }
+    .browser-bar span {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--silver);
+    }
+    .placeholder-screen {
+      border: 1px solid var(--silver-line); border-radius: 16px; background: #FFF; padding: 16px;
+      display: grid; gap: 12px;
+    }
+    .placeholder-bar { height: 10px; border-radius: 999px; background: var(--bg-soft); }
+    .placeholder-bar.short { width: 68%; }
+    .placeholder-bar.medium { width: 84%; }
+    .placeholder-row { display: grid; gap: 10px; grid-template-columns: 1.2fr 0.8fr; }
+    .placeholder-box { border-radius: 12px; background: linear-gradient(135deg, var(--accent-soft), #F7F9FC); min-height: 70px; }
+    .placeholder-box.large { min-height: 108px; }
+    .preview-shell {
+      border: 1px solid var(--silver-line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #FFF;
+      min-height: 260px;
+      cursor: pointer;
+      position: relative;
+    }
+    .preview-shell iframe {
+      width: 100%;
+      height: 280px;
+      border: 0;
+      display: block;
+      background: #FFF;
+      pointer-events: none;
+    }
+    .preview-shell::after {
+      content: 'Click to expand';
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      padding: 8px 10px;
+      background: rgba(22,35,59,0.9);
+      color: #FFF;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 999px;
+      pointer-events: none;
+      opacity: 0.95;
+    }
+    .preview-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .preview-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 10, 20, 0.82);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .preview-overlay.open { display: flex; }
+    .preview-modal {
+      width: min(100%, 1200px);
+      height: min(92vh, 900px);
+      background: #FFF;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      position: relative;
+    }
+    .preview-modal iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    .preview-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 0;
+      background: rgba(22,35,59,0.9);
+      color: #FFF;
+      font-size: 1.15rem;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .card-body { padding: 20px 22px 24px; }
+    .card-body h3 {
+      font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 8px;
+    }
+    .card-body p { color: var(--ink-soft); font-size: 0.92rem; margin-bottom: 12px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tags span {
+      padding: 6px 10px; border-radius: 999px;
+      background: var(--accent-soft); color: var(--accent);
+      font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    }
+
+    .cta-band {
+      padding: 40px 32px 80px;
+    }
+    .cta-box {
+      max-width: 940px; margin: 0 auto; padding: 28px 30px;
+      border: 1px solid var(--silver-line); border-radius: 24px;
+      background: linear-gradient(135deg, var(--tab) 0%, #243A60 100%);
+      color: #FFF;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+    }
+    .cta-box h2 { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 8px; }
+    .cta-box p { color: rgba(255,255,255,0.85); margin-bottom: 16px; }
+    .cta-box a {
+      display: inline-block; background: #FFFFFF; color: var(--tab); padding: 12px 20px; border-radius: 999px;
+      font-family: var(--font-mono); font-size: 0.84rem; font-weight: 600;
+    }
+
+    footer {
+      padding: 24px 32px 40px; border-top: 1px solid var(--silver-line); background: rgba(255,255,255,0.65);
+    }
+    .footer-inner {
+      max-width: 1180px; margin: 0 auto; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      font-family: var(--font-mono); font-size: 0.76rem; color: var(--silver-dark);
+    }
+    .footer-inner a{ color: var(--silver-dark); }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a class="logo" href="index.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="showcase.html">Showcase</a>
+        <a href="faq.html">FAQ</a>
+        <a href="contact.html" class="nav-cta">Contact us</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Concepts for future launches</div>
+      <h1>Example website directions for the next generation of clients.</h1>
+      <p>These are polished placeholders for website styles, layouts, and user experiences we can shape into real launches. They help clients picture the direction before a single line of final content is written.</p>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div class="showcase-grid">
+      <article class="card">
+        <div class="mockup">
+          <div class="browser-bar"><span></span><span></span><span></span></div>
+          <div class="preview-shell" id="previewShellPerfume" role="button" tabindex="0" aria-label="Open Sillage preview in full screen">
+            <iframe src="sillage-perfume-site/index.html" title="Sillage perfume subscription website preview"></iframe>
+          </div>
+        </div>
+        <div class="card-body">
+          <h3>Perfume subscription</h3>
+          <p>A monthly scent subscription storefront with a browsable collection, a pick-your-own or surprise-me option, and a full checkout flow.</p>
+          <a class="preview-link" id="previewLinkPerfume">Open full concept →</a>
+          <div class="tags"><span>Subscription</span><span>E-commerce</span><span>Lifestyle</span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="mockup">
+          <div class="browser-bar"><span></span><span></span><span></span></div>
+          <div class="preview-shell" id="previewShell" role="button" tabindex="0" aria-label="Open Hearth & Rye preview in full screen">
+            <iframe src="hearth-and-rye-site/index.html" title="Hearth & Rye website preview"></iframe>
+          </div>
+        </div>
+        <div class="card-body">
+          <h3>Neighborhood cafe</h3>
+          <p>Warm, welcoming, and easy to navigate for reservations, menus, and local discovery.</p>
+          <a class="preview-link" id="previewLink">Open full concept →</a>
+          <div class="tags"><span>Hospitality</span><span>Booking</span><span>Warm</span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="mockup">
+          <div class="browser-bar"><span></span><span></span><span></span></div>
+          <div class="preview-shell" id="previewShellClinic" role="button" tabindex="0" aria-label="Open Reyes Strength & Conditioning preview in full screen">
+            <iframe src="reyes-strength-conditioning.html" title="Reyes Strength & Conditioning website preview"></iframe>
+          </div>
+        </div>
+        <div class="card-body">
+          <h3>Personal Business</h3>
+          <p>Clear service information, scheduling, and a calm visual system for trust and clarity.</p>
+          <a class="preview-link" id="previewLinkClinic">Open full concept →</a>
+          <div class="tags"><span>Healthcare</span><span>Service</span><span>Calm</span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="mockup">
+          <div class="browser-bar"><span></span><span></span><span></span></div>
+          <div class="placeholder-screen">
+            <div class="placeholder-bar medium"></div>
+            <div class="placeholder-row">
+              <div class="placeholder-box large"></div>
+              <div class="placeholder-box"></div>
+            </div>
+            <div class="placeholder-bar short"></div>
+            <div class="placeholder-bar medium"></div>
+          </div>
+        </div>
+        <div class="card-body">
+          <h3>Product launch page</h3>
+          <p>Fast-moving and conversion-focused with product messaging, social proof, and pricing.</p>
+          <div class="tags"><span>Startup</span><span>Launch</span><span>Conversion</span></div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <section class="cta-band">
+    <div class="cta-box">
+      <h2>Want one of these directions turned into a real site?</h2>
+      <p>We can turn a concept into a live page with your content, brand, and goals.</p>
+      <a href="contact.html">Contact us</a>
+    </div>
+  </section>
+
+  <div class="preview-overlay" id="previewOverlay" aria-hidden="true">
+    <div class="preview-modal">
+      <button class="preview-close" id="previewClose" aria-label="Close preview">×</button>
+      <iframe src="hearth-and-rye-site/index.html" title="Hearth & Rye full preview"></iframe>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
+      <span>© 2026, built by three friends</span>
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+  </footer>
+
+  <script>
+    const previewOverlay = document.getElementById('previewOverlay');
+    const previewClose = document.getElementById('previewClose');
+    const previewFrame = previewOverlay.querySelector('iframe');
+    const previewTriggers = [
+      { shell: document.getElementById('previewShell'), link: document.getElementById('previewLink'), src: 'hearth-and-rye-site/index.html' },
+      { shell: document.getElementById('previewShellClinic'), link: document.getElementById('previewLinkClinic'), src: 'reyes-strength-conditioning.html' },
+      { shell: document.getElementById('previewShellPerfume'), link: document.getElementById('previewLinkPerfume'), src: 'sillage-perfume-site/index.html' }
+    ];
+
+    function openPreview(src) {
+      previewFrame.src = src;
+      previewOverlay.classList.add('open');
+      previewOverlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePreview() {
+      previewOverlay.classList.remove('open');
+      previewOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      previewFrame.src = '';
+    }
+
+    previewTriggers.forEach(({ shell, link, src }) => {
+      [shell, link].forEach((element) => {
+        if (!element) return;
+        element.addEventListener('click', () => openPreview(src));
+        element.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openPreview(src);
+          }
+        });
+      });
+    });
+
+    previewClose.addEventListener('click', closePreview);
+    previewOverlay.addEventListener('click', (event) => {
+      if (event.target === previewOverlay) {
+        closePreview();
+      }
+    });
+  </script>
+</body>
+</html>

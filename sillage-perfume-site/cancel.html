@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cancel subscription — Sillage</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none"><path d="M12 2c2.5 3.5 5 7 5 10.5A5 5 0 0 1 7 12.5C7 9 9.5 5.5 12 2z" stroke="#c1440e" stroke-width="1.6"/></svg>
+      Sillage
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">About</a></li>
+      <li><a href="products.html">The collection</a></li>
+      <li><a href="checkout.html">Checkout</a></li>
+      <li><a href="cancel.html" class="active">Cancel subscription</a></li>
+    </ul>
+    <a href="products.html" class="nav-cta">Edit selection</a>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Manage subscription</p>
+    <h1>Cancel your subscription.</h1>
+    <p>No phone call, no retention maze — cancel here and your subscription ends. This is a demo page, so nothing is actually charged or cancelled.</p>
+  </div>
+</header>
+
+<section style="padding-top:56px;">
+  <div class="wrap">
+    <div class="checkout-layout">
+
+      <div class="checkout-form">
+        <div class="form-block">
+          <h2>What happens when you cancel</h2>
+          <ul style="padding-left:20px;margin:0;color:#5a5a5a;font-size:14.5px;line-height:2;">
+            <li>Your current bottle still ships if it's already been processed this cycle.</li>
+            <li>No further charges go out after today.</li>
+            <li>You can restart a subscription any time from the collection page.</li>
+          </ul>
+        </div>
+
+        <div class="form-block" id="cancel-step-initial">
+          <h2>Cancel</h2>
+          <p style="font-size:14.5px;color:#5a5a5a;margin-bottom:20px;">If you're sure, confirm below.</p>
+          <button class="btn btn-outline-dark" id="start-cancel" type="button">Cancel subscription</button>
+        </div>
+
+        <div class="form-block" id="cancel-step-confirm" style="display:none;">
+          <h2>Tell us why (optional)</h2>
+          <div class="field" style="margin-bottom:20px;max-width:360px;">
+            <label for="reason">Reason</label>
+            <select id="reason">
+              <option value="">Prefer not to say</option>
+              <option value="too-expensive">Too expensive</option>
+              <option value="not-my-scent">Fragrances weren't right for me</option>
+              <option value="too-frequent">Bottles arrive too often</option>
+              <option value="pausing">Just taking a break</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:14px;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="confirm-cancel" type="button">Confirm cancellation</button>
+            <button class="btn btn-outline-dark" id="keep-sub" type="button">Never mind, keep my subscription</button>
+          </div>
+        </div>
+
+        <div class="form-block" id="cancel-step-done" style="display:none;">
+          <h2>Subscription cancelled</h2>
+          <p style="font-size:14.5px;color:#5a5a5a;">Your subscription has been cancelled — demo only, nothing was actually charged or stopped. <a href="products.html" style="color:var(--amber);">Start a new one</a> any time.</p>
+        </div>
+      </div>
+
+      <div class="checkout-summary">
+        <h2 style="font-size:19px;margin-bottom:24px;">Current plan</h2>
+        <div class="summary-item" id="summary-item"></div>
+        <div class="summary-line"><span id="price-label">Subscription</span><span id="price-value">$34.00</span></div>
+        <div class="summary-line"><span>Billing</span><span>Monthly</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom">
+      <span>Demo site — no real subscriptions exist</span>
+      <span>Sillage</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/cancel.js"></script>
+</body>
+</html>
