@@ -83,6 +83,11 @@
       font-weight: 600;
       opacity: 1 !important;
     }
+    @media (max-width: 720px) {
+      nav { padding: 14px 16px; }
+      .nav-links { gap: 10px; }
+      .nav-links a:not(.nav-cta) { display: none; }
+    }
 
     .hero {
       padding: 88px 32px 60px;
@@ -287,6 +292,7 @@
         <a href="index.html">Home</a>
         <a href="showcase.html">Showcase</a>
         <a href="faq.html">FAQ</a>
+        <a href="/engler-questionnaire/client-form.html" class="nav-cta">Order form</a>
         <a href="contact.html" class="nav-cta">Contact us</a>
       </div>
     </nav>
@@ -387,7 +393,6 @@
   <footer>
     <div class="footer-inner">
       <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
-      <span>© 2026, built by three friends</span>
       <a href="privacy.html">Privacy Policy</a>
     </div>
   </footer>
