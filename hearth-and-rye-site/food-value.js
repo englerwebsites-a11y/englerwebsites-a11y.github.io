@@ -1,4 +1,4 @@
-// Food Value page — carousel through nutrition facts, with a search
+// Nutrition page — carousel through nutrition facts, with a search
 // bar that jumps straight to a matching item.
 let fvCurrentIndex = 0;
 
@@ -29,6 +29,8 @@ function fvRenderItem(idx) {
   ).join('');
 
   document.getElementById('fvIngredients').textContent = item.ingredients;
+  const allergenEl = document.getElementById('fvAllergens');
+  if (allergenEl) allergenEl.textContent = item.allergens || 'None';
 }
 
 const fvPrevBtn = document.getElementById('fvPrevBtn');

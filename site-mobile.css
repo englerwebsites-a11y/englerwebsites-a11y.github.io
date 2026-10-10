@@ -1,0 +1,50 @@
+/* Shared phone/tablet fixes for the main Engler pages. */
+
+/* Phone menu button (added to the header by site-nav.js) */
+.menu-toggle{ display:none; }
+.mobile-menu{ display:none; }
+
+@media (max-width: 720px){
+  header .nav-links a.nav-order{ display:none; }
+  .menu-toggle{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:44px; height:44px; margin-left:8px;
+    border:1px solid rgba(255,255,255,0.28); border-radius:12px;
+    background:transparent; color:#FFFFFF; cursor:pointer; flex-shrink:0;
+  }
+  .menu-toggle:focus-visible{ outline:2px solid #7CA6FF; outline-offset:2px; }
+  .menu-toggle svg{ width:22px; height:22px; }
+  .menu-toggle .ic-close{ display:none; }
+  .menu-toggle[aria-expanded="true"] .ic-open{ display:none; }
+  .menu-toggle[aria-expanded="true"] .ic-close{ display:block; }
+  header nav{ position:relative; }
+  .mobile-menu{
+    position:absolute; left:0; right:0; top:100%;
+    background:#16233B;
+    border-top:1px solid rgba(255,255,255,0.1);
+    border-bottom:1px solid rgba(255,255,255,0.12);
+    box-shadow:0 18px 30px rgba(4,10,20,0.35);
+    padding:8px 16px 16px;
+  }
+  .mobile-menu.open{ display:block; }
+  .mobile-menu a{
+    display:block; padding:14px 6px;
+    color:#FFFFFF; text-decoration:none;
+    font-family:'Inter', sans-serif; font-size:1.05rem; font-weight:500;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .mobile-menu a:last-child{ border-bottom:none; }
+  .mobile-menu a[aria-current="page"]{ color:#7CA6FF; }
+  .mobile-menu a:focus-visible{ outline:2px solid #7CA6FF; outline-offset:-2px; border-radius:6px; }
+
+}
+@media (prefers-reduced-motion: no-preference){
+  .mobile-menu.open{ animation: menuIn .18s ease-out; }
+  @keyframes menuIn{ from{ opacity:0; transform:translateY(-6px); } to{ opacity:1; transform:none; } }
+}
+
+/* Form fields at 16px on touch screens so iPhones and iPads don't zoom in when a field is tapped */
+@media (hover: none) and (pointer: coarse){
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select, textarea{ font-size:16px !important; }
+}

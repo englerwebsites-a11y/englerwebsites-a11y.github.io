@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reyes Strength &amp; Conditioning — Coaching, Logged</title>
-<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
 <style>
   @font-face{
     font-family:'Shoulders';
@@ -362,6 +361,8 @@
 
   /* ---------- contact ---------- */
   .contact-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .contact-grid > *{ min-width:0; }
+  .contact-card{ overflow-wrap:anywhere; }
   @media (max-width:820px){ .contact-grid{ grid-template-columns:1fr; } }
   .contact-card{
     border:1px solid var(--line); border-radius:4px; padding:26px 24px; background:var(--paper-raised); box-shadow:var(--shadow-sm);
@@ -373,7 +374,14 @@
 
   /* ---------- cta band ---------- */
   .cta-band{ background:var(--ink); color:var(--paper); text-align:center; padding:90px 0; }
-  :root[data-theme="dark"] .cta-band{ background:var(--accent-soft); }
+  :root[data-theme="dark"] .cta-band{ background:var(--paper-raised); }
+  :root[data-theme="dark"] .cta-band h2{ color:var(--ink); }
+  :root[data-theme="dark"] .cta-band p{ color:var(--ink-soft); }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .cta-band{ background:var(--paper-raised); }
+    :root:not([data-theme="light"]) .cta-band h2{ color:var(--ink); }
+    :root:not([data-theme="light"]) .cta-band p{ color:var(--ink-soft); }
+  }
   .cta-band h2{ color:var(--paper); font-size:clamp(1.9rem, 4vw, 2.7rem); max-width:22ch; margin:0 auto 18px; }
   .cta-band p{ color:color-mix(in srgb, var(--paper) 70%, transparent); margin-bottom:30px; font-size:1.05rem; }
   .cta-band .btn{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
@@ -382,8 +390,6 @@
   .footer-inner{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; font-family:var(--font-mono); font-size:0.72rem; color:var(--ink-faint); }
   .theme-note{ font-family:var(--font-mono); font-size:0.68rem; color:var(--ink-faint); }
 </style>
-</head>
-<body>
 
 <header id="siteHeader">
   <nav>
@@ -396,7 +402,7 @@
       <a href="#about">About</a>
       <a href="#schedule">Schedule</a>
       <a href="#reviews">Reviews</a>
-      <a href="#schedule" class="btn accent">Book a session</a>
+      <a href="reyes-schedule.html" class="btn accent">Book a session</a>
     </div>
   </nav>
 </header>
@@ -408,7 +414,7 @@
       <h1>Every session,<br>logged. Every rep,<br><span class="accent-word">counted.</span></h1>
       <p class="lede">One-on-one strength and conditioning coaching built around a plan you can actually see — not a workout picked at random on the way to the rack.</p>
       <div class="hero-ctas">
-        <a href="#schedule" class="btn accent">Book a session →</a>
+        <a href="reyes-schedule.html" class="btn accent">Book a session →</a>
         <a href="#coaching" class="btn ghost">See what I coach</a>
       </div>
       <div class="hero-stats">
@@ -574,74 +580,11 @@
   <div class="wrap reveal">
     <div class="section-head">
       <h2>Book a session</h2>
-      <span class="tag" id="weekRangeTag">This week</span>
+      <span class="tag">Scheduling moved</span>
     </div>
-
-    <div class="schedule-shell">
-      <div class="schedule-legend">
-        <div class="item"><span class="dot open"></span>Open</div>
-        <div class="item"><span class="dot sel"></span>Selected</div>
-        <div class="item"><span class="dot full"></span>Booked</div>
-      </div>
-
-      <div class="week-grid" id="weekGrid"></div>
-
-      <div class="book-panel" id="bookPanel">
-        <div>
-          <div class="selection-summary" id="selectionSummary">No time selected yet — pick an open slot above.</div>
-          <div class="mono-label" style="margin-bottom:10px;">Studio hours run 6:00 AM – 7:30 PM, Mon–Sat. Closed Sunday.</div>
-        </div>
-        <form id="bookForm" novalidate>
-          <div class="row-2">
-            <div class="field">
-              <label for="bfName">Name</label>
-              <input id="bfName" type="text" required placeholder="Jordan Cole">
-            </div>
-            <div class="field">
-              <label for="bfEmail">Email</label>
-              <input id="bfEmail" type="email" required placeholder="you@email.com">
-            </div>
-          </div>
-          <div class="row-2">
-            <div class="field">
-              <label for="bfPhone">Phone</label>
-              <input id="bfPhone" type="tel" placeholder="(optional)">
-            </div>
-            <div class="field">
-              <label for="bfService">Service</label>
-              <select id="bfService">
-                <option value="Strength Coaching">Strength Coaching</option>
-                <option value="Sport-Specific Conditioning">Sport-Specific Conditioning</option>
-                <option value="Small-Group Training">Small-Group Training</option>
-                <option value="Nutrition & Habit Coaching">Nutrition &amp; Habit Coaching</option>
-                <option value="Mobility & Recovery">Mobility &amp; Recovery</option>
-                <option value="Remote Programming">Remote Programming</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label for="bfNotes">Anything I should know? (optional)</label>
-            <textarea id="bfNotes" placeholder="Injuries, goals, prior training..."></textarea>
-          </div>
-          <button type="submit" class="btn accent" style="width:100%; justify-content:center;">Reserve this slot →</button>
-          <div class="form-error" id="bookError"></div>
-        </form>
-      </div>
-
-      <div class="confirm-ticket" id="confirmTicket">
-        <div class="ticket" style="transform:none; max-width:420px; margin:0 auto;">
-          <div class="ticket-top"><span class="t-label">Reserved</span><span class="t-no tabular" id="cfNo">№ 0413</span></div>
-          <h3 id="cfHeadline">You're booked.</h3>
-          <div class="ticket-row"><span>Athlete</span><span id="cfName">—</span></div>
-          <div class="ticket-row"><span>Service</span><span id="cfService">—</span></div>
-          <div class="ticket-row"><span>When</span><span id="cfWhen">—</span></div>
-          <div class="ticket-row"><span>Coach</span><span>N. Reyes, CSCS</span></div>
-          <div class="ticket-foot"><span>Confirmation by email within 24 hrs</span><span class="stamp-mini">Booked</span></div>
-        </div>
-        <div style="text-align:center; margin-top:20px;">
-          <a href="#" class="btn ghost" id="bookAnother">Book another session</a>
-        </div>
-      </div>
+    <div style="padding:26px 22px; background:var(--paper-raised); border:1px solid var(--line); border-radius:6px; box-shadow:var(--shadow-sm); text-align:center;">
+      <p style="margin:0 0 18px; color:var(--ink-soft);">The full booking schedule has been moved to its own page for a cleaner experience.</p>
+      <a href="reyes-schedule.html" class="btn accent">Open schedule →</a>
     </div>
   </div>
 </section>
@@ -678,7 +621,7 @@
     <div class="contact-grid">
       <div class="contact-card">
         <div class="label">Studio address</div>
-        <address>Riverside Strength Studio<br>118 Harbor Ln, Suite 4</address>
+        <address>Redding, CA</address>
         <div class="meta-row"><span>Hours</span><span>Mon–Sat, 6am–7:30pm</span></div>
         <div class="meta-row"><span>Sessions</span><span>By appointment only</span></div>
         <div class="meta-row"><span>Parking</span><span>Free lot, rear entrance</span></div>
@@ -698,15 +641,15 @@
   <div class="wrap">
     <h2>Ready to stop guessing and start logging?</h2>
     <p>First session includes a full movement assessment — no cost, no obligation.</p>
-    <a href="#schedule" class="btn">Book your first session →</a>
+    <a href="reyes-schedule.html" class="btn">Book your first session →</a>
   </div>
 </section>
 
 <footer>
   <div class="wrap footer-inner">
     <span>REYES STRENGTH &amp; CONDITIONING</span>
-    <span class="theme-note">Placeholder contact details — swap in your own before publishing.</span>
-    <span>© 2026 Naomi Reyes</span>
+    <span class="theme-note">A demo site by Engler. Naomi Reyes is a fictional coach, and this is not a real business.</span>
+    <span>© 2026 Engler</span>
   </div>
 </footer>
 
@@ -730,113 +673,5 @@
     reveals.forEach(function(el){ io.observe(el); });
   }
 
-  var DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat'];
-  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-  var AVAILABILITY = [
-    [ {t:'6:00 AM',o:1},{t:'7:00 AM',o:0},{t:'8:00 AM',o:1},{t:'12:00 PM',o:1},{t:'5:00 PM',o:0},{t:'6:00 PM',o:1},{t:'7:00 PM',o:1} ],
-    [ {t:'6:00 AM',o:1},{t:'7:00 AM',o:1},{t:'12:00 PM',o:0},{t:'5:00 PM',o:1},{t:'6:00 PM',o:0},{t:'7:00 PM',o:1} ],
-    [ {t:'6:00 AM',o:0},{t:'7:00 AM',o:1},{t:'8:00 AM',o:1},{t:'12:00 PM',o:1},{t:'5:00 PM',o:1},{t:'6:00 PM',o:1} ],
-    [ {t:'6:00 AM',o:1},{t:'7:00 AM',o:0},{t:'12:00 PM',o:1},{t:'5:00 PM',o:0},{t:'6:00 PM',o:0},{t:'7:00 PM',o:1} ],
-    [ {t:'6:00 AM',o:1},{t:'7:00 AM',o:1},{t:'8:00 AM',o:0},{t:'12:00 PM',o:1},{t:'5:00 PM',o:1} ],
-    [ {t:'8:00 AM',o:1},{t:'9:00 AM',o:1},{t:'10:00 AM',o:0},{t:'11:00 AM',o:1} ]
-  ];
-
-  function getMonday(d){
-    d = new Date(d);
-    var day = d.getDay();
-    var diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    return new Date(d.getFullYear(), d.getMonth(), diff);
-  }
-
-  var monday = getMonday(new Date());
-  var weekDates = DAY_NAMES.map(function(_, i){
-    var d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    return d;
-  });
-
-  var rangeTag = document.getElementById('weekRangeTag');
-  var last = weekDates[weekDates.length - 1];
-  rangeTag.textContent = MONTHS[monday.getMonth()] + ' ' + monday.getDate() + ' – ' + MONTHS[last.getMonth()] + ' ' + last.getDate();
-
-  var grid = document.getElementById('weekGrid');
-  var selectedBtn = null;
-  var selectedInfo = null;
-
-  DAY_NAMES.forEach(function(name, i){
-    var col = document.createElement('div');
-    col.className = 'day-col';
-
-    var head = document.createElement('div');
-    head.className = 'day-head';
-    var dn = document.createElement('div'); dn.className = 'dname'; dn.textContent = name;
-    var dd = document.createElement('div'); dd.className = 'ddate tabular';
-    dd.textContent = MONTHS[weekDates[i].getMonth()] + ' ' + weekDates[i].getDate();
-    head.appendChild(dn); head.appendChild(dd);
-    col.appendChild(head);
-
-    AVAILABILITY[i].forEach(function(slot){
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'slot tabular';
-      b.textContent = slot.t;
-      if (!slot.o) {
-        b.disabled = true;
-      } else {
-        b.addEventListener('click', function(){
-          if (selectedBtn) selectedBtn.classList.remove('selected');
-          b.classList.add('selected');
-          selectedBtn = b;
-          selectedInfo = { day: name, date: dd.textContent, time: slot.t };
-          document.getElementById('selectionSummary').innerHTML =
-            'Selected: <strong>' + name + ', ' + dd.textContent + ' · ' + slot.t + '</strong>';
-          document.getElementById('bookError').textContent = '';
-        });
-      }
-      col.appendChild(b);
-    });
-
-    grid.appendChild(col);
-  });
-
-  var form = document.getElementById('bookForm');
-  var errorEl = document.getElementById('bookError');
-  var panel = document.getElementById('bookPanel');
-  var confirm = document.getElementById('confirmTicket');
-
-  form.addEventListener('submit', function(e){
-    e.preventDefault();
-    if (!selectedInfo) {
-      errorEl.textContent = 'Pick an open time slot above first.';
-      return;
-    }
-    var name = document.getElementById('bfName').value.trim();
-    var email = document.getElementById('bfEmail').value.trim();
-    if (!name || !email) {
-      errorEl.textContent = 'Name and email are required.';
-      return;
-    }
-    var service = document.getElementById('bfService').value;
-    document.getElementById('cfName').textContent = name;
-    document.getElementById('cfService').textContent = service;
-    document.getElementById('cfWhen').textContent = selectedInfo.day + ', ' + selectedInfo.date + ' · ' + selectedInfo.time;
-    document.getElementById('cfNo').textContent = '№ ' + (4100 + Math.floor(Math.random() * 800));
-    panel.classList.add('hidden');
-    confirm.classList.add('show');
-  });
-
-  document.getElementById('bookAnother').addEventListener('click', function(e){
-    e.preventDefault();
-    confirm.classList.remove('show');
-    panel.classList.remove('hidden');
-    form.reset();
-    if (selectedBtn) selectedBtn.classList.remove('selected');
-    selectedBtn = null; selectedInfo = null;
-    document.getElementById('selectionSummary').textContent = 'No time selected yet — pick an open slot above.';
-    errorEl.textContent = '';
-  });
 })();
 </script>
-</body>
-</html>

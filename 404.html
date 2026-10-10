@@ -234,6 +234,8 @@
 
   ::selection{ background: var(--accent); color: #FFFFFF; }
 </style>
+<link rel="stylesheet" href="/site-footer.css">
+<link rel="stylesheet" href="/site-mobile.css">
 </head>
 <body>
 
@@ -282,12 +284,38 @@
   </div>
 </section>
 
-<footer>
-  <div class="footer-inner">
-    <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
-    <a href="privacy.html">Privacy Policy</a>
+<footer class="site-footer">
+  <div class="sf-inner">
+    <div class="sf-about">
+      <a class="sf-brand" href="/home"><img src="/favicon.ico" alt="">Engler</a>
+      <p class="sf-tagline">Websites, drafted and built for local businesses.</p>
+      <p class="sf-place">Redding, California</p>
+    </div>
+    <div class="sf-col" role="navigation" aria-label="Footer">
+      <h2>Pages</h2>
+      <ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="/showcase">Showcase</a></li>
+        <li><a href="/faq">FAQ</a></li>
+        <li><a href="/client-form">Order form</a></li>
+        <li><a href="/contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="sf-col sf-contact">
+      <h2>Get in touch</h2>
+      <ul>
+        <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
+        <li><a href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a></li>
+        <li><a class="sf-quote" href="/client-form">Get a quote</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sf-bottom">
+    <span>© 2026 Engler</span>
+    <a href="/privacy.html">Privacy Policy</a>
   </div>
 </footer>
 
+<script src="/site-nav.js"></script>
 </body>
 </html>

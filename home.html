@@ -7,13 +7,13 @@
 <meta name="description" content="Engler builds custom websites for small businesses — no templates, no locked-in quotes, just a website built by three people who'll talk you through it directly.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Engler — Websites, built properly">
-<meta property="og:description" content="Custom websites for small businesses, built by three people who'll talk you through it directly. First 3 clients: $15 to launch.">
-<meta property="og:image" content="assets/og-image.png">
-<meta property="og:url" content="/home">
+<meta property="og:description" content="Custom websites for small businesses, built by three people who'll talk you through it directly.">
+<meta property="og:image" content="https://englerwebsites.com/assets/og-image.png">
+<meta property="og:url" content="https://englerwebsites.com/home">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Engler — Websites, built properly">
 <meta name="twitter:description" content="Custom websites for small businesses, built by three people who'll talk you through it directly.">
-<meta name="twitter:image" content="assets/og-image.png">
+<meta name="twitter:image" content="https://englerwebsites.com/assets/og-image.png">
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -412,13 +412,29 @@
   }
   .email-btn:hover{ transform: translateY(-1px); box-shadow: 0 16px 28px rgba(22,35,59,0.2); }
 
+  /* "How a build runs" — a navy blueprint sheet */
   .process{
-    background: var(--bg);
-    color: var(--ink);
-    padding: 90px 32px;
+    --bp-line: rgba(140,175,255,0.13);
+    --bp-line-fine: rgba(140,175,255,0.06);
+    --bp-ink: #FFFFFF;
+    --bp-ink-soft: rgba(225,234,255,0.74);
+    --bp-rule: rgba(160,190,255,0.32);
+    background-color: var(--tab);
+    background-image:
+      radial-gradient(ellipse at 85% 0%, rgba(47,107,255,0.35), transparent 55%),
+      linear-gradient(var(--bp-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--bp-line) 1px, transparent 1px),
+      linear-gradient(var(--bp-line-fine) 1px, transparent 1px),
+      linear-gradient(90deg, var(--bp-line-fine) 1px, transparent 1px);
+    background-size: auto, 40px 40px, 40px 40px, 8px 8px, 8px 8px;
+    color: var(--bp-ink);
+    padding: 100px 32px 110px;
     position: relative;
+    overflow: hidden;
   }
-  .hero + .process{ padding-top: 24px; }
+  .process .section-head{ border-bottom-color: var(--bp-rule); }
+  .process .section-head h2{ color: var(--bp-ink); }
+  .process .section-head .tag{ color: rgba(170,195,255,0.8); }
   .section-head{
     display:flex; justify-content: space-between; align-items: flex-end;
     margin-bottom: 54px;
@@ -445,41 +461,75 @@
     display:grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
+    position: relative;
+    padding-top: 52px;
   }
-  @media (max-width: 900px){
-    .sheets{ grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 560px){
-    .sheets{ grid-template-columns: 1fr; }
+  /* dashed dimension line joining the four steps */
+  .sheets::before{
+    content:'';
+    position:absolute;
+    top: 17px;
+    left: 38px;
+    right: calc((100% - 48px) / 4 - 38px);
+    border-top: 1.5px dashed rgba(170,195,255,0.55);
   }
   .sheet{
-    padding: 28px 24px;
-    background: linear-gradient(180deg, #FFFFFF 0%, #FBFCFE 100%);
-    border: 1px solid var(--silver-line);
-    border-radius: 20px;
+    padding: 26px 24px 28px;
+    background: rgba(255,255,255,0.035);
+    border: 1px solid var(--bp-rule);
+    border-radius: 14px;
     position: relative;
-    box-shadow: var(--shadow-sm);
-    transition: transform .2s ease, box-shadow .2s ease;
+    transition: border-color .2s ease, background-color .2s ease;
   }
   .sheet:hover{
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
+    border-color: rgba(170,195,255,0.75);
+    background: rgba(255,255,255,0.06);
   }
+  .step-dot{
+    position:absolute;
+    top: -52px;
+    left: 24px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display:grid; place-items:center;
+    background: var(--accent);
+    color: #FFFFFF;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    box-shadow: 0 0 0 5px var(--tab), 0 0 0 6px rgba(170,195,255,0.45);
+  }
+  .sheet-icon{
+    display:block;
+    width: 44px; height: 44px;
+    margin-bottom: 18px;
+    color: #FFFFFF;
+  }
+  .sheet-icon .ic-accent{ stroke: #7CA6FF; }
   .sheet .sheet-no{
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    color: var(--silver);
-    margin-bottom: 18px;
+    color: rgba(170,195,255,0.7);
+    margin-bottom: 8px;
   }
   .sheet h3{
     font-family: var(--font-display);
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 700;
     margin-bottom: 10px;
+    color: var(--bp-ink);
   }
   .sheet p{
-    font-size: 0.88rem;
-    color: var(--ink-soft);
+    font-size: 0.9rem;
+    color: var(--bp-ink-soft);
+  }
+  @media (max-width: 900px){
+    .sheets{ grid-template-columns: 1fr 1fr; row-gap: 64px; }
+    .sheets::before{ display:none; }
+  }
+  @media (max-width: 560px){
+    .sheets{ grid-template-columns: 1fr; }
+    .process{ padding: 80px 20px 90px; }
   }
 
   .values{
@@ -622,6 +672,15 @@
     box-shadow: 0 14px 24px rgba(0,0,0,0.18);
   }
   .cta-btn:hover{ transform: translateY(-1px); box-shadow: 0 16px 28px rgba(0,0,0,0.22); }
+  .cta-band p + p{ margin-top: -24px; }
+  .cta-actions{ display:flex; flex-wrap:wrap; justify-content:center; gap:14px; }
+  .cta-btn-outline{
+    background: transparent;
+    color: #FFFFFF;
+    border: 1.5px solid rgba(255,255,255,0.85);
+    box-shadow: none;
+  }
+  .cta-btn-outline:hover{ background: rgba(255,255,255,0.1); box-shadow: none; }
 
   footer{
     padding: 40px 32px;
@@ -640,18 +699,21 @@
 
   ::selection{ background: var(--accent); color: #FFFFFF; }
 </style>
+<link rel="stylesheet" href="site-footer.css">
+<link rel="stylesheet" href="site-mobile.css">
 </head>
 <body>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
 
 <header>
   <nav>
-    <a class="logo" href="/home" style="text-decoration:none;"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+    <a class="logo" href="home.html" style="text-decoration:none;"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
     <div class="nav-links">
-      <a href="/home">Home</a>
-      <a href="/showcase">Showcase</a>
-      <a href="/faq">FAQ</a>
-      <a href="/client-form" class="nav-order">Order Form</a>
-      <a href="/contact" class="nav-cta">Contact Us</a>
+      <a href="home.html">Home</a>
+      <a href="showcase.html">Showcase</a>
+      <a href="faq.html">FAQ</a>
+      <a href="client-form.html" class="nav-order">Order Form</a>
+      <a href="contact.html" class="nav-cta">Contact Us</a>
     </div>
   </nav>
 </header>
@@ -665,17 +727,16 @@
         <span class="pill">Small team • fast launch</span>
       </div>
       <h1>We draft it, frame it,<br>and <em>ship it.</em></h1>
-      <p class="lede">Three friends who got tired of watching good businesses run on outdated websites. Tell us what you're building — we'll have a site live in weeks, not months.</p>
+      <p class="lede">We're three college students from Redding on a mission to replace outdated websites with modern, SEO-ready designs. Tell us your vision, and we'll bring it to life.</p>
       <div class="hero-stats">
-        <a class="stat-card offer" href="/client-form"><strong>Get a Quote</strong>tell us about your business and we'll send you a price<span class="offer-action">Fill out the questionnaire →</span></a>
+        <a class="stat-card offer" href="client-form.html"><strong>Get a Quote</strong>Tell us about your business and we'll send you a price<span class="offer-action">Fill out the questionnaire →</span></a>
         <div class="stat-card"><strong>$0</strong>due until your site is finished</div>
       </div>
-      <p class="offer-context">For reference, freelance-built small business sites typically start around $500–$8,000.</p>
-      <a href="/showcase" class="see-work-link">See what we've already built <span class="arrow">→</span></a>
+      <a href="showcase.html" class="see-work-link">See what we've already built <span class="arrow">→</span></a>
     </div>
 
     <div>
-      <div class="schematic">
+      <div class="schematic" id="heroSchematic">
         <div class="schematic-label"><span>SHT — HOME.SITE</span><span>SCALE N.T.S.</span></div>
         <svg viewBox="0 0 320 260" xmlns="http://www.w3.org/2000/svg">
           <rect x="4" y="4" width="312" height="252" class="sw-dim" fill="none"/>
@@ -716,49 +777,32 @@
     </div>
     <div class="sheets">
       <div class="sheet">
+        <span class="step-dot" aria-hidden="true">1</span>
+        <svg class="sheet-icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="24" height="30" rx="2"/><path d="M10 13h14M10 18h10M10 23h7"/><circle class="ic-accent" cx="28" cy="27" r="7"/><path class="ic-accent" d="M33 32l6 6"/></svg>
         <div class="sheet-no">SHT 01 / 04</div>
         <h3>Discover</h3>
         <p>A short call to map out what the business needs the site to actually do — bookings, sales, or just a solid front door.</p>
       </div>
       <div class="sheet">
+        <span class="step-dot" aria-hidden="true">2</span>
+        <svg class="sheet-icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 38V8l30 30z"/><path d="M12 32V22l10 10z"/><path d="M6 14h3M6 20h3M6 26h3M14 38v-3M20 38v-3M26 38v-3"/><path class="ic-accent" d="M30 6l6 6-14 14-7 1 1-7z"/></svg>
         <div class="sheet-no">SHT 02 / 04</div>
         <h3>Design</h3>
         <p>We draft the layout and look, built around the business's own content — not a template with the logo swapped in.</p>
       </div>
       <div class="sheet">
+        <span class="step-dot" aria-hidden="true">3</span>
+        <svg class="sheet-icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="36" height="30" rx="3"/><path d="M4 14h36"/><circle cx="9" cy="10.5" r="0.6"/><circle cx="13" cy="10.5" r="0.6"/><path class="ic-accent" d="M17 21l-5 5 5 5M27 21l5 5-5 5M24 19l-4 14"/></svg>
         <div class="sheet-no">SHT 03 / 04</div>
         <h3>Build</h3>
         <p>The site gets built and tested on real devices, with copy, forms, and payments wired up and working.</p>
       </div>
       <div class="sheet">
+        <span class="step-dot" aria-hidden="true">4</span>
+        <svg class="sheet-icon" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21L39 6 31 38l-9-11z"/><path d="M39 6L22 27v9l5-6"/><path class="ic-accent" d="M4 33h7M7 38h9M2 28h4"/></svg>
         <div class="sheet-no">SHT 04 / 04</div>
         <h3>Launch</h3>
         <p>We go live, hand over the keys, and stay on for the first month of tweaks — free of charge.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="values" id="values">
-  <div class="wrap">
-    <div class="section-head">
-      <h2>Why business owners choose us</h2>
-    </div>
-    <div class="values-grid">
-      <div class="value-item">
-        <div class="num">— 01</div>
-        <h3>Direct communication</h3>
-        <p>Email us and talk to the person actually building your site — no sales layer, no runaround.</p>
-      </div>
-      <div class="value-item">
-        <div class="num">— 02</div>
-        <h3>One team, no handoffs</h3>
-        <p>The three of us design, build, and support every site — no outsourced pieces, no lost context.</p>
-      </div>
-      <div class="value-item">
-        <div class="num">— 03</div>
-        <h3>Built to be run, not just shipped</h3>
-        <p>You can edit your own pages after launch. We show you how before we hand it over.</p>
       </div>
     </div>
   </div>
@@ -793,16 +837,73 @@
 <section class="cta-band">
   <span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
   <h2>Have a business that needs a proper website?</h2>
-  <p>Tell us about it — call, text, or email, whatever's easiest.</p>
-  <a href="/contact" class="cta-btn">Contact Us →</a>
+  <p>Tell us about it — text or email, whatever's easiest.</p>
+  <p>Or fill out our order form and we'll contact you back.</p>
+  <div class="cta-actions">
+    <a href="contact.html" class="cta-btn">Contact Us →</a>
+    <a href="client-form.html" class="cta-btn cta-btn-outline">Fill Out the Order Form →</a>
+  </div>
 </section>
 
-<footer>
-  <div class="footer-inner">
-    <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
+<footer class="site-footer">
+  <div class="sf-inner">
+    <div class="sf-about">
+      <a class="sf-brand" href="home.html"><img src="favicon.ico" alt="">Engler</a>
+      <p class="sf-tagline">Websites, drafted and built for local businesses.</p>
+      <p class="sf-place">Redding, California</p>
+    </div>
+    <div class="sf-col" role="navigation" aria-label="Footer">
+      <h2>Pages</h2>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="showcase.html">Showcase</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="client-form.html">Order form</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="sf-col sf-contact">
+      <h2>Get in touch</h2>
+      <ul>
+        <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
+        <li><a href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a></li>
+        <li><a class="sf-quote" href="client-form.html">Get a quote</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sf-bottom">
+    <span>© 2026 Engler</span>
     <a href="privacy.html">Privacy Policy</a>
   </div>
 </footer>
 
+<script>
+  // Hero sketch: traces its own lines once when the page loads.
+  (function(){
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const svg = document.querySelector('#heroSchematic svg');
+    if (!svg || !svg.animate) return;
+    const shapes = [...svg.querySelectorAll('rect, line')];
+    const texts = [...svg.querySelectorAll('text, circle')];
+    shapes.forEach((el, i) => {
+      let len = 0;
+      try { len = el.getTotalLength(); } catch (e) { return; }
+      if (!len) return;
+      const delay = 150 + i * 70;
+      el.style.strokeDasharray = len;
+      el.style.strokeDashoffset = len;
+      el.style.fillOpacity = 0;
+      const draw = el.animate(
+        [{ strokeDashoffset: len, fillOpacity: 0 }, { strokeDashoffset: 0, fillOpacity: 0, offset: 0.75 }, { strokeDashoffset: 0, fillOpacity: 1 }],
+        { duration: 900, delay, easing: 'cubic-bezier(.4,.1,.2,1)', fill: 'forwards' }
+      );
+      draw.onfinish = () => { el.style.strokeDasharray = ''; el.style.strokeDashoffset = ''; el.style.fillOpacity = ''; draw.cancel(); };
+    });
+    texts.forEach((el, i) => {
+      el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: 900 + i * 120, fill: 'backwards' });
+    });
+  })();
+</script>
+<script src="site-nav.js"></script>
 </body>
 </html>

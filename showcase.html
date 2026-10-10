@@ -8,12 +8,12 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="Engler — Website showcase">
   <meta property="og:description" content="Example website concepts built by Engler, from a neighborhood cafe to a perfume subscription storefront.">
-  <meta property="og:image" content="assets/og-image.png">
-  <meta property="og:url" content="/showcase">
+  <meta property="og:image" content="https://englerwebsites.com/assets/og-image.png">
+  <meta property="og:url" content="https://englerwebsites.com/showcase">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Engler — Website showcase">
   <meta name="twitter:description" content="Example website concepts built by Engler, from a neighborhood cafe to a perfume subscription storefront.">
-  <meta name="twitter:image" content="assets/og-image.png">
+  <meta name="twitter:image" content="https://englerwebsites.com/assets/og-image.png">
   <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -98,8 +98,8 @@
                   linear-gradient(90deg, rgba(47,107,255,0.12) 1px, transparent 1px),
                   linear-gradient(180deg, #FFFFFF 0%, #F8FAFD 100%);
       background-size: auto, 40px 40px, 40px 40px, auto;
-      mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 0%, black 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 0%, black 88%, transparent 100%);
     }
     .hero-inner {
       max-width: 960px; margin: 0 auto; text-align: center;
@@ -122,6 +122,54 @@
     .hero p {
       max-width: 720px; margin: 0 auto 28px;
       font-size: 1rem; color: var(--ink-soft);
+    }
+
+    /* Big "Showcase" title: gradient ink + an offset blueprint outline behind it */
+    .hero h1.showcase-title {
+      position: relative;
+      display: inline-block;
+      font-size: clamp(3.4rem, 12vw, 7.5rem);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.045em;
+      margin: 0 0 22px;
+      padding: 0 0.06em;
+      background: linear-gradient(100deg, var(--tab-deep) 0%, var(--tab) 35%, var(--accent) 60%, var(--tab) 85%);
+      background-size: 220% 100%;
+      background-position: 100% 0;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: title-sheen 2.4s ease-out 0.2s both;
+    }
+    .hero h1.showcase-title::before {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      padding: 0 0.06em;
+      transform: translate(0.07em, 0.07em);
+      color: transparent;
+      -webkit-text-stroke: 1.5px rgba(47,107,255,0.45);
+      z-index: -1;
+      pointer-events: none;
+    }
+    .title-rule {
+      display: block;
+      width: 120px; height: 4px;
+      margin: 0 auto 24px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--tab), var(--accent));
+      transform-origin: center;
+      animation: rule-draw 0.9s cubic-bezier(.2,.8,.2,1) 0.5s both;
+    }
+    .hero h1.showcase-title + .title-rule + p {
+      font-size: clamp(1.02rem, 1.6vw, 1.15rem);
+      line-height: 1.6;
+    }
+    @keyframes title-sheen { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+    @keyframes rule-draw { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) {
+      .hero h1.showcase-title, .title-rule { animation: none; }
     }
 
     .showcase-grid {
@@ -226,6 +274,23 @@
       box-shadow: var(--shadow-md);
       position: relative;
     }
+    @media (max-width: 720px) {
+      .preview-overlay { padding: 10px; }
+      .preview-modal {
+        height: calc(100vh - 20px);
+        height: calc(100dvh - 20px);
+        border-radius: 18px;
+        padding-top: 52px;
+        background: #16233B;
+      }
+      .preview-modal iframe { background: #FFF; }
+      .preview-close {
+        top: 6px; right: 8px;
+        width: 40px; height: 40px;
+        background: transparent !important;
+        border: 1px solid rgba(255,255,255,0.35) !important;
+      }
+    }
     .preview-modal iframe {
       width: 100%;
       height: 100%;
@@ -247,6 +312,31 @@
       z-index: 2;
     }
     .card-body { padding: 20px 22px 24px; }
+    .next-mockup { display: block; text-decoration: none; }
+    .next-sheet {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      background-color: #16233B;
+      background-image:
+        radial-gradient(ellipse at 90% 0%, rgba(47,107,255,0.4), transparent 60%),
+        linear-gradient(rgba(140,175,255,0.13) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(140,175,255,0.13) 1px, transparent 1px);
+      background-size: auto, 20px 20px, 20px 20px;
+      padding: 14px;
+    }
+    .next-sheet svg { display: block; width: 100%; height: auto; }
+    .nx-frame { fill: none; stroke: rgba(225,234,255,0.7); stroke-width: 1.4; stroke-dasharray: 6 5; }
+    .nx-line { fill: none; stroke: rgba(170,195,255,0.55); stroke-width: 1.2; stroke-dasharray: 4 4; }
+    .nx-accent { fill: rgba(47,107,255,0.55); stroke: #7CA6FF; stroke-width: 1.2; }
+    .next-label {
+      position: absolute; right: 16px; bottom: 14px;
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: #FFFFFF; background: var(--accent);
+      padding: 6px 12px; border-radius: 999px;
+    }
+    .next-mockup:hover .nx-frame { stroke: #FFFFFF; }
+    .next-mockup:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 20px; }
     .card-body h3 {
       font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 8px;
     }
@@ -285,27 +375,29 @@
     }
     .footer-inner a{ color: var(--silver-dark); }
   </style>
-<script>if (location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+<link rel="stylesheet" href="site-footer.css">
+<link rel="stylesheet" href="site-mobile.css">
 </head>
 <body>
   <header>
     <nav>
-      <a class="logo" href="/home"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+      <a class="logo" href="home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
       <div class="nav-links">
-        <a href="/home">Home</a>
-        <a href="/showcase">Showcase</a>
-        <a href="/faq">FAQ</a>
-        <a href="/client-form" class="nav-order">Order Form</a>
-        <a href="/contact" class="nav-cta">Contact Us</a>
+        <a href="home.html">Home</a>
+        <a href="showcase.html">Showcase</a>
+        <a href="faq.html">FAQ</a>
+        <a href="client-form.html" class="nav-order">Order Form</a>
+        <a href="contact.html" class="nav-cta">Contact Us</a>
       </div>
     </nav>
   </header>
 
   <section class="hero">
     <div class="hero-inner">
-      <div class="eyebrow">Concepts for future launches</div>
-      <h1>Example website directions for the next generation of clients.</h1>
-      <p>These are polished placeholders for website styles, layouts, and user experiences we can shape into real launches. They help clients picture the direction before a single line of final content is written.</p>
+      <h1 class="showcase-title" data-text="Showcase">Showcase</h1>
+      <span class="title-rule" aria-hidden="true"></span>
+      <p>These are a few demonstration websites that our team has created to give you a sense of our skill in building websites. Our goal is to help give our clients a picture of what a website we build might look like before any code is written.</p>
     </div>
   </section>
 
@@ -320,9 +412,9 @@
         </div>
         <div class="card-body">
           <h3>Perfume subscription</h3>
-          <p>A monthly scent subscription storefront with a browsable collection, a pick-your-own or surprise-me option, and a full checkout flow.</p>
-          <a class="preview-link" id="previewLinkPerfume">Open full concept →</a>
-          <div class="tags"><span>Subscription</span><span>E-commerce</span><span>Lifestyle</span></div>
+          <p>A monthly scent subscription storefront with a browsable collection, a pick-your-own or surprise-me option, full checkout, customer accounts with order history, and a support page.</p>
+          <a class="preview-link" id="previewLinkPerfume">Open full demo →</a>
+          <div class="tags"><span>Subscription</span><span>E-commerce</span><span>Accounts</span></div>
         </div>
       </article>
 
@@ -335,9 +427,9 @@
         </div>
         <div class="card-body">
           <h3>Neighborhood cafe</h3>
-          <p>Warm, welcoming, and easy to navigate for reservations, menus, and local discovery.</p>
-          <a class="preview-link" id="previewLink">Open full concept →</a>
-          <div class="tags"><span>Hospitality</span><span>Booking</span><span>Warm</span></div>
+          <p>A neighborhood bakery and coffee shop with a full menu, online pickup orders, and a rewards account for regulars.</p>
+          <a class="preview-link" id="previewLink">Open full demo →</a>
+          <div class="tags"><span>Food &amp; drink</span><span>Online ordering</span><span>Rewards</span></div>
         </div>
       </article>
 
@@ -349,30 +441,35 @@
           </div>
         </div>
         <div class="card-body">
-          <h3>Personal Business</h3>
-          <p>Clear service information, scheduling, and a calm visual system for trust and clarity.</p>
-          <a class="preview-link" id="previewLinkClinic">Open full concept →</a>
-          <div class="tags"><span>Healthcare</span><span>Service</span><span>Calm</span></div>
+          <h3>Personal business</h3>
+          <p>A coach's site with clear service information, a simple start-here process, client reviews, and online session booking.</p>
+          <a class="preview-link" id="previewLinkClinic">Open full demo →</a>
+          <div class="tags"><span>Fitness</span><span>Service</span><span>Booking</span></div>
         </div>
       </article>
 
-      <article class="card">
-        <div class="mockup">
+      <article class="card card-next">
+        <a class="mockup next-mockup" href="client-form.html" aria-label="Start your order form">
           <div class="browser-bar"><span></span><span></span><span></span></div>
-          <div class="placeholder-screen">
-            <div class="placeholder-bar medium"></div>
-            <div class="placeholder-row">
-              <div class="placeholder-box large"></div>
-              <div class="placeholder-box"></div>
-            </div>
-            <div class="placeholder-bar short"></div>
-            <div class="placeholder-bar medium"></div>
+          <div class="next-sheet">
+            <svg viewBox="0 0 320 170" aria-hidden="true">
+              <rect x="14" y="12" width="292" height="146" rx="8" class="nx-frame"/>
+              <line x1="14" y1="34" x2="306" y2="34" class="nx-line"/>
+              <rect x="30" y="48" width="150" height="10" rx="5" class="nx-line"/>
+              <rect x="30" y="66" width="110" height="6" rx="3" class="nx-line"/>
+              <rect x="30" y="84" width="58" height="16" rx="8" class="nx-accent"/>
+              <rect x="30" y="114" width="78" height="32" rx="5" class="nx-line"/>
+              <rect x="121" y="114" width="78" height="32" rx="5" class="nx-line"/>
+              <rect x="212" y="114" width="78" height="32" rx="5" class="nx-line"/>
+              <rect x="200" y="46" width="90" height="56" rx="5" class="nx-line"/>
+            </svg>
+            <span class="next-label">Your site here</span>
           </div>
-        </div>
+        </a>
         <div class="card-body">
-          <h3>Product launch page</h3>
-          <p>Fast-moving and conversion-focused with product messaging, social proof, and pricing.</p>
-          <div class="tags"><span>Startup</span><span>Launch</span><span>Conversion</span></div>
+          <h3>Your business, next</h3>
+          <p>Have something in mind? Tell us about your business and we'll plan a site built around it, with your content, brand, and goals.</p>
+          <a class="preview-link" href="client-form.html">Start your order form →</a>
         </div>
       </article>
     </div>
@@ -380,9 +477,9 @@
 
   <section class="cta-band">
     <div class="cta-box">
-      <h2>Want one of these directions turned into a real site?</h2>
-      <p>We can turn a concept into a live page with your content, brand, and goals.</p>
-      <a href="/contact">Contact Us</a>
+      <h2>Want a site like these for your business?</h2>
+      <p>We'll build one around your content, brand, and goals.</p>
+      <a href="contact.html">Contact Us</a>
     </div>
   </section>
 
@@ -393,12 +490,37 @@
     </div>
   </div>
 
-  <footer>
-    <div class="footer-inner">
-      <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
-      <a href="privacy.html">Privacy Policy</a>
+  <footer class="site-footer">
+  <div class="sf-inner">
+    <div class="sf-about">
+      <a class="sf-brand" href="home.html"><img src="favicon.ico" alt="">Engler</a>
+      <p class="sf-tagline">Websites, drafted and built for local businesses.</p>
+      <p class="sf-place">Redding, California</p>
     </div>
-  </footer>
+    <div class="sf-col" role="navigation" aria-label="Footer">
+      <h2>Pages</h2>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="showcase.html">Showcase</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="client-form.html">Order form</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="sf-col sf-contact">
+      <h2>Get in touch</h2>
+      <ul>
+        <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
+        <li><a href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a></li>
+        <li><a class="sf-quote" href="client-form.html">Get a quote</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sf-bottom">
+    <span>© 2026 Engler</span>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+</footer>
 
   <script>
     const previewOverlay = document.getElementById('previewOverlay');
@@ -444,5 +566,6 @@
       }
     });
   </script>
+<script src="site-nav.js"></script>
 </body>
 </html>

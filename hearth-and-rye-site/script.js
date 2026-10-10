@@ -62,61 +62,81 @@ window.addEventListener('pageshow', (event) => {
     badge.classList.add(isOpen ? 'open' : 'closed');
   }
 
-  // Account system — demo only, no real server. Uses the browser's
-  // localStorage so "signing up" and "logging in" persist across
-  // pages and reloads on this device, without any backend.
-  // Note: some browsers restrict localStorage for files opened
-  // directly (file://) — this works reliably once the site is
-  // actually hosted online.
-  const ACCOUNTS_KEY = 'hr_accounts';   // array of {name, email, password}
-  const CURRENT_KEY = 'hr_current_user'; // email of the signed-in account, or null
+  // Accounts need Firebase. If it fails to load (blocked, offline, outage),
+  // keep the rest of the site working and explain the problem on sign-in.
+  let auth = null;
+  let database = null;
+  try {
+    auth = firebase.auth();
+    database = firebase.firestore();
+  } catch (error) {
+    console.warn('Accounts are unavailable because Firebase did not load.', error);
+  }
+  const ACCOUNTS_UNAVAILABLE = "Accounts aren't available right now. Refresh the page or try again later.";
+  let currentUser = null;
+  let currentAccount = null;
 
-  function getAccounts() {
-    try {
-      const raw = localStorage.getItem(ACCOUNTS_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) { return []; }
-  }
-  function saveAccounts(accounts) {
-    try { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts)); } catch (e) {}
-  }
-  function findAccount(email) {
-    return getAccounts().find(a => a.email.toLowerCase() === email.toLowerCase()) || null;
-  }
-  function updateCurrentAccount(mutatorFn) {
-    const email = getCurrentUserEmail();
-    if (!email) return null;
-    const accounts = getAccounts();
-    const idx = accounts.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
-    if (idx === -1) return null;
-    mutatorFn(accounts[idx]);
-    saveAccounts(accounts);
-    return accounts[idx];
+  function getCurrentUser() {
+    return currentAccount;
   }
   function getCurrentUserEmail() {
-    try { return localStorage.getItem(CURRENT_KEY); } catch (e) { return null; }
+    return currentAccount?.email || null;
   }
-  function setCurrentUserEmail(email) {
-    try {
-      if (email) localStorage.setItem(CURRENT_KEY, email);
-      else localStorage.removeItem(CURRENT_KEY);
-    } catch (e) {}
+  function findAccount(email) {
+    const account = getCurrentUser();
+    if (!account) return null;
+    return account.email.toLowerCase() === String(email).trim().toLowerCase() ? account : null;
+  }
+  async function loadAccount(user) {
+    if (!user) {
+      currentUser = null;
+      currentAccount = null;
+      refreshAccountUI();
+      return;
+    }
+
+    currentUser = user;
+    const snapshot = await database.collection('users').doc(user.uid).get();
+    currentAccount = {
+      id: user.uid,
+      name: snapshot.exists ? snapshot.data().name || user.displayName || 'Friend' : user.displayName || 'Friend',
+      email: user.email || '',
+      phone: snapshot.exists ? snapshot.data().phone || '' : '',
+      points: snapshot.exists ? Number(snapshot.data().points || 0) : 0
+    };
+    refreshAccountUI();
+  }
+  async function saveAccount(account) {
+    if (!currentUser) return null;
+    await database.collection('users').doc(currentUser.uid).set({
+      name: account.name || '',
+      email: currentUser.email || '',
+      phone: account.phone || '',
+      points: Number(account.points || 0),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    currentAccount = account;
+    refreshAccountUI();
+    return account;
+  }
+  async function updateCurrentAccount(mutatorFn) {
+    const account = getCurrentUser();
+    if (!account) return null;
+    const updated = { ...account };
+    mutatorFn(updated);
+    return saveAccount(updated);
   }
   function isLoggedIn() {
-    return !!getCurrentUserEmail();
+    return !!currentUser;
   }
 
   function refreshAccountUI() {
-    const currentEmail = getCurrentUserEmail();
-    const account = currentEmail ? findAccount(currentEmail) : null;
+    const account = getCurrentUser();
     const loggedIn = !!account;
 
-    // Header Account button always says "Account" — it's how you sign
-    // in, sign up, AND switch to a different existing account.
     const headerBtn = document.getElementById('accountOpenBtn');
     if (headerBtn) headerBtn.textContent = 'Account';
 
-    // My Account page: swap between signed-out and signed-in views
     const signedOutBlock = document.getElementById('accountSignedOut');
     const signedInBlock = document.getElementById('accountSignedIn');
     if (signedOutBlock && signedInBlock) {
@@ -146,10 +166,6 @@ window.addEventListener('pageshow', (event) => {
     }
   }
 
-  // Account modal — sign up creates an account, log in checks
-  // email + password against a stored account. The header button
-  // always opens this modal (even while signed in), so entering
-  // different credentials switches to a different account.
   const modal = document.getElementById('accountModal');
   const openBtn = document.getElementById('accountOpenBtn');
   const openBtnInline = document.getElementById('accountOpenBtnInline');
@@ -189,87 +205,145 @@ window.addEventListener('pageshow', (event) => {
     });
   });
 
+  async function submitAuthForm(form) {
+    const isSignup = form.dataset.form === 'signup';
+
+    if (!auth || !database) {
+      modalStatus.textContent = ACCOUNTS_UNAVAILABLE;
+      return;
+    }
+
+    if (isSignup) {
+      const name = document.getElementById('su-name').value.trim();
+      const email = document.getElementById('su-email').value.trim();
+      const phone = document.getElementById('su-phone').value.trim();
+      const password = document.getElementById('su-password').value;
+
+      if (!name || !email || !password) {
+        modalStatus.textContent = 'Please fill in your name, email, and password.';
+        return;
+      }
+
+      try {
+        const credential = await auth.createUserWithEmailAndPassword(email, password);
+        await credential.user.updateProfile({ displayName: name });
+        await database.collection('users').doc(credential.user.uid).set({
+          name,
+          email,
+          phone,
+          points: 0,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        modalStatus.textContent = `Account created — welcome, ${name}!`;
+      } catch (error) {
+        modalStatus.textContent = error.code === 'auth/email-already-in-use'
+          ? 'An account with that email already exists — try logging in instead.'
+          : error.message;
+      }
+    } else {
+      const email = document.getElementById('li-email').value.trim();
+      const password = document.getElementById('li-password').value;
+
+      if (!email || !password) {
+        modalStatus.textContent = 'Please enter both email and password.';
+        return;
+      }
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        modalStatus.textContent = 'Logged in successfully.';
+      } catch (error) {
+        modalStatus.textContent = error.code === 'auth/invalid-credential'
+          ? 'Incorrect email or password.'
+          : error.message;
+      }
+    }
+
+    form.reset();
+  }
+
   document.querySelectorAll('.auth-form').forEach(form => {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const isSignup = form.dataset.form === 'signup';
-
-      if (isSignup) {
-        const name = document.getElementById('su-name').value.trim();
-        const email = document.getElementById('su-email').value.trim();
-        const phone = document.getElementById('su-phone').value.trim();
-        const password = document.getElementById('su-password').value;
-
-        if (findAccount(email)) {
-          modalStatus.textContent = 'An account with that email already exists — try logging in instead.';
-        } else {
-          const accounts = getAccounts();
-          accounts.push({ name, email, phone, password, points: 0 });
-          saveAccounts(accounts);
-          setCurrentUserEmail(email);
-          modalStatus.textContent = `Account created — welcome, ${name}!`;
-          refreshAccountUI();
-        }
-      } else {
-        const email = document.getElementById('li-email').value.trim();
-        const password = document.getElementById('li-password').value;
-        const existing = findAccount(email);
-
-        if (!existing) {
-          modalStatus.textContent = 'No account found. Please sign up first.';
-        } else if (existing.password !== password) {
-          modalStatus.textContent = 'Incorrect email or password.';
-        } else {
-          setCurrentUserEmail(email);
-          modalStatus.textContent = `Logged in — welcome back, ${existing.name}!`;
-          refreshAccountUI();
-        }
-      }
-      form.reset();
+      submitAuthForm(form);
     });
   });
 
-  // Log out button on the My Account page itself
   const logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      setCurrentUserEmail(null);
-      refreshAccountUI();
+      if (auth) auth.signOut();
     });
   }
 
   refreshAccountUI();
+  if (auth) auth.onAuthStateChanged((user) => {
+    loadAccount(user).catch((error) => {
+      console.error('Unable to load Firebase account:', error);
+      currentUser = null;
+      currentAccount = null;
+      refreshAccountUI();
+    });
+  });
 
-  // Contact form — no backend, so this opens the visitor's email app
-  // with a message pre-addressed and pre-filled to send directly.
+  // Contact form — uses FormSubmit's free email endpoint so the site
+  // can receive messages without exposing an email-service API key.
   const contactForm = document.getElementById('contactForm');
   if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = document.getElementById('cf-name').value;
-      const email = document.getElementById('cf-email').value;
-      const message = document.getElementById('cf-message').value;
-
-      const subject = `Message from ${name} via Hearth & Rye site`;
-      const body = `Name: ${name}\nEmail: ${email}\n\n${message}`;
-      const mailtoLink = `mailto:gabriel3789lewis@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
+      const name = document.getElementById('cf-name').value.trim();
+      const email = document.getElementById('cf-email').value.trim();
+      const message = document.getElementById('cf-message').value.trim();
       const status = document.getElementById('formStatus');
-      status.textContent = "Opening your email app to send this…";
-      window.location.href = mailtoLink;
+
+      if (!name || !email || !message) {
+        status.textContent = 'Please fill in your name, email, and message.';
+        return;
+      }
+
+      status.textContent = 'Sending your message...';
+
+      try {
+        const response = await fetch('https://formsubmit.co/ajax/englerwebsites@gmail.com', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            message,
+            _subject: `Message from ${name} via Hearth & Rye site`,
+            _replyto: email,
+            _captcha: 'true',
+            _template: 'table'
+          })
+        });
+        const responseText = await response.text();
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          throw new Error(response.ok
+            ? 'The server returned an unexpected response.'
+            : 'The contact service is not connected to this hosted site yet.');
+        }
+
+        if (!response.ok || data.success === false || data.success === 'false') {
+          throw new Error(data.error || data.message || 'Unable to send your message.');
+        }
+
+        status.textContent = 'Your message was sent successfully.';
+        contactForm.reset();
+      } catch (error) {
+        status.textContent = error.message || 'Unable to send your message.';
+      }
     });
   }
 
-  // Scroll reveal
-  const els = document.querySelectorAll('[data-reveal]');
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
-    }, {threshold:0.15});
-    els.forEach(el => io.observe(el));
-  } else {
-    els.forEach(el => el.classList.add('in'));
-  }
+  // Fade-in on scroll now lives in site-ui.js so it works even if Firebase fails.
 
 // Menu search — live filters visible menu items as you type.
 // Only present on menu.html, guarded so it's safe in the shared script.

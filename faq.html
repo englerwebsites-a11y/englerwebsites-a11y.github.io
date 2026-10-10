@@ -8,12 +8,12 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Engler — FAQ">
 <meta property="og:description" content="Answers to the most common questions about pricing, ownership, timelines, and getting started with Engler.">
-<meta property="og:image" content="assets/og-image.png">
-<meta property="og:url" content="/faq">
+<meta property="og:image" content="https://englerwebsites.com/assets/og-image.png">
+<meta property="og:url" content="https://englerwebsites.com/faq">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Engler — FAQ">
 <meta name="twitter:description" content="Answers to the most common questions about pricing, ownership, timelines, and getting started with Engler.">
-<meta name="twitter:image" content="assets/og-image.png">
+<meta name="twitter:image" content="https://englerwebsites.com/assets/og-image.png">
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -135,8 +135,8 @@
       linear-gradient(rgba(47,107,255,0.12) 1px, transparent 1px),
       linear-gradient(90deg, rgba(47,107,255,0.12) 1px, transparent 1px);
     background-size: auto, 40px 40px, 40px 40px;
-    mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
   }
   .page-head .eyebrow{
     font-family: var(--font-mono);
@@ -147,23 +147,47 @@
     margin-bottom: 14px;
   }
   .page-head h1{
+    position: relative;
+    display: inline-block;
     font-family: var(--font-display);
+    font-size: clamp(3.4rem, 12vw, 7.5rem);
     font-weight: 800;
-    font-size: clamp(3.2rem, 9vw, 5.6rem);
-    letter-spacing: -0.03em;
-    margin-bottom: 6px;
-    background: linear-gradient(135deg, var(--tab) 0%, var(--accent) 55%, #7CA6FF 100%);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    margin: 0 0 22px;
+    padding: 0 0.06em;
+    background: linear-gradient(100deg, var(--tab-deep) 0%, var(--tab) 35%, var(--accent) 60%, var(--tab) 85%);
+    background-size: 220% 100%;
+    background-position: 100% 0;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    display: inline-block;
+    animation: title-sheen 2.4s ease-out 0.2s both;
+  }
+  .page-head h1::before{
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    padding: 0 0.06em;
+    transform: translate(0.07em, 0.07em);
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(47,107,255,0.45);
+    z-index: -1;
+    pointer-events: none;
   }
   .page-head .heading-rule{
-    width: 64px;
+    width: 120px;
     height: 4px;
-    margin: 0 auto 18px;
+    margin: 0 auto 24px;
     border-radius: 999px;
-    background: linear-gradient(90deg, var(--tab), var(--accent), #7CA6FF);
+    background: linear-gradient(90deg, var(--tab), var(--accent));
+    transform-origin: center;
+    animation: rule-draw 0.9s cubic-bezier(.2,.8,.2,1) 0.5s both;
+  }
+  @keyframes title-sheen{ from{ background-position: 0% 0; } to{ background-position: 100% 0; } }
+  @keyframes rule-draw{ from{ transform: scaleX(0); opacity: 0; } to{ transform: scaleX(1); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce){
+    .page-head h1, .page-head .heading-rule{ animation: none; }
   }
   .page-head p{
     color: var(--ink-soft);
@@ -215,6 +239,9 @@
     margin-bottom: 6px;
     color: var(--ink);
   }
+  .faq-answer a{ color: var(--accent); font-weight: 600; }
+  .faq-body{ min-width: 0; }
+  .faq-answer{ overflow-wrap: anywhere; }
   .faq-answer{
     font-size: 0.92rem;
     color: var(--ink-soft);
@@ -241,27 +268,29 @@
 
   ::selection{ background: var(--accent); color: #FFFFFF; }
 </style>
-<script>if (location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+<link rel="stylesheet" href="site-footer.css">
+<link rel="stylesheet" href="site-mobile.css">
 </head>
 <body>
 
 <header>
   <nav>
-    <a class="logo" href="/home" style="text-decoration:none;"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+    <a class="logo" href="home.html" style="text-decoration:none;"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
     <div class="nav-links">
-      <a href="/home">Home</a>
-      <a href="/showcase">Showcase</a>
-      <a href="/faq">FAQ</a>
-      <a href="/client-form" class="nav-order">Order Form</a>
-      <a href="/contact" class="nav-cta">Contact Us</a>
+      <a href="home.html">Home</a>
+      <a href="showcase.html">Showcase</a>
+      <a href="faq.html">FAQ</a>
+      <a href="client-form.html" class="nav-order">Order Form</a>
+      <a href="contact.html" class="nav-cta">Contact Us</a>
     </div>
   </nav>
 </header>
 
 <section class="page-head">
   <p class="eyebrow">Before you reach out</p>
-  <h1>FAQ</h1>
-  <div class="heading-rule"></div>
+  <h1 data-text="FAQ">FAQ</h1>
+  <div class="heading-rule" aria-hidden="true"></div>
   <p>The questions we hear most — answered up front, no email required.</p>
 </section>
 
@@ -275,13 +304,6 @@
           <div class="faq-body">
             <div class="faq-question">How much does a website cost?</div>
             <div class="faq-answer">Website pricing depends on the number of pages, the level of design detail, and how much time the project takes. Rather than posting a generic quote, we prefer to walk through the details with you on an initial call — by the end, we'll agree on a set price together.</div>
-          </div>
-        </li>
-        <li class="faq-item">
-          <div class="faq-num"></div>
-          <div class="faq-body">
-            <div class="faq-question">What's included in the $15 offer?</div>
-            <div class="faq-answer">As a newer business building our portfolio, we're offering to build a website for our first three customers for just $15. This includes a site of up to 5 pages and guidance on getting it live on the web. Any additional details can be worked out over a call or text.</div>
           </div>
         </li>
         <li class="faq-item">
@@ -316,7 +338,7 @@
           <div class="faq-num"></div>
           <div class="faq-body">
             <div class="faq-question">How long does a build take?</div>
-            <div class="faq-answer">Build time depends on the size of the site and how many revisions you'd like along the way — we build at your pace and welcome your input throughout. As a general guide, a 5-page site has typically taken us 2–3 days to complete.</div>
+            <div class="faq-answer">Build time depends on the size of the site and how many revisions you'd like along the way — we build at your pace and welcome your input throughout. As a general guide, a 5-page site takes us about a week. That gives us time to test everything carefully so your site launches without issues.</div>
           </div>
         </li>
         <li class="faq-item">
@@ -330,14 +352,14 @@
           <div class="faq-num"></div>
           <div class="faq-body">
             <div class="faq-question">What if my business needs more than 5 pages?</div>
-            <div class="faq-answer">Absolutely — we can build sites larger than 5 pages. They just won't qualify for the $15 launch offer and will be priced a bit higher depending on scope.</div>
+            <div class="faq-answer">Absolutely — we can build sites larger than 5 pages. Larger sites are priced based on their scope and take a little longer to build.</div>
           </div>
         </li>
         <li class="faq-item">
           <div class="faq-num"></div>
           <div class="faq-body">
             <div class="faq-question">How do I get started?</div>
-            <div class="faq-answer">Head to our contact page and reach out however's easiest — email, text, phone, or the contact form. Email, text, and the form are best if you're not sure we'll be free to pick up right away. We typically reply within a day.</div>
+            <div class="faq-answer">Reach out whichever way is easiest for you. If you already know what you want, fill out our <a href="client-form.html">order form</a> and we'll get back to you with a price. If you'd rather talk first, text us at <a href="sms:+15306912191">(530) 691-2191</a> or email <a href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a> and we'll set up a time for a call. You can also send a message through the form on our <a href="contact.html">Contact page</a>. We typically reply within a day.</div>
           </div>
         </li>
       </ul>
@@ -345,12 +367,38 @@
   </div>
 </section>
 
-<footer>
-  <div class="footer-inner">
-    <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
+<footer class="site-footer">
+  <div class="sf-inner">
+    <div class="sf-about">
+      <a class="sf-brand" href="home.html"><img src="favicon.ico" alt="">Engler</a>
+      <p class="sf-tagline">Websites, drafted and built for local businesses.</p>
+      <p class="sf-place">Redding, California</p>
+    </div>
+    <div class="sf-col" role="navigation" aria-label="Footer">
+      <h2>Pages</h2>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="showcase.html">Showcase</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="client-form.html">Order form</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="sf-col sf-contact">
+      <h2>Get in touch</h2>
+      <ul>
+        <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
+        <li><a href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a></li>
+        <li><a class="sf-quote" href="client-form.html">Get a quote</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sf-bottom">
+    <span>© 2026 Engler</span>
     <a href="privacy.html">Privacy Policy</a>
   </div>
 </footer>
 
+<script src="site-nav.js"></script>
 </body>
 </html>

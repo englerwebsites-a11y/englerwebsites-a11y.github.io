@@ -1,0 +1,79 @@
+/* Shared site footer — used by every Engler page. Edit here to change the footer everywhere. */
+.site-footer{
+  --sf-ink: #FFFFFF;
+  --sf-soft: rgba(225,234,255,0.72);
+  --sf-faint: rgba(170,195,255,0.6);
+  --sf-rule: rgba(160,190,255,0.22);
+  background-color: #0D1729;
+  background-image:
+    linear-gradient(rgba(140,175,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(140,175,255,0.07) 1px, transparent 1px);
+  background-size: 40px 40px;
+  border-top: 1px solid var(--sf-rule);
+  color: var(--sf-soft);
+  padding: 64px 32px 28px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.site-footer a{ color: var(--sf-soft); text-decoration: none; transition: color .15s ease; }
+.site-footer a:hover{ color: var(--sf-ink); }
+.site-footer a:focus-visible{ outline: 2px solid #7CA6FF; outline-offset: 3px; border-radius: 4px; }
+.sf-inner{
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.2fr;
+  gap: 40px;
+}
+.sf-brand{
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: -0.01em;
+  color: var(--sf-ink) !important;
+  margin-bottom: 10px;
+}
+.sf-brand img{ width: 28px; height: 28px; image-rendering: pixelated; }
+.sf-tagline{ max-width: 30ch; margin-bottom: 6px; }
+.sf-place{ color: var(--sf-faint); font-size: 0.86rem; }
+.sf-col h2{
+  font-family: 'Archivo', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--sf-ink);
+  margin: 4px 0 14px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.sf-col ul{ list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sf-contact li span{ display: block; color: var(--sf-faint); font-size: 0.8rem; }
+.sf-quote{
+  display: inline-block;
+  margin-top: 6px;
+  padding: 9px 18px;
+  border: 1.5px solid rgba(170,195,255,0.6);
+  border-radius: 999px;
+  color: var(--sf-ink) !important;
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+.sf-quote:hover{ background: rgba(255,255,255,0.08); }
+.sf-bottom{
+  max-width: 1180px;
+  margin: 48px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--sf-rule);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  font-size: 0.82rem;
+  color: var(--sf-faint);
+}
+@media (max-width: 820px){
+  .sf-inner{ grid-template-columns: 1fr 1fr; }
+  .sf-about{ grid-column: 1 / -1; }
+}
+@media (max-width: 480px){
+  .site-footer{ padding: 52px 20px 24px; }
+  .sf-inner{ grid-template-columns: 1fr; gap: 32px; }
+}

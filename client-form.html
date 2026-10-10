@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
   <title>Engler — Project Questionnaire</title>
+  <meta name="description" content="Tell Engler about your business and the website you need, and we'll get back to you with a price.">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -250,11 +251,14 @@
       body { background: #FFF; }
     }
   </style>
+<link rel="stylesheet" href="site-footer.css">
+<link rel="stylesheet" href="site-mobile.css">
 </head>
 <body>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
   <header>
     <nav>
-      <a class="logo" href="/home"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+      <a class="logo" href="home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
       <div class="progress-wrap">
         <span id="progressText">0% complete</span>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -333,7 +337,9 @@
             <label class="chip"><input type="checkbox" name="Preferred Communication" value="Video Call / Zoom"><span>Video Call / Zoom</span></label>
             <label class="chip"><input type="checkbox" name="Preferred Communication" value="Dedicated Project Portal"><span>Dedicated Project Portal</span></label>
             <label class="chip"><input type="checkbox" name="Preferred Communication" value="Text Message"><span>Text Message</span></label>
+            <label class="chip"><input type="checkbox" name="Preferred Communication" value="Other"><span>Other</span></label>
           </div>
+          <input type="text" name="Preferred Communication (Other / Details)" placeholder="If other, how would you like us to reach you? (optional)" />
         </div>
         <div class="field required">
           <label class="q" for="decisionMaker">Who will make final decisions on design and content sign-offs?<span class="req">*</span></label>
@@ -524,16 +530,41 @@
     <p class="thanks-files" id="thanksFiles" hidden></p>
   </div>
 
-  <footer>
-    <div class="footer-inner">
-      <span>ENGLER — WEBSITES, DRAFTED &amp; BUILT</span>
-      <span>© 2026</span>
+  <footer class="site-footer">
+  <div class="sf-inner">
+    <div class="sf-about">
+      <a class="sf-brand" href="home.html"><img src="favicon.ico" alt="">Engler</a>
+      <p class="sf-tagline">Websites, drafted and built for local businesses.</p>
+      <p class="sf-place">Redding, California</p>
     </div>
-  </footer>
+    <div class="sf-col" role="navigation" aria-label="Footer">
+      <h2>Pages</h2>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="showcase.html">Showcase</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="client-form.html">Order form</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="sf-col sf-contact">
+      <h2>Get in touch</h2>
+      <ul>
+        <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
+        <li><a href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a></li>
+        <li><a class="sf-quote" href="client-form.html">Get a quote</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sf-bottom">
+    <span>© 2026 Engler</span>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+</footer>
 
   <div class="toast" id="toast"></div>
 
-  <script src="/appraisal.js"></script>
+  <script src="appraisal.js"></script>
   <script>
     // Submissions go to Firestore (collection below); its security rules live
     // in firebase/ and must be pasted into the Firebase console. Attached files
