@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engler — Payment</title>
+<link rel="canonical" href="https://englerwebsites.com/payment">
+<meta name="description" content="Pay your Engler invoice online.">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F7F8FB;
+    --bg-soft: #F0F3F8;
+    --tab: #16233B;
+    --tab-deep: #0D1729;
+    --ink: #16233B;
+    --ink-soft: #5F6776;
+    --silver: #9BA3B0;
+    --silver-dark: #6F7A8A;
+    --silver-line: #DDE2EA;
+    --accent: #2F6BFF;
+    --accent-soft: #E9F0FF;
+    --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+    --shadow-md: 0 22px 50px rgba(13, 23, 41, 0.08);
+    --font-display: 'Archivo', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+  body{
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+  a{ color: var(--accent); }
+  .wrap{ max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+  header{
+    position: sticky; top:0; z-index: 50;
+    background: rgba(22,35,59,0.96);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+  }
+  nav{
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 18px 32px;
+    max-width: 1180px; margin: 0 auto;
+  }
+  .logo{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    display:flex; align-items:center; gap:10px;
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .logo .mark{
+    width: 33px; height:33px;
+    flex-shrink:0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    border-radius: 8px;
+  }
+  .nav-links{ display:flex; gap: 28px; align-items:center; font-size: 0.92rem; }
+  .nav-links a,
+  .nav-links a:visited,
+  .nav-links a:focus-visible,
+  .nav-links a:active{
+    text-decoration:none;
+    color: #FFFFFF;
+    opacity:0.78;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .nav-links a:hover{ opacity:1; transform: translateY(-1px); }
+  .nav-cta{
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    background: linear-gradient(135deg, #E5EBF5, #CBD4E1);
+    color: var(--tab-deep) !important;
+    padding: 9px 16px;
+    text-decoration:none;
+    font-weight: 600;
+    opacity: 1 !important;
+    transition: transform .15s ease, box-shadow .15s ease;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(255,255,255,0.12);
+  }
+  .nav-cta:hover{ transform: translateY(-1px); box-shadow: 0 12px 28px rgba(255,255,255,0.18); }
+  .nav-cta:focus, .nav-order:focus{ outline: none; }
+  .nav-cta:focus-visible{ box-shadow: 0 0 0 2px #FFFFFF; }
+  @media (max-width: 720px){
+    nav{ padding: 14px 16px; }
+    .nav-links{ gap: 10px; }
+    .nav-links a:not(.nav-cta):not(.nav-order){ display:none; }
+  }
+
+  .page-head{
+    padding: 70px 32px 44px;
+    text-align:center;
+    background:
+      radial-gradient(circle at 78% 8%, rgba(47,107,255,0.24), transparent 42%),
+      linear-gradient(rgba(47,107,255,0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,107,255,0.12) 1px, transparent 1px);
+    background-size: auto, 40px 40px, 40px 40px;
+    mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+  }
+  .page-head .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--accent);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .page-head h1{
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 4.5vw, 2.8rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .page-head p{
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+
+  .policy-section{ padding: 10px 32px 90px; }
+  .policy-card{
+    max-width: 720px;
+    margin: 0 auto;
+    background: #FFFFFF;
+    border: 1px solid var(--silver-line);
+    border-radius: 24px;
+    padding: 40px 40px 30px;
+    box-shadow: var(--shadow-md);
+  }
+  .policy-card h2{
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  .policy-card h2:first-child{ margin-top: 0; }
+  .policy-card p{
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+  .policy-card p + p{ margin-top: 10px; }
+  .policy-card p.intro{ font-size: 1rem; color: var(--ink); margin-bottom: 8px; }
+  .policy-card strong{ color: var(--ink); font-weight: 600; }
+  .policy-card a{ color: var(--accent); font-weight: 600; }
+  .policy-card ul{ margin: 10px 0 10px 1.2em; color: var(--ink-soft); font-size: 0.95rem; }
+  .policy-card li{ margin-bottom: 8px; padding-left: 4px; }
+  .policy-card li::marker{ color: var(--accent); }
+  .policy-card .note{
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid var(--silver-line);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--silver-dark);
+  }
+
+  footer{
+    padding: 40px 32px;
+    border-top: 1px solid var(--silver-line);
+    background: rgba(255,255,255,0.7);
+  }
+  .footer-inner{
+    max-width: 1180px; margin: 0 auto;
+    display:flex; justify-content: space-between; align-items:center;
+    flex-wrap: wrap; gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--silver-dark);
+  }
+  .footer-inner a{ color: var(--silver-dark); }
+  .pay-slot{
+    margin-top: 24px;
+    min-height: 220px;
+    border: 1.5px dashed var(--silver-line);
+    border-radius: 18px;
+    background: var(--bg-soft);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap: 6px;
+    padding: 32px 24px;
+    text-align:center;
+  }
+  .pay-slot .pay-slot-label{
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .pay-slot p{ font-size: 0.9rem; }
+  @media (max-width: 720px){
+    .policy-section{ padding: 10px 16px 70px; }
+    .policy-card{ padding: 28px 22px 24px; }
+  }
+
+  ::selection{ background: var(--accent); color: #FFFFFF; }
+</style>
+<link rel="stylesheet" href="site-footer.css">
+<link rel="stylesheet" href="site-mobile.css">
+</head>
+<body>
+
+<header>
+  <nav>
+    <a class="logo" href="home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+    <div class="nav-links">
+      <a href="home.html">Home</a>
+      <a href="showcase.html">Showcase</a>
+      <a href="faq.html">FAQ</a>
+      <a href="client-form.html" class="nav-order">Order Form</a>
+      <a href="contact.html" class="nav-cta">Contact Us</a>
+    </div>
+  </nav>
+</header>
+
+<section class="page-head">
+  <p class="eyebrow">Pay your invoice</p>
+  <h1>Payment</h1>
+  <p>Pay for your Engler website securely online.</p>
+</section>
+
+<section class="policy-section">
+  <div class="wrap">
+    <div class="policy-card">
+      <p class="intro">Once your website is finished and you've approved it, you can pay your invoice here. Have your invoice handy so you can check the amount before you pay.</p>
+
+      <!-- PAYMENT SYSTEM: replace the placeholder below with your payment provider's embed or button code. -->
+      <div class="pay-slot" id="payment">
+        <span class="pay-slot-label">Online payment</span>
+        <p>Online payment is coming soon.</p>
+      </div>
+
+      <h2>Questions about your invoice?</h2>
+      <p>If something doesn't look right, or you'd rather pay another way, email us at <a href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a> or text us at <a href="sms:+15306912191">(530) 691-2191</a>.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="sf-inner">
+    <div class="sf-about">
+      <a class="sf-brand" href="home.html"><img src="favicon.ico" alt="">Engler</a>
+      <p class="sf-tagline">Websites, drafted and built for local businesses.</p>
+      <p class="sf-place">Redding, California</p>
+    </div>
+    <div class="sf-col" role="navigation" aria-label="Footer">
+      <h2>Pages</h2>
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="showcase.html">Showcase</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="client-form.html">Order form</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="sf-col sf-contact">
+      <h2>Get in touch</h2>
+      <ul>
+        <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
+        <li><a href="mailto:EnglerWebsites@gmail.com">EnglerWebsites@gmail.com</a></li>
+        <li><a class="sf-quote" href="client-form.html">Get a quote</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="sf-bottom">
+    <span>© 2026 Engler</span>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+</footer>
+
+<script src="site-nav.js"></script>
+</body>
+</html>
