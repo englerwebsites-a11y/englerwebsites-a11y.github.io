@@ -125,6 +125,7 @@
       font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500;
       display: grid; place-items: center; box-shadow: 0 6px 14px rgba(47,107,255,0.35);
     }
+    .tool-status { font-size: 0.8rem; color: var(--danger); }
     .tool.soon { border-style: dashed; box-shadow: none; background: transparent; }
     .tool.soon .tag { color: var(--silver); }
 
@@ -176,6 +177,7 @@
         <h2>Order form responses</h2>
         <p>Review client questionnaire submissions, appraisals, and uploaded files.</p>
         <span class="go">Open →</span>
+        <span class="tool-status" id="formsStatus" hidden></span>
       </a>
       <div class="tool soon">
         <span class="tag">Coming soon</span>
@@ -227,26 +229,54 @@
     $('signOut').addEventListener('click', () => signOut(auth));
 
     // ---- Unreviewed order form count ----
-    // portal/client-form.html writes a questionnaireReviews/<submission ID> doc when a submission is opened.
-    let submissionIds = null, reviewedIds = null, stopWatching = [];
+    // portal/client-form.html marks a submission reviewed when it's opened: in the shared
+    // questionnaireReviews collection, and in this browser's localStorage as a fallback for
+    // when the Firestore rules don't allow reading the shared marks.
+    const LOCAL_REVIEWED_KEY = 'engler-reviewed-submissions';
+    function localReviewed() {
+      try { return new Set(JSON.parse(localStorage.getItem(LOCAL_REVIEWED_KEY)) || []); } catch (e) { return new Set(); }
+    }
+    let submissionIds = null, sharedReviewed = null, stopWatching = [];
     function updateBadge() {
       const badge = $('newBadge');
-      const count = submissionIds && reviewedIds ? submissionIds.filter(id => !reviewedIds.has(id)).length : 0;
+      const done = sharedReviewed || localReviewed();
+      const count = submissionIds ? submissionIds.filter(id => !done.has(id)).length : 0;
       badge.hidden = count === 0;
       badge.textContent = count > 99 ? '99+' : String(count);
       badge.setAttribute('aria-label', count === 1 ? '1 new submission' : `${count} new submissions`);
     }
     function watchCounts() {
-      const fail = err => { console.warn('Could not load order form counts', err); submissionIds = null; updateBadge(); };
       stopWatching = [
-        onSnapshot(collection(db, 'questionnaireSubmissions'), snap => { submissionIds = snap.docs.map(d => d.id); updateBadge(); }, fail),
-        onSnapshot(collection(db, 'questionnaireReviews'), snap => { reviewedIds = new Set(snap.docs.map(d => d.id)); updateBadge(); }, fail)
+        onSnapshot(collection(db, 'questionnaireSubmissions'), snap => {
+          submissionIds = snap.docs.map(d => d.id);
+          $('formsStatus').hidden = true;
+          updateBadge();
+        }, err => {
+          console.warn('Could not load order forms', err);
+          submissionIds = null;
+          $('formsStatus').textContent = err.code === 'permission-denied'
+            ? "Can't check for new forms: this account isn't allowed to read them."
+            : "Can't check for new forms right now.";
+          $('formsStatus').hidden = false;
+          updateBadge();
+        }),
+        onSnapshot(collection(db, 'questionnaireReviews'), snap => {
+          sharedReviewed = new Set(snap.docs.map(d => d.id));
+          updateBadge();
+        }, err => {
+          console.warn('Shared review marks unavailable; using this browser\'s', err);
+          sharedReviewed = null;
+          updateBadge();
+        })
       ];
     }
+    // Picks up forms opened in another tab of this browser.
+    window.addEventListener('storage', e => { if (e.key === LOCAL_REVIEWED_KEY) updateBadge(); });
+    window.addEventListener('pageshow', updateBadge);
 
     onAuthStateChanged(auth, user => {
       stopWatching.forEach(stop => stop());
-      stopWatching = []; submissionIds = reviewedIds = null; updateBadge();
+      stopWatching = []; submissionIds = sharedReviewed = null; updateBadge();
       if (user) watchCounts();
       $('loginView').hidden = !!user;
       $('hubView').hidden = !user;

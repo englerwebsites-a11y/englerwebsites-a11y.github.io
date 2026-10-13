@@ -642,7 +642,7 @@
       }
       list.replaceChildren(...shown.map(s => {
         const n = (s.files || []).length;
-        const isNew = reviewed && !reviewed.has(s.id);
+        const isNew = !(reviewed || localReviewed()).has(s.id);
         const btn = el('button', { class: 'item' + (s.id === selectedId ? ' active' : ''), type: 'button' },
           n ? el('span', { class: 'clip', text: `📎 ${n}` }) : null,
           el('span', { class: 'name' }, isNew ? el('span', { class: 'new-dot', title: 'Not reviewed yet', 'aria-label': 'New' }) : null, s.companyName || 'Untitled'),
@@ -653,7 +653,22 @@
     }
     $('search').addEventListener('input', renderList);
 
+    // Also remembered in this browser, for the Team Portal count when the shared marks can't be read.
+    const LOCAL_REVIEWED_KEY = 'engler-reviewed-submissions';
+    function localReviewed() {
+      try { return new Set(JSON.parse(localStorage.getItem(LOCAL_REVIEWED_KEY)) || []); } catch (e) { return new Set(); }
+    }
+    function markReviewedLocally(id) {
+      try {
+        const ids = new Set(JSON.parse(localStorage.getItem(LOCAL_REVIEWED_KEY)) || []);
+        if (ids.has(id)) return;
+        ids.add(id);
+        localStorage.setItem(LOCAL_REVIEWED_KEY, JSON.stringify([...ids]));
+      } catch (e) {}
+    }
+
     function markReviewed(id) {
+      markReviewedLocally(id);
       if (!reviewed || reviewed.has(id)) return;
       reviewed.add(id);
       setDoc(doc(db, REVIEWS_COLLECTION, id), { reviewedAt: serverTimestamp() })
