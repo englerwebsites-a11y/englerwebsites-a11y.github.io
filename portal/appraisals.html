@@ -252,11 +252,33 @@
     .money-input { position: relative; }
     .money-input span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); }
     .money-input input { padding-left: 26px; }
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th { text-align: left; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; padding: 0 8px 8px 0; }
+    .items-table td { padding: 5px 8px 5px 0; vertical-align: middle; }
+    .items-table th:last-child, .items-table td:last-child { padding-right: 0; width: 1%; }
+    .items-table .col-type { width: 130px; }
+    .items-table .col-price { width: 130px; }
+    .items-table input, .items-table select { width: 100%; font: inherit; font-size: 0.92rem; color: var(--ink); background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px; padding: 9px 12px; }
+    .items-table input:focus, .items-table select:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .items-table .money-input input { padding-left: 24px; }
+    .item-remove { font: inherit; font-size: 1.1rem; line-height: 1; width: 34px; height: 34px; border-radius: 8px; border: 1px solid transparent; background: none; color: var(--silver); cursor: pointer; }
+    .item-remove:hover { color: var(--danger); border-color: #F1CFCF; }
+    .items-empty { color: var(--ink-soft); font-size: 0.9rem; padding: 8px 0 4px; }
+    .items-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--silver-line); }
+    .items-foot .left, .items-foot .right { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .items-sum { font-family: var(--font-mono); font-size: 0.85rem; color: var(--ink-soft); }
+    .items-sum strong { color: var(--ink); font-weight: 500; }
+    .unsaved { font-size: 0.8rem; color: #9A6A00; }
     .fee-note { margin-top: 12px; font-size: 0.82rem; color: var(--ink-soft); }
     .fee-note.local { color: #9A6A00; }
     @media (max-width: 600px) {
       .req-row { grid-template-columns: 1fr; gap: 4px; }
       .fee-form { grid-template-columns: 1fr; }
+      .items-table thead { display: none; }
+      .items-table tr { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; padding: 10px 0; border-bottom: 1px solid var(--silver-line); }
+      .items-table td { padding: 0; }
+      .items-table td:first-child { grid-column: 1 / -1; }
+      .items-table .col-type, .items-table .col-price { width: auto; }
     }
   </style>
 </head>
@@ -319,10 +341,11 @@
       appId: '1:477147439593:web:43ceb566517778c8fdeb78'
     };
     const SUBMISSIONS_COLLECTION = 'questionnaireSubmissions';
-    // One doc per submission with any extra fees: { fees: [{ amount, reason, addedAt }], updatedAt }.
+    // One doc per submission: { fees: [{ kind?, amount, reason, addedAt }], items?: [{ type, name, price }], updatedAt }.
     const FEES_COLLECTION = 'questionnaireFees';
     // Used when the Firestore rules don't allow the fees collection yet.
     const LOCAL_FEES_KEY = 'engler-appraisal-fees';
+    const LOCAL_ITEMS_KEY = 'engler-appraisal-items';
 
     const BUSINESS = {
       name: 'Engler',
@@ -341,7 +364,8 @@
 
     const $ = id => document.getElementById(id);
     let submissions = [];
-    let fees = {};          // submission ID -> [{ amount, reason, addedAt }]
+    let fees = {};          // submission ID -> [{ kind?, amount, reason, addedAt }]
+    let items = {};         // submission ID -> [{ type: 'page'|'feature', name, price }], once edited
     let feesShared = true;  // false when fees are kept in this browser only
     let selectedId = null;
     let stopWatching = [];
@@ -373,7 +397,26 @@
     // Each entry is a fee or, with kind: 'discount', a discount. Amounts are stored as positive numbers.
     const isDiscount = f => f.kind === 'discount';
     const signed = f => (isDiscount(f) ? -1 : 1) * (Number(f.amount) || 0);
-    const totalFor = sub => Math.max(0, appraise(sub).total + feesFor(sub.id).reduce((t, f) => t + signed(f), 0));
+
+    // The list of requested items starts from the client's answers (each listed page, each
+    // feature) and can be edited and saved. Pages and features are priced per item.
+    const cleanName = x => x.replace(/^[\s\-*\d.)]+/, '').trim();
+    function defaultItems(sub) {
+      const a = sub.answers || {};
+      const ap = appraise(sub);
+      const listed = (a['Anticipated Pages'] || '').split(/[,;\n•]+/).map(cleanName).filter(Boolean);
+      const count = parseInt(a['Estimated Page Count'], 10) || 0;
+      const pages = listed.slice();
+      for (let n = listed.length + 1; n <= count; n++) pages.push(`Additional page ${n - listed.length}`);
+      return [
+        ...pages.map(name => ({ type: 'page', name: name.slice(0, 120), price: ap.pricePerPage })),
+        ...ap.features.map(name => ({ type: 'feature', name, price: ap.pricePerFeature })),
+        ...(ap.other ? [{ type: 'feature', name: ap.other.slice(0, 120), price: 0 }] : [])
+      ];
+    }
+    const itemsFor = sub => items[sub.id] || defaultItems(sub);
+    const itemsTotal = list => list.reduce((t, i) => t + (Number(i.price) || 0), 0);
+    const totalFor = sub => Math.max(0, itemsTotal(itemsFor(sub)) + feesFor(sub.id).reduce((t, f) => t + signed(f), 0));
     const submittedDate = sub => sub.submittedAt?.toDate?.() || null;
     function fmtDate(sub) {
       const d = submittedDate(sub);
@@ -385,30 +428,38 @@
       return `ENG-${ymd}-${sub.id.slice(0, 4).toUpperCase()}`;
     }
 
-    // ---- Fees storage ----
-    function readLocalFees() {
-      try { return JSON.parse(localStorage.getItem(LOCAL_FEES_KEY)) || {}; } catch (e) { return {}; }
+    // ---- Storage (fees, discounts and edited items share one doc per submission) ----
+    function readLocal(key) {
+      try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; }
     }
     function useLocalFees() {
       feesShared = false;
-      fees = readLocalFees();
+      fees = readLocal(LOCAL_FEES_KEY);
+      items = readLocal(LOCAL_ITEMS_KEY);
     }
-    async function saveFees(id, list) {
-      fees[id] = list;
+    async function saveRecord(id) {
       if (feesShared) {
         try {
-          await setDoc(doc(db, FEES_COLLECTION, id), { fees: list, updatedAt: serverTimestamp() });
-          return;
+          const data = { fees: fees[id] || [], updatedAt: serverTimestamp() };
+          if (items[id]) data.items = items[id];
+          await setDoc(doc(db, FEES_COLLECTION, id), data);
+          return true;
         } catch (e) {
-          console.warn('Could not save fees to Firestore; keeping them in this browser', e);
-          const shared = fees;
+          console.warn('Could not save to Firestore; keeping changes in this browser', e);
+          const shared = { fees, items };
           useLocalFees();
-          fees = { ...shared, ...fees, [id]: list };
+          fees = { ...fees, ...shared.fees };
+          items = { ...items, ...shared.items };
         }
       }
-      try { localStorage.setItem(LOCAL_FEES_KEY, JSON.stringify(fees)); }
-      catch (e) { toast("Couldn't save the fee in this browser."); }
+      try {
+        localStorage.setItem(LOCAL_FEES_KEY, JSON.stringify(fees));
+        localStorage.setItem(LOCAL_ITEMS_KEY, JSON.stringify(items));
+        return true;
+      } catch (e) { toast("Couldn't save in this browser."); return false; }
     }
+    function saveFees(id, list) { fees[id] = list; return saveRecord(id); }
+    function saveItems(id, list) { if (list) items[id] = list; else delete items[id]; return saveRecord(id); }
 
     // ---- Rendering ----
     function reqRow(label, value) {
@@ -433,6 +484,9 @@
       const a = sub.answers || {};
       const ap = appraise(sub);
       const list = feesFor(id);
+      const reqItems = itemsFor(sub);
+      const pageItems = reqItems.filter(i => i.type === 'page');
+      const featureItems = reqItems.filter(i => i.type !== 'page');
 
       const dlBtn = el('button', { class: 'btn btn-primary btn-small', type: 'button', text: 'Download invoice (PDF)' });
       dlBtn.onclick = () => downloadInvoice(sub, dlBtn);
@@ -452,9 +506,8 @@
 
       const appraisal = el('section', { class: 'card appraisal' },
         el('div', { class: 'card-head' }, el('span', { class: 'num', text: '$' }), el('h2', { text: 'Appraisal' })),
-        apRow(`Pages × ${ap.pages}`, `${money(ap.pricePerPage)} per page · ${ap.pagesSource}`, ap.pagesCost),
-        apRow(`Interactive features × ${ap.features.length}`,
-          `${money(ap.pricePerFeature)} per feature` + (ap.features.length ? ` · ${ap.features.join(', ')}` : ''), ap.featuresCost),
+        apRow(`Pages × ${pageItems.length}`, pageItems.map(i => i.name).join(', ') || 'None', itemsTotal(pageItems)),
+        apRow(`Features × ${featureItems.length}`, featureItems.map(i => i.name).join(', ') || 'None', itemsTotal(featureItems)),
         ...list.map((f, i) => {
           const rm = el('button', { class: 'fee-remove', type: 'button', text: 'Remove' });
           rm.onclick = async () => {
@@ -467,7 +520,8 @@
           return apRow(f.reason, null, signed(f), isDiscount(f) ? ' discount' : ' fee', el('div', { class: 'ap-right' }, el('div', { class: 'ap-amount', text: money(signed(f)) }), rm));
         }),
         el('div', { class: 'ap-row ap-total' }, el('div', { class: 'ap-label', text: 'Total' }), el('div', { class: 'ap-amount', text: money(totalFor(sub)) })));
-      if (ap.other) appraisal.append(el('div', { class: 'ap-note', text: `Not priced: other features the client described: “${ap.other}”. Add a fee below to charge for them.` }));
+      const unpriced = reqItems.filter(i => !(Number(i.price) > 0));
+      if (unpriced.length) appraisal.append(el('div', { class: 'ap-note', text: `No price yet: ${unpriced.map(i => i.name || 'Unnamed item').join(', ')}. Set a price in the requested items list.` }));
 
       const kindInput = (value, label, checked) => el('label', {},
         el('input', Object.assign({ type: 'radio', name: 'feeKind', value }, checked ? { checked: '' } : {})), el('span', { text: label }));
@@ -515,7 +569,82 @@
           ? 'Fees and discounts are saved for the whole team and included on the invoice.'
           : 'Fees and discounts are saved in this browser only, because the Firebase rules don’t allow team-wide saving yet. They are still included on the invoice.' }));
 
-      detail.replaceChildren(head, requests, appraisal, feeCard);
+      detail.replaceChildren(head, requests, itemsEditor(sub), appraisal, feeCard);
+    }
+
+    function itemsEditor(sub) {
+      const id = sub.id;
+      const tbody = el('tbody');
+      const sum = el('span', { class: 'items-sum' });
+      const unsaved = el('span', { class: 'unsaved', text: 'Unsaved changes' });
+      unsaved.hidden = true;
+      const edited = !!items[id];
+
+      const readRows = () => [...tbody.querySelectorAll('tr')].map(tr => ({
+        type: tr.querySelector('select').value,
+        name: tr.querySelector('.item-name').value.trim().slice(0, 120),
+        price: Math.max(0, Math.round((parseFloat(tr.querySelector('.item-price').value) || 0) * 100) / 100)
+      }));
+      const update = () => {
+        const rows = readRows();
+        sum.replaceChildren(`${rows.length} item${rows.length === 1 ? '' : 's'} · `, el('strong', { text: money(itemsTotal(rows)) }));
+        tbody.parentNode && (empty.hidden = rows.length > 0);
+      };
+      const changed = () => { unsaved.hidden = false; update(); };
+
+      function row(it) {
+        const name = el('input', { type: 'text', class: 'item-name', maxlength: '120', placeholder: 'Item name', 'aria-label': 'Name', value: it.name || '' });
+        const type = el('select', { 'aria-label': 'Type' }, el('option', { value: 'page', text: 'Page' }), el('option', { value: 'feature', text: 'Feature' }));
+        type.value = it.type === 'page' ? 'page' : 'feature';
+        const price = el('input', { type: 'number', class: 'item-price', min: '0', step: '0.01', inputmode: 'decimal', 'aria-label': 'Price', value: String(Number(it.price) || 0) });
+        const rm = el('button', { class: 'item-remove', type: 'button', title: 'Remove item', 'aria-label': 'Remove item', text: '×' });
+        const tr = el('tr', {},
+          el('td', {}, name),
+          el('td', { class: 'col-type' }, type),
+          el('td', { class: 'col-price' }, el('div', { class: 'money-input' }, el('span', { text: '$' }), price)),
+          el('td', {}, rm));
+        rm.onclick = () => { tr.remove(); changed(); };
+        [name, type, price].forEach(i => i.addEventListener('input', changed));
+        return tr;
+      }
+      itemsFor(sub).forEach(it => tbody.append(row(it)));
+
+      const table = el('table', { class: 'items-table' },
+        el('thead', {}, el('tr', {}, el('th', { text: 'Name' }), el('th', { class: 'col-type', text: 'Type' }), el('th', { class: 'col-price', text: 'Price' }), el('th', {}))),
+        tbody);
+      const empty = el('div', { class: 'items-empty', text: 'No items. Add one below.' });
+
+      const addBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: '+ Add item' });
+      addBtn.onclick = () => {
+        const tr = row({ type: 'feature', name: '', price: 0 });
+        tbody.append(tr); changed();
+        tr.querySelector('.item-name').focus();
+      };
+      const resetBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Reset to client’s answers' });
+      resetBtn.onclick = async () => {
+        if (!confirm('Replace this list with the items from the client’s answers? Your edits will be lost.')) return;
+        await saveItems(id, null);
+        toast('Items reset to the client’s answers.');
+        showSubmission(id);
+      };
+      const saveBtn = el('button', { class: 'btn btn-primary btn-small', type: 'button', text: 'Save changes' });
+      saveBtn.onclick = async () => {
+        const rows = readRows();
+        if (rows.some(r => !r.name)) { toast('Give every item a name before saving.'); return; }
+        saveBtn.disabled = true;
+        if (await saveItems(id, rows)) toast('Items saved.');
+        saveBtn.disabled = false;
+        showSubmission(id);
+      };
+
+      const card = el('section', { class: 'card', id: 'itemsCard' },
+        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '02' }), el('h2', { text: 'Requested items' })),
+        table, empty,
+        el('div', { class: 'items-foot' },
+          el('div', { class: 'left' }, addBtn, edited ? resetBtn : null),
+          el('div', { class: 'right' }, unsaved, sum, saveBtn)));
+      update();
+      return card;
     }
 
     function renderList() {
@@ -543,8 +672,11 @@
     function refresh() {
       renderList();
       if (selectedId) {
-        // Don't wipe a fee someone is typing.
-        const typing = document.activeElement && ['feeAmount', 'feeReason'].includes(document.activeElement.id);
+        // Don't wipe a fee being typed or item edits that haven't been saved.
+        const card = $('itemsCard');
+        const itemsDirty = !!card && !card.querySelector('.unsaved').hidden;
+        const typing = itemsDirty || (document.activeElement && (['feeAmount', 'feeReason'].includes(document.activeElement.id)
+          || !!document.activeElement.closest('#itemsCard')));
         if (!submissions.some(s => s.id === selectedId)) showSubmission(null);
         else if (!typing) showSubmission(selectedId);
       }
@@ -565,6 +697,7 @@
       stopWatching.push(onSnapshot(collection(db, FEES_COLLECTION), snap => {
         feesShared = true;
         fees = Object.fromEntries(snap.docs.map(d => [d.id, d.data().fees || []]));
+        items = Object.fromEntries(snap.docs.filter(d => Array.isArray(d.data().items)).map(d => [d.id, d.data().items]));
         refresh();
       }, err => {
         console.warn('Team-wide fees unavailable; using this browser\'s', err);
@@ -598,11 +731,10 @@
         const ap = appraise(sub);
         const contact = (sub.contacts || []).find(c => c && (c.name || c.email)) || {};
         const items = [];
-        if (ap.pages) items.push({ desc: 'Website pages', sub: ap.pagesSource === 'estimated page count' ? 'Design and build, based on your estimated page count' : 'Design and build, based on the pages you listed', qty: ap.pages, rate: ap.pricePerPage });
-        if (ap.features.length) items.push({ desc: 'Interactive features', sub: ap.features.join(', '), qty: ap.features.length, rate: ap.pricePerFeature });
-        feesFor(sub.id).filter(f => !isDiscount(f)).forEach(f => items.push({ desc: f.reason, sub: '', qty: 1, rate: Number(f.amount) || 0 }));
+        const lines = itemsFor(sub).map(i => ({ desc: i.name, sub: i.type === 'page' ? 'Page' : 'Feature', qty: 1, rate: Number(i.price) || 0 }));
+        feesFor(sub.id).filter(f => !isDiscount(f)).forEach(f => lines.push({ desc: f.reason, sub: 'Additional fee', qty: 1, rate: Number(f.amount) || 0 }));
         const discounts = feesFor(sub.id).filter(isDiscount);
-        const subtotal = items.reduce((t, i) => t + i.qty * i.rate, 0);
+        const subtotal = lines.reduce((t, i) => t + i.qty * i.rate, 0);
         const total = Math.max(0, subtotal - discounts.reduce((t, f) => t + (Number(f.amount) || 0), 0));
 
         const pdf = new jsPDF({ unit: 'pt', format: 'letter' });
@@ -651,11 +783,11 @@
           y += 24;
         };
         tableHead();
-        items.forEach(it => {
+        lines.forEach(it => {
           const descLines = pdf.splitTextToSize(pdfText(it.desc), cQty - M - 60);
           const subLines = it.sub ? pdf.splitTextToSize(pdfText(it.sub), cQty - M - 60) : [];
           const h = 14 + descLines.length * 13 + subLines.length * 11.5 + 8;
-          if (y + h > H - 170) { pdf.addPage(); y = M; tableHead(); }
+          if (y + h > H - 70) { pdf.addPage(); y = M; tableHead(); }
           set(10, 'bold'); pdf.text(descLines, M + 10, y + 18);
           set(8.5, 'normal', SOFT); if (subLines.length) pdf.text(subLines, M + 10, y + 18 + descLines.length * 13);
           set(10, 'normal'); text(String(it.qty), cQty, y + 18, { align: 'right' }); text(money2(it.rate), cRate, y + 18, { align: 'right' });
@@ -663,7 +795,7 @@
           y += h;
           pdf.setDrawColor(...LINE); pdf.setLineWidth(0.75); pdf.line(M, y, R, y);
         });
-        if (!items.length) { set(10, 'normal', SOFT); text('No billable items yet.', M + 10, y + 20); y += 32; }
+        if (!lines.length) { set(10, 'normal', SOFT); text('No billable items yet.', M + 10, y + 20); y += 32; }
 
         // Totals
         if (y + 120 + discounts.length * 16 > H - 60) { pdf.addPage(); y = M; }
@@ -742,6 +874,7 @@
       } else {
         submissions = [];
         fees = {};
+        items = {};
         selectedId = null;
         $('detail').replaceChildren(el('div', { class: 'placeholder', text: 'Select an order form to see its appraisal.' }));
         $('email').focus();
