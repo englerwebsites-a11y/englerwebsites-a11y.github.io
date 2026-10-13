@@ -233,25 +233,9 @@
     .req-label { font-weight: 600; font-size: 0.9rem; }
     .req-value { font-size: 0.95rem; white-space: pre-wrap; overflow-wrap: anywhere; }
     .req-value.none { color: var(--silver); font-style: italic; }
-    .ap-row.fee .ap-label::before { content: 'Fee'; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 2px 8px; margin-right: 8px; vertical-align: 2px; }
-    .ap-row.discount .ap-label::before { content: 'Discount'; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ok); background: #E6F6EF; border-radius: 999px; padding: 2px 8px; margin-right: 8px; vertical-align: 2px; }
     .ap-row.discount .ap-amount { color: var(--ok); }
-    .ap-row.fee .ap-right, .ap-row.discount .ap-right { display: flex; align-items: center; gap: 12px; }
-    .kind-toggle { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 16px; background: var(--bg); border: 1px solid var(--silver-line); border-radius: 999px; }
-    .kind-toggle label { cursor: pointer; }
-    .kind-toggle input { position: absolute; opacity: 0; pointer-events: none; }
-    .kind-toggle span { display: block; padding: 7px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
-    .kind-toggle input:checked + span { background: #FFF; color: var(--ink); box-shadow: 0 2px 8px rgba(13,23,41,0.08); }
-    .kind-toggle input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
-    .fee-remove { font: inherit; font-size: 0.78rem; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 6px; }
-    .fee-remove:hover { text-decoration: underline; }
-    .fee-form { display: grid; grid-template-columns: 160px 1fr auto; gap: 12px; align-items: end; }
-    .fee-form label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; }
-    .fee-form input { width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink); background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px; padding: 11px 14px; }
-    .fee-form input:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
     .money-input { position: relative; }
-    .money-input span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); }
-    .money-input input { padding-left: 26px; }
+    .money-input span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); }
     .items-table { width: 100%; border-collapse: collapse; }
     .items-table th { text-align: left; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; padding: 0 8px 8px 0; }
     .items-table td { padding: 5px 8px 5px 0; vertical-align: middle; }
@@ -273,8 +257,7 @@
     .fee-note.local { color: #9A6A00; }
     @media (max-width: 600px) {
       .req-row { grid-template-columns: 1fr; gap: 4px; }
-      .fee-form { grid-template-columns: 1fr; }
-      .items-table thead { display: none; }
+        .items-table thead { display: none; }
       .items-table tr { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; padding: 10px 0; border-bottom: 1px solid var(--silver-line); }
       .items-table td { padding: 0; }
       .items-table td:first-child { grid-column: 1 / -1; }
@@ -394,12 +377,14 @@
     const money2 = n => (n < 0 ? '-$' : '$') + Math.abs(Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const appraise = sub => window.Appraisal.appraise(sub.answers);
     const feesFor = id => fees[id] || [];
-    // Each entry is a fee or, with kind: 'discount', a discount. Amounts are stored as positive numbers.
-    const isDiscount = f => f.kind === 'discount';
-    const signed = f => (isDiscount(f) ? -1 : 1) * (Number(f.amount) || 0);
+    const TYPES = { page: 'Page', feature: 'Feature', fee: 'Fee', discount: 'Discount' };
+    // Prices are stored as positive numbers; discounts are subtracted.
+    const signedPrice = i => (i.type === 'discount' ? -1 : 1) * (Number(i.price) || 0);
+    // Fees and discounts added before they became item types; shown in the list until it's next saved.
+    const feeAsItem = f => ({ type: f.kind === 'discount' ? 'discount' : 'fee', name: f.reason, price: Number(f.amount) || 0 });
 
-    // The list of requested items starts from the client's answers (each listed page, each
-    // feature) and can be edited and saved. Pages and features are priced per item.
+    // The invoice inventory starts from the client's answers (each listed page, each feature)
+    // and can be edited and saved, including fees and discounts.
     const cleanName = x => x.replace(/^[\s\-*\d.)]+/, '').trim();
     function defaultItems(sub) {
       const a = sub.answers || {};
@@ -414,9 +399,9 @@
         ...(ap.other ? [{ type: 'feature', name: ap.other.slice(0, 120), price: 0 }] : [])
       ];
     }
-    const itemsFor = sub => items[sub.id] || defaultItems(sub);
-    const itemsTotal = list => list.reduce((t, i) => t + (Number(i.price) || 0), 0);
-    const totalFor = sub => Math.max(0, itemsTotal(itemsFor(sub)) + feesFor(sub.id).reduce((t, f) => t + signed(f), 0));
+    const itemsFor = sub => items[sub.id] || [...defaultItems(sub), ...feesFor(sub.id).map(feeAsItem)];
+    const itemsTotal = list => list.reduce((t, i) => t + signedPrice(i), 0);
+    const totalFor = sub => Math.max(0, itemsTotal(itemsFor(sub)));
     const submittedDate = sub => sub.submittedAt?.toDate?.() || null;
     function fmtDate(sub) {
       const d = submittedDate(sub);
@@ -458,8 +443,8 @@
         return true;
       } catch (e) { toast("Couldn't save in this browser."); return false; }
     }
-    function saveFees(id, list) { fees[id] = list; return saveRecord(id); }
-    function saveItems(id, list) { if (list) items[id] = list; else delete items[id]; return saveRecord(id); }
+    // Saving the inventory folds any older separately-added fees into it.
+    function saveItems(id, list) { fees[id] = []; if (list) items[id] = list; else delete items[id]; return saveRecord(id); }
 
     // ---- Rendering ----
     function reqRow(label, value) {
@@ -483,10 +468,9 @@
       if (!sub) { detail.replaceChildren(el('div', { class: 'placeholder', text: 'Select an order form to see its appraisal.' })); return; }
       const a = sub.answers || {};
       const ap = appraise(sub);
-      const list = feesFor(id);
       const reqItems = itemsFor(sub);
-      const pageItems = reqItems.filter(i => i.type === 'page');
-      const featureItems = reqItems.filter(i => i.type !== 'page');
+      const ofType = t => reqItems.filter(i => i.type === t);
+      const names = list => list.map(i => i.name).join(', ');
 
       const dlBtn = el('button', { class: 'btn btn-primary btn-small', type: 'button', text: 'Download invoice (PDF)' });
       dlBtn.onclick = () => downloadInvoice(sub, dlBtn);
@@ -504,72 +488,18 @@
         reqRow('Interactive features', ap.features.length ? ap.features.join(', ') : ''),
         reqRow('Other features described', ap.other));
 
+      const [pages, features, feeItems, discounts] = ['page', 'feature', 'fee', 'discount'].map(ofType);
       const appraisal = el('section', { class: 'card appraisal' },
         el('div', { class: 'card-head' }, el('span', { class: 'num', text: '$' }), el('h2', { text: 'Appraisal' })),
-        apRow(`Pages × ${pageItems.length}`, pageItems.map(i => i.name).join(', ') || 'None', itemsTotal(pageItems)),
-        apRow(`Features × ${featureItems.length}`, featureItems.map(i => i.name).join(', ') || 'None', itemsTotal(featureItems)),
-        ...list.map((f, i) => {
-          const rm = el('button', { class: 'fee-remove', type: 'button', text: 'Remove' });
-          rm.onclick = async () => {
-            const word = isDiscount(f) ? 'discount' : 'fee';
-            if (!confirm(`Remove the ${money(f.amount)} ${word} for "${f.reason}"?`)) return;
-            await saveFees(id, feesFor(id).filter((_, j) => j !== i));
-            toast(isDiscount(f) ? 'Discount removed.' : 'Fee removed.');
-            showSubmission(id);
-          };
-          return apRow(f.reason, null, signed(f), isDiscount(f) ? ' discount' : ' fee', el('div', { class: 'ap-right' }, el('div', { class: 'ap-amount', text: money(signed(f)) }), rm));
-        }),
+        apRow(`Pages × ${pages.length}`, names(pages) || 'None', itemsTotal(pages)),
+        apRow(`Features × ${features.length}`, names(features) || 'None', itemsTotal(features)),
+        feeItems.length ? apRow(`Fees × ${feeItems.length}`, names(feeItems), itemsTotal(feeItems), ' fee') : null,
+        discounts.length ? apRow(`Discounts × ${discounts.length}`, names(discounts), itemsTotal(discounts), ' discount') : null,
         el('div', { class: 'ap-row ap-total' }, el('div', { class: 'ap-label', text: 'Total' }), el('div', { class: 'ap-amount', text: money(totalFor(sub)) })));
       const unpriced = reqItems.filter(i => !(Number(i.price) > 0));
-      if (unpriced.length) appraisal.append(el('div', { class: 'ap-note', text: `No price yet: ${unpriced.map(i => i.name || 'Unnamed item').join(', ')}. Set a price in the requested items list.` }));
+      if (unpriced.length) appraisal.append(el('div', { class: 'ap-note', text: `No price yet: ${unpriced.map(i => i.name || 'Unnamed item').join(', ')}. Set a price in the invoice inventory.` }));
 
-      const kindInput = (value, label, checked) => el('label', {},
-        el('input', Object.assign({ type: 'radio', name: 'feeKind', value }, checked ? { checked: '' } : {})), el('span', { text: label }));
-      const toggle = el('div', { class: 'kind-toggle', role: 'radiogroup', 'aria-label': 'Fee or discount' },
-        kindInput('fee', 'Fee', true), kindInput('discount', 'Discount', false));
-      const amount = el('input', { type: 'number', id: 'feeAmount', min: '0.01', step: '0.01', inputmode: 'decimal', placeholder: '0.00', required: '' });
-      const reason = el('input', { type: 'text', id: 'feeReason', maxlength: '200', required: '' });
-      const amountLabel = el('label', { for: 'feeAmount' });
-      const reasonLabel = el('label', { for: 'feeReason' });
-      const addBtn = el('button', { class: 'btn btn-primary', type: 'submit' });
-      const kind = () => toggle.querySelector('input:checked').value;
-      const setLabels = () => {
-        const d = kind() === 'discount';
-        amountLabel.textContent = d ? 'Discount amount' : 'Fee price';
-        reasonLabel.textContent = d ? 'Reason for the discount' : 'Reason for the fee';
-        reason.placeholder = d ? 'e.g. Returning client, referral, launch promotion' : 'e.g. Rush delivery, extra revisions, logo design';
-        addBtn.textContent = d ? 'Add discount' : 'Add fee';
-      };
-      toggle.addEventListener('change', setLabels);
-      setLabels();
-      const form = el('form', {},
-        toggle,
-        el('div', { class: 'fee-form' },
-          el('div', {}, amountLabel, el('div', { class: 'money-input' }, el('span', { text: '$' }), amount)),
-          el('div', {}, reasonLabel, reason),
-          addBtn));
-      form.onsubmit = async ev => {
-        ev.preventDefault();
-        const value = Math.round(parseFloat(amount.value) * 100) / 100;
-        const why = reason.value.trim();
-        if (!(value > 0) || !why) return;
-        const k = kind();
-        if (k === 'discount' && value > totalFor(sub)) {
-          toast(`A discount can't be more than the current total (${money(totalFor(sub))}).`);
-          return;
-        }
-        await saveFees(id, [...feesFor(id), { kind: k, amount: value, reason: why.slice(0, 200), addedAt: new Date().toISOString() }]);
-        toast(k === 'discount' ? `Added ${money(value)} discount.` : `Added ${money(value)} fee.`);
-        showSubmission(id);
-      };
-      const feeCard = el('section', { class: 'card' },
-        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '±' }), el('h2', { text: 'Add a fee or discount' })),
-        form,
-        el('div', { class: 'fee-note' + (feesShared ? '' : ' local'), text: feesShared
-          ? 'Fees and discounts are saved for the whole team and included on the invoice.'
-          : 'Fees and discounts are saved in this browser only, because the Firebase rules don’t allow team-wide saving yet. They are still included on the invoice.' }));
-
-      detail.replaceChildren(head, requests, itemsEditor(sub), appraisal, feeCard);
+      detail.replaceChildren(head, requests, itemsEditor(sub), appraisal);
     }
 
     function itemsEditor(sub) {
@@ -587,15 +517,15 @@
       }));
       const update = () => {
         const rows = readRows();
-        sum.replaceChildren(`${rows.length} item${rows.length === 1 ? '' : 's'} · `, el('strong', { text: money(itemsTotal(rows)) }));
+        sum.replaceChildren(`${rows.length} item${rows.length === 1 ? '' : 's'} · `, el('strong', { text: money(Math.max(0, itemsTotal(rows))) }));
         tbody.parentNode && (empty.hidden = rows.length > 0);
       };
       const changed = () => { unsaved.hidden = false; update(); };
 
       function row(it) {
         const name = el('input', { type: 'text', class: 'item-name', maxlength: '120', placeholder: 'Item name', 'aria-label': 'Name', value: it.name || '' });
-        const type = el('select', { 'aria-label': 'Type' }, el('option', { value: 'page', text: 'Page' }), el('option', { value: 'feature', text: 'Feature' }));
-        type.value = it.type === 'page' ? 'page' : 'feature';
+        const type = el('select', { 'aria-label': 'Type' }, ...Object.entries(TYPES).map(([value, text]) => el('option', { value, text })));
+        type.value = TYPES[it.type] ? it.type : 'feature';
         const price = el('input', { type: 'number', class: 'item-price', min: '0', step: '0.01', inputmode: 'decimal', 'aria-label': 'Price', value: String(Number(it.price) || 0) });
         const rm = el('button', { class: 'item-remove', type: 'button', title: 'Remove item', 'aria-label': 'Remove item', text: '×' });
         const tr = el('tr', {},
@@ -631,6 +561,7 @@
       saveBtn.onclick = async () => {
         const rows = readRows();
         if (rows.some(r => !r.name)) { toast('Give every item a name before saving.'); return; }
+        if (itemsTotal(rows) < 0) { toast('Discounts can’t be more than the rest of the invoice.'); return; }
         saveBtn.disabled = true;
         if (await saveItems(id, rows)) toast('Items saved.');
         saveBtn.disabled = false;
@@ -638,11 +569,14 @@
       };
 
       const card = el('section', { class: 'card', id: 'itemsCard' },
-        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '02' }), el('h2', { text: 'Requested items' })),
+        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '02' }), el('h2', { text: 'Invoice Inventory' })),
         table, empty,
         el('div', { class: 'items-foot' },
           el('div', { class: 'left' }, addBtn, edited ? resetBtn : null),
-          el('div', { class: 'right' }, unsaved, sum, saveBtn)));
+          el('div', { class: 'right' }, unsaved, sum, saveBtn)),
+        el('div', { class: 'fee-note' + (feesShared ? '' : ' local'), text: feesShared
+          ? 'Changes are saved for the whole team and used for the invoice. Discounts are subtracted from the total.'
+          : 'Changes are saved in this browser only, because the Firebase rules don’t allow team-wide saving yet. They are still used for the invoice.' }));
       update();
       return card;
     }
@@ -657,7 +591,8 @@
         return;
       }
       list.replaceChildren(...shown.map(s => {
-        const nf = feesFor(s.id).filter(f => !isDiscount(f)).length, nd = feesFor(s.id).length - nf;
+        const its = itemsFor(s);
+        const nf = its.filter(i => i.type === 'fee').length, nd = its.filter(i => i.type === 'discount').length;
         const tag = [nf && (nf === 1 ? '+1 fee' : `+${nf} fees`), nd && (nd === 1 ? '−1 discount' : `−${nd} discounts`)].filter(Boolean).join(' · ');
         const btn = el('button', { class: 'item' + (s.id === selectedId ? ' active' : ''), type: 'button' },
           tag ? el('span', { class: 'clip', text: tag }) : null,
@@ -672,11 +607,10 @@
     function refresh() {
       renderList();
       if (selectedId) {
-        // Don't wipe a fee being typed or item edits that haven't been saved.
+        // Don't wipe inventory edits that haven't been saved.
         const card = $('itemsCard');
         const itemsDirty = !!card && !card.querySelector('.unsaved').hidden;
-        const typing = itemsDirty || (document.activeElement && (['feeAmount', 'feeReason'].includes(document.activeElement.id)
-          || !!document.activeElement.closest('#itemsCard')));
+        const typing = itemsDirty || !!document.activeElement?.closest('#itemsCard');
         if (!submissions.some(s => s.id === selectedId)) showSubmission(null);
         else if (!typing) showSubmission(selectedId);
       }
@@ -731,9 +665,10 @@
         const ap = appraise(sub);
         const contact = (sub.contacts || []).find(c => c && (c.name || c.email)) || {};
         const items = [];
-        const lines = itemsFor(sub).map(i => ({ desc: i.name, sub: i.type === 'page' ? 'Page' : 'Feature', qty: 1, rate: Number(i.price) || 0 }));
-        feesFor(sub.id).filter(f => !isDiscount(f)).forEach(f => lines.push({ desc: f.reason, sub: 'Additional fee', qty: 1, rate: Number(f.amount) || 0 }));
-        const discounts = feesFor(sub.id).filter(isDiscount);
+        const all = itemsFor(sub);
+        const lines = all.filter(i => i.type !== 'discount')
+          .map(i => ({ desc: i.name, sub: i.type === 'fee' ? 'Additional fee' : TYPES[i.type] || 'Feature', qty: 1, rate: Number(i.price) || 0 }));
+        const discounts = all.filter(i => i.type === 'discount').map(i => ({ reason: i.name, amount: Number(i.price) || 0 }));
         const subtotal = lines.reduce((t, i) => t + i.qty * i.rate, 0);
         const total = Math.max(0, subtotal - discounts.reduce((t, f) => t + (Number(f.amount) || 0), 0));
 
