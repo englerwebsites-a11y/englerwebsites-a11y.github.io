@@ -38,7 +38,7 @@
 .sf-brand img{ width: 28px; height: 28px; image-rendering: pixelated; }
 .sf-tagline{ max-width: 30ch; margin-bottom: 6px; }
 .sf-place{ color: var(--sf-faint); font-size: 0.86rem; }
-.sf-portal{ margin-top: 6px; font-size: 0.86rem; }
+.sf-portal{ margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--sf-rule); max-width: 220px; font-size: 0.86rem; }
 .site-footer .sf-portal a{ color: var(--sf-faint); }
 .site-footer .sf-portal a:hover{ color: var(--sf-ink); }
 .sf-col h2{
