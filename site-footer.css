@@ -69,6 +69,7 @@
   font-size: 0.82rem;
   color: var(--sf-faint);
 }
+.sf-bottom-links{ display: flex; flex-wrap: wrap; gap: 20px; }
 @media (max-width: 820px){
   .sf-inner{ grid-template-columns: 1fr 1fr; }
   .sf-about{ grid-column: 1 / -1; }
