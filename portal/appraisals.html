@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
+  <title>Engler — Appraisals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --bg-soft: #F0F3F8;
+      --tab: #16233B;
+      --tab-deep: #0D1729;
+      --ink: #16233B;
+      --ink-soft: #5F6776;
+      --silver: #9BA3B0;
+      --silver-line: #DDE2EA;
+      --accent: #2F6BFF;
+      --accent-soft: #E9F0FF;
+      --danger: #D64545;
+      --ok: #1F9D6B;
+      --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+      --font-display: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(22,35,59,0.96);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+    }
+    nav {
+      max-width: 1240px; margin: 0 auto; padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo {
+      font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;
+      letter-spacing: -0.02em; color: #FFF; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo .mark { width: 33px; height: 33px; border-radius: 8px; image-rendering: pixelated; }
+    .logo small { font-family: var(--font-mono); font-weight: 400; font-size: 0.72rem; opacity: 0.6; letter-spacing: 0.08em; }
+    .nav-right { display: flex; align-items: center; gap: 14px; color: #FFF; font-family: var(--font-mono); font-size: 0.78rem; }
+    .nav-right .who { opacity: 0.7; }
+
+    .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; letter-spacing: -0.03em; line-height: 1.15; margin: 8px 0 10px; }
+    h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+    .btn {
+      font: inherit; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      padding: 12px 20px; border-radius: 999px; border: 1px solid transparent; transition: all 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    }
+    .btn-primary { background: var(--tab); color: #FFF; }
+    .btn-primary:hover { background: var(--tab-deep); }
+    .btn-ghost { background: #FFF; color: var(--ink); border-color: var(--silver-line); }
+    .btn-ghost:hover { border-color: var(--silver); }
+    .btn-danger { background: #FFF; color: var(--danger); border-color: #F1CFCF; }
+    .btn-danger:hover { border-color: var(--danger); }
+    .btn-small { padding: 7px 14px; font-size: 0.8rem; }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    header .btn-ghost { background: transparent; color: #FFF; border-color: rgba(255,255,255,0.3); }
+    header .btn-ghost:hover { border-color: #FFF; }
+
+    input[type="email"], input[type="password"], input[type="search"] {
+      width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink);
+      background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px;
+      padding: 11px 14px; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    input:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* ---- Sign in ---- */
+    .login-wrap {
+      min-height: calc(100vh - 66px); display: grid; place-items: center; padding: 40px 16px;
+      background: radial-gradient(circle at top right, rgba(47,107,255,0.16), transparent 35%);
+    }
+    .login {
+      width: 100%; max-width: 400px; background: #FFF; border: 1px solid var(--silver-line);
+      border-radius: 16px; box-shadow: var(--shadow-sm); padding: 32px;
+    }
+    .login p { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 22px; }
+    .login label { display: block; font-weight: 600; font-size: 0.88rem; margin: 14px 0 6px; }
+    .login .btn { width: 100%; margin-top: 22px; }
+    .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 12px; min-height: 1.2em; }
+
+    /* ---- Dashboard ---- */
+    .dash {
+      max-width: 1240px; margin: 0 auto; padding: 28px 32px 80px;
+      display: grid; grid-template-columns: 300px 1fr; gap: 32px; align-items: start;
+    }
+    .list-panel { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 12px; max-height: calc(100vh - 110px); }
+    .list-head { display: flex; justify-content: space-between; align-items: baseline; }
+    .list-head .count { font-family: var(--font-mono); font-size: 0.75rem; color: var(--silver); }
+    .list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
+    .item {
+      text-align: left; font: inherit; cursor: pointer; width: 100%;
+      background: #FFF; border: 1px solid var(--silver-line); border-radius: 12px; padding: 12px 14px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .item:hover { border-color: var(--silver); }
+    .item.active { border-color: var(--accent); background: var(--accent-soft); }
+    .item .name { font-weight: 600; font-size: 0.95rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item .date { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
+    .item .clip { float: right; font-size: 0.75rem; color: var(--silver); }
+    .new-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: 1px; }
+    .empty { color: var(--ink-soft); font-size: 0.9rem; padding: 24px 4px; }
+
+    .detail { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+    .detail-head {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px;
+      padding-bottom: 4px;
+    }
+    .detail-head .meta { font-family: var(--font-mono); font-size: 0.78rem; color: var(--silver); }
+    .detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .placeholder {
+      border: 1.5px dashed var(--silver-line); border-radius: 16px; padding: 60px 24px;
+      text-align: center; color: var(--ink-soft);
+    }
+
+    section.card {
+      background: #FFF; border: 1px solid var(--silver-line); border-radius: 16px;
+      box-shadow: var(--shadow-sm); padding: 32px;
+    }
+    .card-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--silver-line); }
+    .card-head .num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+    .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+    .field:last-child { margin-bottom: 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+    .q { font-weight: 600; font-size: 0.95rem; }
+    .hint { font-size: 0.83rem; color: var(--ink-soft); margin-top: -4px; }
+    .answer {
+      background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px;
+      padding: 11px 14px; font-size: 0.95rem; white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    .answer.none { color: var(--silver); font-style: italic; }
+    .sub-label { font-size: 0.8rem; color: var(--ink-soft); margin-top: 2px; }
+    .answer a { color: var(--accent); }
+
+    .appraisal { border-color: var(--accent); }
+    .ap-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--silver-line); }
+    .ap-label { font-weight: 600; }
+    .ap-detail { font-size: 0.83rem; color: var(--ink-soft); }
+    .ap-amount { font-family: var(--font-mono); font-size: 1rem; white-space: nowrap; }
+    .ap-total { border-bottom: none; padding-bottom: 0; }
+    .ap-total .ap-label { font-family: var(--font-display); font-size: 1.15rem; }
+    .ap-total .ap-amount { font-size: 1.35rem; font-weight: 500; color: var(--accent); }
+    .ap-note { margin-top: 14px; font-size: 0.83rem; color: var(--ink-soft); background: var(--bg); border-radius: 10px; padding: 10px 14px; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      display: inline-block; padding: 8px 14px; border-radius: 999px;
+      border: 1px solid var(--silver-line); background: var(--bg); font-size: 0.88rem; color: var(--silver);
+    }
+    .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 500; }
+
+    .notice {
+      background: var(--accent-soft); border-left: 3px solid var(--accent);
+      border-radius: 10px; padding: 18px 20px; font-size: 0.95rem; margin-bottom: 18px;
+    }
+    .agree {
+      display: flex; gap: 12px; align-items: center;
+      padding: 14px 16px; border: 1px solid var(--silver-line); border-radius: 10px; background: var(--bg); font-weight: 500;
+    }
+    .tick {
+      width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0; display: grid; place-items: center;
+      border: 1.5px solid var(--silver); color: #FFF; font-size: 0.8rem;
+    }
+    .tick.on { background: var(--ok); border-color: var(--ok); }
+
+    .contact { border: 1px solid var(--silver-line); border-radius: 12px; padding: 16px 18px; margin-bottom: 10px; background: #FCFDFE; }
+    .contact-title { font-family: var(--font-mono); font-size: 0.75rem; color: var(--silver); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .contact dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+    .contact dt { font-size: 0.78rem; color: var(--ink-soft); }
+    .contact dd { font-size: 0.95rem; overflow-wrap: anywhere; }
+
+    .files { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+    .file {
+      border: 1px solid var(--silver-line); border-radius: 12px; overflow: hidden; background: #FFF;
+      display: flex; flex-direction: column;
+    }
+    .file .thumb {
+      aspect-ratio: 4 / 3; display: grid; place-items: center; background:
+        repeating-conic-gradient(#F0F3F8 0% 25%, #FFF 0% 50%) 50% / 16px 16px;
+      color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.8rem;
+    }
+    .file .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .file .fname { padding: 8px 10px; font-family: var(--font-mono); font-size: 0.72rem; border-top: 1px solid var(--silver-line); overflow-wrap: anywhere; }
+    .file .fname a { color: var(--accent); }
+    .file.failed .thumb { background: #FDF3F3; color: var(--danger); text-align: center; padding: 10px; white-space: pre-line; }
+    .file.in-drive .thumb { background: var(--accent-soft); color: var(--accent); text-align: center; padding: 10px; font-weight: 500; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+      background: var(--tab-deep); color: #FFF; padding: 12px 20px; border-radius: 999px;
+      font-size: 0.88rem; box-shadow: 0 12px 30px rgba(0,0,0,0.2); transition: transform 0.3s ease; z-index: 50;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 900px) {
+      .dash { grid-template-columns: 1fr; }
+      .list-panel { position: static; max-height: none; }
+      .list { max-height: 320px; }
+    }
+    @media (max-width: 600px) {
+      nav, .dash { padding-left: 16px; padding-right: 16px; }
+      .nav-right .who { display: none; }
+      section.card { padding: 22px 18px; }
+      .grid-2, .contact dl { grid-template-columns: 1fr; }
+    }
+
+    /* ---- Appraisals ---- */
+    .detail-head h1 { margin: 4px 0 2px; }
+    .req-row { display: grid; grid-template-columns: 200px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--silver-line); }
+    .req-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .req-row:first-of-type { padding-top: 0; }
+    .req-label { font-weight: 600; font-size: 0.9rem; }
+    .req-value { font-size: 0.95rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .req-value.none { color: var(--silver); font-style: italic; }
+    .ap-row.fee .ap-label::before { content: 'Fee'; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 2px 8px; margin-right: 8px; vertical-align: 2px; }
+    .ap-row.fee .ap-right { display: flex; align-items: center; gap: 12px; }
+    .fee-remove { font: inherit; font-size: 0.78rem; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 6px; }
+    .fee-remove:hover { text-decoration: underline; }
+    .fee-form { display: grid; grid-template-columns: 160px 1fr auto; gap: 12px; align-items: end; }
+    .fee-form label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; }
+    .fee-form input { width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink); background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px; padding: 11px 14px; }
+    .fee-form input:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .money-input { position: relative; }
+    .money-input span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); }
+    .money-input input { padding-left: 26px; }
+    .fee-note { margin-top: 12px; font-size: 0.82rem; color: var(--ink-soft); }
+    .fee-note.local { color: #9A6A00; }
+    @media (max-width: 600px) {
+      .req-row { grid-template-columns: 1fr; gap: 4px; }
+      .fee-form { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+  <header>
+    <nav>
+      <a class="logo" href="../home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER <small>APPRAISALS</small></a>
+      <div class="nav-right" id="navRight" hidden>
+        <span class="who" id="who"></span>
+        <button class="btn btn-ghost btn-small" id="signOut">Sign out</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Sign in -->
+  <div class="login-wrap" id="loginView" hidden>
+    <form class="login" id="loginForm">
+      <div class="eyebrow">Team only</div>
+      <h1>Appraisals</h1>
+      <p>Sign in with the Engler admin account to view appraisals and make invoices.</p>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="username" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required />
+      <button class="btn btn-primary" type="submit" id="loginBtn">Sign in</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dash" id="dashView" hidden>
+    <aside class="list-panel">
+      <div class="list-head"><h2>Appraisals</h2><span class="count" id="count"></span></div>
+      <input type="search" id="search" placeholder="Search company…" />
+      <div class="list" id="list"></div>
+    </aside>
+    <main class="detail" id="detail">
+      <div class="placeholder">Select an order form to see its appraisal.</div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="../appraisal.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    // Must match the config in client-form.html.
+    const FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyCrmEk6X74MWQH6olX2N5Q5Zd7NJGY_SDk',
+      authDomain: 'engler-questionnaire.firebaseapp.com',
+      projectId: 'engler-questionnaire',
+      storageBucket: 'engler-questionnaire.firebasestorage.app',
+      messagingSenderId: '477147439593',
+      appId: '1:477147439593:web:43ceb566517778c8fdeb78'
+    };
+    const SUBMISSIONS_COLLECTION = 'questionnaireSubmissions';
+    // One doc per submission with any extra fees: { fees: [{ amount, reason, addedAt }], updatedAt }.
+    const FEES_COLLECTION = 'questionnaireFees';
+    // Used when the Firestore rules don't allow the fees collection yet.
+    const LOCAL_FEES_KEY = 'engler-appraisal-fees';
+
+    const BUSINESS = {
+      name: 'Engler',
+      tagline: 'Websites, drafted & built',
+      place: 'Redding, California',
+      email: 'EnglerWebsites@gmail.com',
+      phone: '(530) 691-2191',
+      site: 'englerwebsites.com',
+      paymentUrl: 'englerwebsites.com/payment'
+    };
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    setPersistence(auth, browserSessionPersistence);
+
+    const $ = id => document.getElementById(id);
+    let submissions = [];
+    let fees = {};          // submission ID -> [{ amount, reason, addedAt }]
+    let feesShared = true;  // false when fees are kept in this browser only
+    let selectedId = null;
+    let stopWatching = [];
+
+    // Builds an element; text is always set via textContent because answers are
+    // written by the public and must never be interpreted as HTML.
+    function el(tag, attrs = {}, ...children) {
+      const node = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') node.className = v;
+        else if (k === 'text') node.textContent = v;
+        else node.setAttribute(k, v);
+      }
+      for (const c of children) if (c != null) node.append(c);
+      return node;
+    }
+
+    function toast(msg) {
+      $('toast').textContent = msg;
+      $('toast').classList.add('show');
+      clearTimeout(toast.t);
+      toast.t = setTimeout(() => $('toast').classList.remove('show'), 2600);
+    }
+
+    const money = n => '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(+n) ? 0 : 2, maximumFractionDigits: 2 });
+    const money2 = n => '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const appraise = sub => window.Appraisal.appraise(sub.answers);
+    const feesFor = id => fees[id] || [];
+    const totalFor = sub => appraise(sub).total + feesFor(sub.id).reduce((t, f) => t + (Number(f.amount) || 0), 0);
+    const submittedDate = sub => sub.submittedAt?.toDate?.() || null;
+    function fmtDate(sub) {
+      const d = submittedDate(sub);
+      return d ? d.toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Pending…';
+    }
+    function invoiceNumber(sub) {
+      const d = submittedDate(sub) || new Date();
+      const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+      return `ENG-${ymd}-${sub.id.slice(0, 4).toUpperCase()}`;
+    }
+
+    // ---- Fees storage ----
+    function readLocalFees() {
+      try { return JSON.parse(localStorage.getItem(LOCAL_FEES_KEY)) || {}; } catch (e) { return {}; }
+    }
+    function useLocalFees() {
+      feesShared = false;
+      fees = readLocalFees();
+    }
+    async function saveFees(id, list) {
+      fees[id] = list;
+      if (feesShared) {
+        try {
+          await setDoc(doc(db, FEES_COLLECTION, id), { fees: list, updatedAt: serverTimestamp() });
+          return;
+        } catch (e) {
+          console.warn('Could not save fees to Firestore; keeping them in this browser', e);
+          const shared = fees;
+          useLocalFees();
+          fees = { ...shared, ...fees, [id]: list };
+        }
+      }
+      try { localStorage.setItem(LOCAL_FEES_KEY, JSON.stringify(fees)); }
+      catch (e) { toast("Couldn't save the fee in this browser."); }
+    }
+
+    // ---- Rendering ----
+    function reqRow(label, value) {
+      const empty = value == null || value === '';
+      return el('div', { class: 'req-row' },
+        el('div', { class: 'req-label', text: label }),
+        el('div', { class: 'req-value' + (empty ? ' none' : ''), text: empty ? 'Not answered' : value }));
+    }
+
+    function apRow(label, detail, amount, extraClass = '', right = null) {
+      return el('div', { class: 'ap-row' + extraClass },
+        el('div', {}, el('div', { class: 'ap-label', text: label }), detail ? el('div', { class: 'ap-detail', text: detail }) : null),
+        right || el('div', { class: 'ap-amount', text: money(amount) }));
+    }
+
+    function showSubmission(id) {
+      selectedId = id;
+      renderList();
+      const sub = submissions.find(s => s.id === id);
+      const detail = $('detail');
+      if (!sub) { detail.replaceChildren(el('div', { class: 'placeholder', text: 'Select an order form to see its appraisal.' })); return; }
+      const a = sub.answers || {};
+      const ap = appraise(sub);
+      const list = feesFor(id);
+
+      const dlBtn = el('button', { class: 'btn btn-primary btn-small', type: 'button', text: 'Download invoice (PDF)' });
+      dlBtn.onclick = () => downloadInvoice(sub, dlBtn);
+      const head = el('div', { class: 'detail-head' },
+        el('div', {},
+          el('div', { class: 'eyebrow', text: 'Appraisal' }),
+          el('h1', { text: sub.companyName || 'Untitled' }),
+          el('div', { class: 'meta', text: `Submitted ${fmtDate(sub)} · Invoice ${invoiceNumber(sub)}` })),
+        el('div', { class: 'detail-actions' }, dlBtn));
+
+      const requests = el('section', { class: 'card' },
+        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '01' }), el('h2', { text: 'What the client asked for' })),
+        reqRow('Estimated page count', a['Estimated Page Count'] || ''),
+        reqRow('Pages they listed', a['Anticipated Pages'] || ''),
+        reqRow('Interactive features', ap.features.length ? ap.features.join(', ') : ''),
+        reqRow('Other features described', ap.other));
+
+      const appraisal = el('section', { class: 'card appraisal' },
+        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '$' }), el('h2', { text: 'Appraisal' })),
+        apRow(`Pages × ${ap.pages}`, `${money(ap.pricePerPage)} per page · ${ap.pagesSource}`, ap.pagesCost),
+        apRow(`Interactive features × ${ap.features.length}`,
+          `${money(ap.pricePerFeature)} per feature` + (ap.features.length ? ` · ${ap.features.join(', ')}` : ''), ap.featuresCost),
+        ...list.map((f, i) => {
+          const rm = el('button', { class: 'fee-remove', type: 'button', text: 'Remove' });
+          rm.onclick = async () => {
+            if (!confirm(`Remove the ${money(f.amount)} fee for "${f.reason}"?`)) return;
+            await saveFees(id, feesFor(id).filter((_, j) => j !== i));
+            toast('Fee removed.');
+            showSubmission(id);
+          };
+          return apRow(f.reason, null, f.amount, ' fee', el('div', { class: 'ap-right' }, el('div', { class: 'ap-amount', text: money(f.amount) }), rm));
+        }),
+        el('div', { class: 'ap-row ap-total' }, el('div', { class: 'ap-label', text: 'Total' }), el('div', { class: 'ap-amount', text: money(totalFor(sub)) })));
+      if (ap.other) appraisal.append(el('div', { class: 'ap-note', text: `Not priced: other features the client described: “${ap.other}”. Add a fee below to charge for them.` }));
+
+      const amount = el('input', { type: 'number', id: 'feeAmount', min: '0.01', step: '0.01', inputmode: 'decimal', placeholder: '0.00', required: '' });
+      const reason = el('input', { type: 'text', id: 'feeReason', maxlength: '200', placeholder: 'e.g. Rush delivery, extra revisions, logo design', required: '' });
+      const form = el('form', { class: 'fee-form' },
+        el('div', {}, el('label', { for: 'feeAmount', text: 'Fee price' }), el('div', { class: 'money-input' }, el('span', { text: '$' }), amount)),
+        el('div', {}, el('label', { for: 'feeReason', text: 'Reason for the fee' }), reason),
+        el('button', { class: 'btn btn-primary', type: 'submit', text: 'Add fee' }));
+      form.onsubmit = async ev => {
+        ev.preventDefault();
+        const value = Math.round(parseFloat(amount.value) * 100) / 100;
+        const why = reason.value.trim();
+        if (!(value > 0) || !why) return;
+        await saveFees(id, [...feesFor(id), { amount: value, reason: why.slice(0, 200), addedAt: new Date().toISOString() }]);
+        toast(`Added ${money(value)} fee.`);
+        showSubmission(id);
+      };
+      const feeCard = el('section', { class: 'card' },
+        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '+' }), el('h2', { text: 'Add a fee' })),
+        form,
+        el('div', { class: 'fee-note' + (feesShared ? '' : ' local'), text: feesShared
+          ? 'Fees are saved for the whole team and included on the invoice.'
+          : 'Fees are saved in this browser only, because the Firebase rules don’t allow team-wide fees yet. They are still included on the invoice.' }));
+
+      detail.replaceChildren(head, requests, appraisal, feeCard);
+    }
+
+    function renderList() {
+      const q = $('search').value.trim().toLowerCase();
+      const shown = submissions.filter(s => !q || (s.companyName || '').toLowerCase().includes(q));
+      $('count').textContent = `${shown.length}${q ? ' of ' + submissions.length : ''}`;
+      const list = $('list');
+      if (!shown.length) {
+        list.replaceChildren(el('div', { class: 'empty', text: submissions.length ? 'No matches.' : 'No order forms yet.' }));
+        return;
+      }
+      list.replaceChildren(...shown.map(s => {
+        const n = feesFor(s.id).length;
+        const btn = el('button', { class: 'item' + (s.id === selectedId ? ' active' : ''), type: 'button' },
+          n ? el('span', { class: 'clip', text: n === 1 ? '+1 fee' : `+${n} fees` }) : null,
+          el('span', { class: 'name', text: s.companyName || 'Untitled' }),
+          el('span', { class: 'date', text: `${fmtDate(s)} · ${money(totalFor(s))}` }));
+        btn.onclick = () => showSubmission(s.id);
+        return btn;
+      }));
+    }
+    $('search').addEventListener('input', renderList);
+
+    function refresh() {
+      renderList();
+      if (selectedId) {
+        // Don't wipe a fee someone is typing.
+        const typing = document.activeElement && ['feeAmount', 'feeReason'].includes(document.activeElement.id);
+        if (!submissions.some(s => s.id === selectedId)) showSubmission(null);
+        else if (!typing) showSubmission(selectedId);
+      }
+    }
+
+    function startListening() {
+      const qry = query(collection(db, SUBMISSIONS_COLLECTION), orderBy('submittedAt', 'desc'));
+      stopWatching.push(onSnapshot(qry, snap => {
+        submissions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        refresh();
+      }, err => {
+        console.error(err);
+        const msg = err.code === 'permission-denied'
+          ? 'This account is not allowed to view order forms. Check the admin UID in the Firestore rules.'
+          : "Couldn't load order forms: " + (err.code || err.message);
+        $('list').replaceChildren(el('div', { class: 'empty', text: msg }));
+      }));
+      stopWatching.push(onSnapshot(collection(db, FEES_COLLECTION), snap => {
+        feesShared = true;
+        fees = Object.fromEntries(snap.docs.map(d => [d.id, d.data().fees || []]));
+        refresh();
+      }, err => {
+        console.warn('Team-wide fees unavailable; using this browser\'s', err);
+        useLocalFees();
+        refresh();
+      }));
+    }
+
+    // ---- Invoice PDF ----
+    let jsPDFReady = null;
+    function loadJsPDF() {
+      jsPDFReady = jsPDFReady || new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload = () => resolve(window.jspdf.jsPDF);
+        s.onerror = () => { jsPDFReady = null; reject(new Error('Could not load the PDF maker')); };
+        document.head.append(s);
+      });
+      return jsPDFReady;
+    }
+
+    // The PDF's built-in fonts only cover Western characters; swap anything else.
+    const WINANSI_EXTRA = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
+    const pdfText = s => String(s ?? '').replace(/→/g, '->').replace(/[\u0100-\uFFFF]/g, ch => WINANSI_EXTRA.includes(ch) ? ch : '?');
+
+    async function downloadInvoice(sub, btn) {
+      btn.disabled = true;
+      try {
+        const jsPDF = await loadJsPDF();
+        const a = sub.answers || {};
+        const ap = appraise(sub);
+        const contact = (sub.contacts || []).find(c => c && (c.name || c.email)) || {};
+        const items = [];
+        if (ap.pages) items.push({ desc: 'Website pages', sub: ap.pagesSource === 'estimated page count' ? 'Design and build, based on your estimated page count' : 'Design and build, based on the pages you listed', qty: ap.pages, rate: ap.pricePerPage });
+        if (ap.features.length) items.push({ desc: 'Interactive features', sub: ap.features.join(', '), qty: ap.features.length, rate: ap.pricePerFeature });
+        feesFor(sub.id).forEach(f => items.push({ desc: f.reason, sub: '', qty: 1, rate: Number(f.amount) || 0 }));
+        const total = items.reduce((t, i) => t + i.qty * i.rate, 0);
+
+        const pdf = new jsPDF({ unit: 'pt', format: 'letter' });
+        const W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
+        const M = 54, R = W - M;
+        const NAVY = [22, 35, 59], INK = [22, 35, 59], SOFT = [95, 103, 118], LINE = [221, 226, 234], ACCENT = [47, 107, 255];
+        const set = (size, style = 'normal', color = INK) => { pdf.setFont('helvetica', style); pdf.setFontSize(size); pdf.setTextColor(...color); };
+        const text = (s, x, y, opts) => pdf.text(pdfText(s), x, y, opts);
+
+        // Header band
+        pdf.setFillColor(...NAVY); pdf.rect(0, 0, W, 96, 'F');
+        set(24, 'bold', [255, 255, 255]); text('ENGLER', M, 54);
+        set(9, 'normal', [190, 205, 235]); text(BUSINESS.tagline.toUpperCase(), M, 72);
+        set(26, 'bold', [255, 255, 255]); text('INVOICE', R, 58, { align: 'right' });
+
+        // From / invoice details
+        let y = 132;
+        set(8, 'bold', ACCENT); text('FROM', M, y);
+        set(10, 'bold'); text(BUSINESS.name, M, y + 16);
+        set(9.5, 'normal', SOFT);
+        [BUSINESS.place, BUSINESS.email, BUSINESS.phone, BUSINESS.site].forEach((l, i) => text(l, M, y + 31 + i * 13));
+
+        const issued = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        const meta = [['Invoice number', invoiceNumber(sub)], ['Date issued', issued], ['Questionnaire received', submittedDate(sub) ? submittedDate(sub).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—'], ['Payment due', 'When your website is complete']];
+        meta.forEach(([k, v], i) => {
+          set(9, 'normal', SOFT); text(k, R - 150, y + 16 + i * 15, { align: 'right' });
+          set(9.5, 'bold'); text(v, R, y + 16 + i * 15, { align: 'right' });
+        });
+
+        // Bill to
+        y = 228;
+        set(8, 'bold', ACCENT); text('BILL TO', M, y);
+        set(11, 'bold'); text(sub.companyName || 'Client', M, y + 16);
+        set(9.5, 'normal', SOFT);
+        const billLines = [contact.name && (contact.name + (contact.role ? ', ' + contact.role : '')), contact.email, contact.phone || a['Phone Number'], ...(a['Physical Address'] ? pdf.splitTextToSize(pdfText(a['Physical Address']), 260) : [])].filter(Boolean);
+        billLines.forEach((l, i) => text(l, M, y + 31 + i * 13));
+        y += 31 + billLines.length * 13 + 22;
+
+        // Line items
+        const cQty = R - 190, cRate = R - 100;
+        const tableHead = () => {
+          pdf.setFillColor(240, 243, 248); pdf.rect(M, y, R - M, 24, 'F');
+          set(8, 'bold', SOFT);
+          text('DESCRIPTION', M + 10, y + 15.5); text('QTY', cQty, y + 15.5, { align: 'right' });
+          text('RATE', cRate, y + 15.5, { align: 'right' }); text('AMOUNT', R - 10, y + 15.5, { align: 'right' });
+          y += 24;
+        };
+        tableHead();
+        items.forEach(it => {
+          const descLines = pdf.splitTextToSize(pdfText(it.desc), cQty - M - 60);
+          const subLines = it.sub ? pdf.splitTextToSize(pdfText(it.sub), cQty - M - 60) : [];
+          const h = 14 + descLines.length * 13 + subLines.length * 11.5 + 8;
+          if (y + h > H - 170) { pdf.addPage(); y = M; tableHead(); }
+          set(10, 'bold'); pdf.text(descLines, M + 10, y + 18);
+          set(8.5, 'normal', SOFT); if (subLines.length) pdf.text(subLines, M + 10, y + 18 + descLines.length * 13);
+          set(10, 'normal'); text(String(it.qty), cQty, y + 18, { align: 'right' }); text(money2(it.rate), cRate, y + 18, { align: 'right' });
+          set(10, 'bold'); text(money2(it.qty * it.rate), R - 10, y + 18, { align: 'right' });
+          y += h;
+          pdf.setDrawColor(...LINE); pdf.setLineWidth(0.75); pdf.line(M, y, R, y);
+        });
+        if (!items.length) { set(10, 'normal', SOFT); text('No billable items yet.', M + 10, y + 20); y += 32; }
+
+        // Totals
+        if (y + 120 > H - 60) { pdf.addPage(); y = M; }
+        y += 18;
+        set(10, 'normal', SOFT); text('Subtotal', cRate, y, { align: 'right' });
+        set(10, 'normal'); text(money2(total), R - 10, y, { align: 'right' });
+        y += 14;
+        pdf.setFillColor(...NAVY); pdf.roundedRect(cQty - 60, y, R - (cQty - 60), 34, 6, 6, 'F');
+        set(10, 'bold', [255, 255, 255]); text('TOTAL DUE', cQty - 46, y + 21.5);
+        set(14, 'bold', [255, 255, 255]); text(money2(total), R - 12, y + 22.5, { align: 'right' });
+        y += 64;
+
+        // Notes
+        set(8, 'bold', ACCENT); text('HOW TO PAY', M, y);
+        set(9.5, 'normal', SOFT);
+        const notes = pdf.splitTextToSize(pdfText(`Pay online at ${BUSINESS.paymentUrl} once your website is finished. Questions about this invoice? Email ${BUSINESS.email} or text ${BUSINESS.phone}.`), R - M);
+        pdf.text(notes, M, y + 16);
+        y += 16 + notes.length * 13 + 12;
+        set(10, 'bold'); text('Thank you for choosing Engler.', M, y);
+
+        // Footer on every page
+        const pages = pdf.getNumberOfPages();
+        for (let p = 1; p <= pages; p++) {
+          pdf.setPage(p);
+          pdf.setDrawColor(...LINE); pdf.line(M, H - 44, R, H - 44);
+          set(8, 'normal', SOFT);
+          text(`${BUSINESS.name} · ${BUSINESS.site} · ${BUSINESS.email}`, M, H - 28);
+          text(`${invoiceNumber(sub)} · Page ${p} of ${pages}`, R, H - 28, { align: 'right' });
+        }
+
+        const safe = (sub.companyName || 'client').replace(/[^\w-]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+        pdf.save(`Engler-Invoice-${invoiceNumber(sub)}-${safe}.pdf`);
+      } catch (e) {
+        console.error(e);
+        toast("Couldn't make the invoice: " + (e.message || e));
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ---- Auth ----
+    $('loginForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      $('loginError').textContent = '';
+      $('loginBtn').disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+        $('password').value = '';
+      } catch (e) {
+        $('loginError').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(e.code)
+          ? 'Incorrect email or password.'
+          : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again in a few minutes.' : 'Sign-in failed: ' + e.code;
+      } finally {
+        $('loginBtn').disabled = false;
+      }
+    });
+
+    $('signOut').addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, user => {
+      $('loginView').hidden = !!user;
+      $('dashView').hidden = !user;
+      $('navRight').hidden = !user;
+      stopWatching.forEach(stop => stop());
+      stopWatching = [];
+      if (user) {
+        $('who').textContent = user.email;
+        startListening();
+      } else {
+        submissions = [];
+        fees = {};
+        selectedId = null;
+        $('detail').replaceChildren(el('div', { class: 'placeholder', text: 'Select an order form to see its appraisal.' }));
+        $('email').focus();
+      }
+    });
+  </script>
+</body>
+</html>
