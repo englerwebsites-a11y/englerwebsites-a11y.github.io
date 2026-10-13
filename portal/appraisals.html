@@ -234,7 +234,15 @@
     .req-value { font-size: 0.95rem; white-space: pre-wrap; overflow-wrap: anywhere; }
     .req-value.none { color: var(--silver); font-style: italic; }
     .ap-row.fee .ap-label::before { content: 'Fee'; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 2px 8px; margin-right: 8px; vertical-align: 2px; }
-    .ap-row.fee .ap-right { display: flex; align-items: center; gap: 12px; }
+    .ap-row.discount .ap-label::before { content: 'Discount'; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ok); background: #E6F6EF; border-radius: 999px; padding: 2px 8px; margin-right: 8px; vertical-align: 2px; }
+    .ap-row.discount .ap-amount { color: var(--ok); }
+    .ap-row.fee .ap-right, .ap-row.discount .ap-right { display: flex; align-items: center; gap: 12px; }
+    .kind-toggle { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 16px; background: var(--bg); border: 1px solid var(--silver-line); border-radius: 999px; }
+    .kind-toggle label { cursor: pointer; }
+    .kind-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+    .kind-toggle span { display: block; padding: 7px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
+    .kind-toggle input:checked + span { background: #FFF; color: var(--ink); box-shadow: 0 2px 8px rgba(13,23,41,0.08); }
+    .kind-toggle input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
     .fee-remove { font: inherit; font-size: 0.78rem; color: var(--danger); background: none; border: none; cursor: pointer; padding: 2px 4px; border-radius: 6px; }
     .fee-remove:hover { text-decoration: underline; }
     .fee-form { display: grid; grid-template-columns: 160px 1fr auto; gap: 12px; align-items: end; }
@@ -358,11 +366,14 @@
       toast.t = setTimeout(() => $('toast').classList.remove('show'), 2600);
     }
 
-    const money = n => '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(+n) ? 0 : 2, maximumFractionDigits: 2 });
-    const money2 = n => '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const money = n => (n < 0 ? '−$' : '$') + Math.abs(Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: Number.isInteger(+n) ? 0 : 2, maximumFractionDigits: 2 });
+    const money2 = n => (n < 0 ? '-$' : '$') + Math.abs(Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const appraise = sub => window.Appraisal.appraise(sub.answers);
     const feesFor = id => fees[id] || [];
-    const totalFor = sub => appraise(sub).total + feesFor(sub.id).reduce((t, f) => t + (Number(f.amount) || 0), 0);
+    // Each entry is a fee or, with kind: 'discount', a discount. Amounts are stored as positive numbers.
+    const isDiscount = f => f.kind === 'discount';
+    const signed = f => (isDiscount(f) ? -1 : 1) * (Number(f.amount) || 0);
+    const totalFor = sub => Math.max(0, appraise(sub).total + feesFor(sub.id).reduce((t, f) => t + signed(f), 0));
     const submittedDate = sub => sub.submittedAt?.toDate?.() || null;
     function fmtDate(sub) {
       const d = submittedDate(sub);
@@ -447,37 +458,62 @@
         ...list.map((f, i) => {
           const rm = el('button', { class: 'fee-remove', type: 'button', text: 'Remove' });
           rm.onclick = async () => {
-            if (!confirm(`Remove the ${money(f.amount)} fee for "${f.reason}"?`)) return;
+            const word = isDiscount(f) ? 'discount' : 'fee';
+            if (!confirm(`Remove the ${money(f.amount)} ${word} for "${f.reason}"?`)) return;
             await saveFees(id, feesFor(id).filter((_, j) => j !== i));
-            toast('Fee removed.');
+            toast(isDiscount(f) ? 'Discount removed.' : 'Fee removed.');
             showSubmission(id);
           };
-          return apRow(f.reason, null, f.amount, ' fee', el('div', { class: 'ap-right' }, el('div', { class: 'ap-amount', text: money(f.amount) }), rm));
+          return apRow(f.reason, null, signed(f), isDiscount(f) ? ' discount' : ' fee', el('div', { class: 'ap-right' }, el('div', { class: 'ap-amount', text: money(signed(f)) }), rm));
         }),
         el('div', { class: 'ap-row ap-total' }, el('div', { class: 'ap-label', text: 'Total' }), el('div', { class: 'ap-amount', text: money(totalFor(sub)) })));
       if (ap.other) appraisal.append(el('div', { class: 'ap-note', text: `Not priced: other features the client described: “${ap.other}”. Add a fee below to charge for them.` }));
 
+      const kindInput = (value, label, checked) => el('label', {},
+        el('input', Object.assign({ type: 'radio', name: 'feeKind', value }, checked ? { checked: '' } : {})), el('span', { text: label }));
+      const toggle = el('div', { class: 'kind-toggle', role: 'radiogroup', 'aria-label': 'Fee or discount' },
+        kindInput('fee', 'Fee', true), kindInput('discount', 'Discount', false));
       const amount = el('input', { type: 'number', id: 'feeAmount', min: '0.01', step: '0.01', inputmode: 'decimal', placeholder: '0.00', required: '' });
-      const reason = el('input', { type: 'text', id: 'feeReason', maxlength: '200', placeholder: 'e.g. Rush delivery, extra revisions, logo design', required: '' });
-      const form = el('form', { class: 'fee-form' },
-        el('div', {}, el('label', { for: 'feeAmount', text: 'Fee price' }), el('div', { class: 'money-input' }, el('span', { text: '$' }), amount)),
-        el('div', {}, el('label', { for: 'feeReason', text: 'Reason for the fee' }), reason),
-        el('button', { class: 'btn btn-primary', type: 'submit', text: 'Add fee' }));
+      const reason = el('input', { type: 'text', id: 'feeReason', maxlength: '200', required: '' });
+      const amountLabel = el('label', { for: 'feeAmount' });
+      const reasonLabel = el('label', { for: 'feeReason' });
+      const addBtn = el('button', { class: 'btn btn-primary', type: 'submit' });
+      const kind = () => toggle.querySelector('input:checked').value;
+      const setLabels = () => {
+        const d = kind() === 'discount';
+        amountLabel.textContent = d ? 'Discount amount' : 'Fee price';
+        reasonLabel.textContent = d ? 'Reason for the discount' : 'Reason for the fee';
+        reason.placeholder = d ? 'e.g. Returning client, referral, launch promotion' : 'e.g. Rush delivery, extra revisions, logo design';
+        addBtn.textContent = d ? 'Add discount' : 'Add fee';
+      };
+      toggle.addEventListener('change', setLabels);
+      setLabels();
+      const form = el('form', {},
+        toggle,
+        el('div', { class: 'fee-form' },
+          el('div', {}, amountLabel, el('div', { class: 'money-input' }, el('span', { text: '$' }), amount)),
+          el('div', {}, reasonLabel, reason),
+          addBtn));
       form.onsubmit = async ev => {
         ev.preventDefault();
         const value = Math.round(parseFloat(amount.value) * 100) / 100;
         const why = reason.value.trim();
         if (!(value > 0) || !why) return;
-        await saveFees(id, [...feesFor(id), { amount: value, reason: why.slice(0, 200), addedAt: new Date().toISOString() }]);
-        toast(`Added ${money(value)} fee.`);
+        const k = kind();
+        if (k === 'discount' && value > totalFor(sub)) {
+          toast(`A discount can't be more than the current total (${money(totalFor(sub))}).`);
+          return;
+        }
+        await saveFees(id, [...feesFor(id), { kind: k, amount: value, reason: why.slice(0, 200), addedAt: new Date().toISOString() }]);
+        toast(k === 'discount' ? `Added ${money(value)} discount.` : `Added ${money(value)} fee.`);
         showSubmission(id);
       };
       const feeCard = el('section', { class: 'card' },
-        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '+' }), el('h2', { text: 'Add a fee' })),
+        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '±' }), el('h2', { text: 'Add a fee or discount' })),
         form,
         el('div', { class: 'fee-note' + (feesShared ? '' : ' local'), text: feesShared
-          ? 'Fees are saved for the whole team and included on the invoice.'
-          : 'Fees are saved in this browser only, because the Firebase rules don’t allow team-wide fees yet. They are still included on the invoice.' }));
+          ? 'Fees and discounts are saved for the whole team and included on the invoice.'
+          : 'Fees and discounts are saved in this browser only, because the Firebase rules don’t allow team-wide saving yet. They are still included on the invoice.' }));
 
       detail.replaceChildren(head, requests, appraisal, feeCard);
     }
@@ -492,9 +528,10 @@
         return;
       }
       list.replaceChildren(...shown.map(s => {
-        const n = feesFor(s.id).length;
+        const nf = feesFor(s.id).filter(f => !isDiscount(f)).length, nd = feesFor(s.id).length - nf;
+        const tag = [nf && (nf === 1 ? '+1 fee' : `+${nf} fees`), nd && (nd === 1 ? '−1 discount' : `−${nd} discounts`)].filter(Boolean).join(' · ');
         const btn = el('button', { class: 'item' + (s.id === selectedId ? ' active' : ''), type: 'button' },
-          n ? el('span', { class: 'clip', text: n === 1 ? '+1 fee' : `+${n} fees` }) : null,
+          tag ? el('span', { class: 'clip', text: tag }) : null,
           el('span', { class: 'name', text: s.companyName || 'Untitled' }),
           el('span', { class: 'date', text: `${fmtDate(s)} · ${money(totalFor(s))}` }));
         btn.onclick = () => showSubmission(s.id);
@@ -563,8 +600,10 @@
         const items = [];
         if (ap.pages) items.push({ desc: 'Website pages', sub: ap.pagesSource === 'estimated page count' ? 'Design and build, based on your estimated page count' : 'Design and build, based on the pages you listed', qty: ap.pages, rate: ap.pricePerPage });
         if (ap.features.length) items.push({ desc: 'Interactive features', sub: ap.features.join(', '), qty: ap.features.length, rate: ap.pricePerFeature });
-        feesFor(sub.id).forEach(f => items.push({ desc: f.reason, sub: '', qty: 1, rate: Number(f.amount) || 0 }));
-        const total = items.reduce((t, i) => t + i.qty * i.rate, 0);
+        feesFor(sub.id).filter(f => !isDiscount(f)).forEach(f => items.push({ desc: f.reason, sub: '', qty: 1, rate: Number(f.amount) || 0 }));
+        const discounts = feesFor(sub.id).filter(isDiscount);
+        const subtotal = items.reduce((t, i) => t + i.qty * i.rate, 0);
+        const total = Math.max(0, subtotal - discounts.reduce((t, f) => t + (Number(f.amount) || 0), 0));
 
         const pdf = new jsPDF({ unit: 'pt', format: 'letter' });
         const W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
@@ -627,10 +666,17 @@
         if (!items.length) { set(10, 'normal', SOFT); text('No billable items yet.', M + 10, y + 20); y += 32; }
 
         // Totals
-        if (y + 120 > H - 60) { pdf.addPage(); y = M; }
+        if (y + 120 + discounts.length * 16 > H - 60) { pdf.addPage(); y = M; }
         y += 18;
         set(10, 'normal', SOFT); text('Subtotal', cRate, y, { align: 'right' });
-        set(10, 'normal'); text(money2(total), R - 10, y, { align: 'right' });
+        set(10, 'normal'); text(money2(subtotal), R - 10, y, { align: 'right' });
+        const GREEN = [31, 157, 107];
+        discounts.forEach(f => {
+          y += 16;
+          const label = pdf.splitTextToSize(pdfText('Discount: ' + f.reason), cRate - (M + 150))[0];
+          set(10, 'normal', SOFT); pdf.text(label, cRate, y, { align: 'right' });
+          set(10, 'normal', GREEN); text(money2(-(Number(f.amount) || 0)), R - 10, y, { align: 'right' });
+        });
         y += 14;
         pdf.setFillColor(...NAVY); pdf.roundedRect(cQty - 60, y, R - (cQty - 60), 34, 6, 6, 'F');
         set(10, 'bold', [255, 255, 255]); text('TOTAL DUE', cQty - 46, y + 21.5);
