@@ -162,12 +162,6 @@
       <p>Everything the Engler team uses behind the scenes.</p>
     </div>
     <div class="tools">
-      <a class="tool" href="portal/client-form.html">
-        <span class="tag">Order form</span>
-        <h2>Order form responses</h2>
-        <p>Read client questionnaire submissions, see appraisals, and download uploaded files.</p>
-        <span class="go">Open →</span>
-      </a>
       <div class="tool soon">
         <span class="tag">Coming soon</span>
         <h2>More team pages</h2>
@@ -195,10 +189,6 @@
     setPersistence(auth, browserSessionPersistence);
     const $ = id => document.getElementById(id);
 
-    // Team pages send people here to sign in with ?next=<page>, and get sent back after.
-    const next = new URLSearchParams(location.search).get('next');
-    const nextPage = next && /^[a-z0-9-]+$/.test(next) ? 'portal/' + next + '.html' : null;
-
     $('loginForm').addEventListener('submit', async ev => {
       ev.preventDefault();
       $('loginError').textContent = '';
@@ -218,7 +208,6 @@
     $('signOut').addEventListener('click', () => signOut(auth));
 
     onAuthStateChanged(auth, user => {
-      if (user && nextPage) { location.replace(nextPage); return; }
       $('loginView').hidden = !!user;
       $('hubView').hidden = !user;
       $('navRight').hidden = !user;
