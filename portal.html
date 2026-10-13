@@ -106,6 +106,7 @@
     .hub-head p { color: var(--ink-soft); font-size: 0.95rem; }
     .tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
     .tool {
+      position: relative;
       display: flex; flex-direction: column; gap: 6px; text-decoration: none;
       background: #FFF; border: 1px solid var(--silver-line); border-radius: 16px;
       box-shadow: var(--shadow-sm); padding: 24px;
@@ -117,6 +118,13 @@
     .tool h2 { font-size: 1.2rem; }
     .tool p { color: var(--ink-soft); font-size: 0.9rem; }
     .tool .go { margin-top: 8px; font-weight: 600; font-size: 0.88rem; color: var(--accent); }
+    .badge {
+      position: absolute; top: -9px; right: -9px;
+      min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px;
+      background: var(--accent); color: #FFF; border: 3px solid #FFF;
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500;
+      display: grid; place-items: center; box-shadow: 0 6px 14px rgba(47,107,255,0.35);
+    }
     .tool.soon { border-style: dashed; box-shadow: none; background: transparent; }
     .tool.soon .tag { color: var(--silver); }
 
@@ -162,6 +170,13 @@
       <p>Everything the Engler team uses behind the scenes.</p>
     </div>
     <div class="tools">
+      <a class="tool" href="portal/client-form.html">
+        <span class="badge" id="newBadge" hidden></span>
+        <span class="tag">Order form</span>
+        <h2>Order form responses</h2>
+        <p>Review client questionnaire submissions, appraisals, and uploaded files.</p>
+        <span class="go">Open →</span>
+      </a>
       <div class="tool soon">
         <span class="tag">Coming soon</span>
         <h2>More team pages</h2>
@@ -174,6 +189,8 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, onSnapshot }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     // Must match the config in client-form.html.
     const FIREBASE_CONFIG = {
@@ -185,7 +202,9 @@
       appId: '1:477147439593:web:43ceb566517778c8fdeb78'
     };
 
-    const auth = getAuth(initializeApp(FIREBASE_CONFIG));
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
     setPersistence(auth, browserSessionPersistence);
     const $ = id => document.getElementById(id);
 
@@ -207,7 +226,28 @@
 
     $('signOut').addEventListener('click', () => signOut(auth));
 
+    // ---- Unreviewed order form count ----
+    // portal/client-form.html writes a questionnaireReviews/<submission ID> doc when a submission is opened.
+    let submissionIds = null, reviewedIds = null, stopWatching = [];
+    function updateBadge() {
+      const badge = $('newBadge');
+      const count = submissionIds && reviewedIds ? submissionIds.filter(id => !reviewedIds.has(id)).length : 0;
+      badge.hidden = count === 0;
+      badge.textContent = count > 99 ? '99+' : String(count);
+      badge.setAttribute('aria-label', count === 1 ? '1 new submission' : `${count} new submissions`);
+    }
+    function watchCounts() {
+      const fail = err => { console.warn('Could not load order form counts', err); submissionIds = null; updateBadge(); };
+      stopWatching = [
+        onSnapshot(collection(db, 'questionnaireSubmissions'), snap => { submissionIds = snap.docs.map(d => d.id); updateBadge(); }, fail),
+        onSnapshot(collection(db, 'questionnaireReviews'), snap => { reviewedIds = new Set(snap.docs.map(d => d.id)); updateBadge(); }, fail)
+      ];
+    }
+
     onAuthStateChanged(auth, user => {
+      stopWatching.forEach(stop => stop());
+      stopWatching = []; submissionIds = reviewedIds = null; updateBadge();
+      if (user) watchCounts();
       $('loginView').hidden = !!user;
       $('hubView').hidden = !user;
       $('navRight').hidden = !user;

@@ -119,6 +119,7 @@
     .item .name { font-weight: 600; font-size: 0.95rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .item .date { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
     .item .clip { float: right; font-size: 0.75rem; color: var(--silver); }
+    .new-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-right: 8px; vertical-align: 1px; }
     .empty { color: var(--ink-soft); font-size: 0.9rem; padding: 24px 4px; }
 
     .detail { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
@@ -292,7 +293,7 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, collection, query, orderBy, onSnapshot, doc, deleteDoc }
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, deleteDoc, setDoc, serverTimestamp }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     // Must match the config in client-form.html.
@@ -305,6 +306,8 @@
       appId: '1:477147439593:web:43ceb566517778c8fdeb78'
     };
     const SUBMISSIONS_COLLECTION = 'questionnaireSubmissions';
+    // One doc per submission that someone has opened, keyed by submission ID. Shared with portal.html.
+    const REVIEWS_COLLECTION = 'questionnaireReviews';
 
 
     const app = initializeApp(FIREBASE_CONFIG);
@@ -316,6 +319,8 @@
     let submissions = [];
     let selectedId = null;
     let unsubscribe = null;
+    let unsubscribeReviews = null;
+    let reviewed = null; // Set of reviewed submission IDs, or null until loaded
     let schema = null;
 
     // Builds an element; text is always set via textContent because answers are
@@ -536,6 +541,7 @@
       const sub = submissions.find(s => s.id === id);
       const detail = $('detail');
       if (!sub) { detail.replaceChildren(el('div', { class: 'placeholder', text: 'Select a submission to view it.' })); return; }
+      markReviewed(id);
       const layout = await loadSchema();
       if (selectedId !== id) return;
 
@@ -614,6 +620,7 @@
       btn.disabled = true;
       try {
         await deleteDoc(doc(db, SUBMISSIONS_COLLECTION, sub.id));
+        deleteDoc(doc(db, REVIEWS_COLLECTION, sub.id)).catch(e => console.warn('Could not clear review mark', e));
         selectedId = null;
         toast('Submission deleted.');
       } catch (e) {
@@ -635,9 +642,10 @@
       }
       list.replaceChildren(...shown.map(s => {
         const n = (s.files || []).length;
+        const isNew = reviewed && !reviewed.has(s.id);
         const btn = el('button', { class: 'item' + (s.id === selectedId ? ' active' : ''), type: 'button' },
           n ? el('span', { class: 'clip', text: `📎 ${n}` }) : null,
-          el('span', { class: 'name', text: s.companyName || 'Untitled' }),
+          el('span', { class: 'name' }, isNew ? el('span', { class: 'new-dot', title: 'Not reviewed yet', 'aria-label': 'New' }) : null, s.companyName || 'Untitled'),
           el('span', { class: 'date', text: `${fmtDate(s)} · ${money(appraise(s).total)}` }));
         btn.onclick = () => showSubmission(s.id);
         return btn;
@@ -645,7 +653,21 @@
     }
     $('search').addEventListener('input', renderList);
 
+    function markReviewed(id) {
+      if (!reviewed || reviewed.has(id)) return;
+      reviewed.add(id);
+      setDoc(doc(db, REVIEWS_COLLECTION, id), { reviewedAt: serverTimestamp() })
+        .catch(e => { console.warn('Could not mark as reviewed', e); reviewed.delete(id); renderList(); });
+    }
+
     function startListening() {
+      // If the reviews can't be read (e.g. Firestore rules not updated yet), the list just shows no "new" dots.
+      unsubscribeReviews = onSnapshot(collection(db, REVIEWS_COLLECTION), snap => {
+        reviewed = new Set(snap.docs.map(d => d.id));
+        if (selectedId) markReviewed(selectedId);
+        renderList();
+      }, err => { console.warn('Could not load review marks', err); reviewed = null; renderList(); });
+
       const qry = query(collection(db, SUBMISSIONS_COLLECTION), orderBy('submittedAt', 'desc'));
       unsubscribe = onSnapshot(qry, snap => {
         submissions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -684,6 +706,8 @@
       $('dashView').hidden = !user;
       $('navRight').hidden = !user;
       if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+      if (unsubscribeReviews) { unsubscribeReviews(); unsubscribeReviews = null; }
+      reviewed = null;
       if (user) {
         $('who').textContent = user.email;
         loadSchema();
