@@ -1,14 +1,230 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
-<title>Engler — Portal</title>
-<link rel="canonical" href="/portal/client-form">
-<script>location.replace('/portal/client-form' + location.search + location.hash);</script>
-<meta http-equiv="refresh" content="0; url=/portal/client-form">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
+  <title>Engler — Team Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --bg-soft: #F0F3F8;
+      --tab: #16233B;
+      --tab-deep: #0D1729;
+      --ink: #16233B;
+      --ink-soft: #5F6776;
+      --silver: #9BA3B0;
+      --silver-line: #DDE2EA;
+      --accent: #2F6BFF;
+      --accent-soft: #E9F0FF;
+      --danger: #D64545;
+      --ok: #1F9D6B;
+      --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+      --font-display: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(22,35,59,0.96);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+    }
+    nav {
+      max-width: 1240px; margin: 0 auto; padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo {
+      font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;
+      letter-spacing: -0.02em; color: #FFF; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo .mark { width: 33px; height: 33px; border-radius: 8px; image-rendering: pixelated; }
+    .logo small { font-family: var(--font-mono); font-weight: 400; font-size: 0.72rem; opacity: 0.6; letter-spacing: 0.08em; }
+    .nav-right { display: flex; align-items: center; gap: 14px; color: #FFF; font-family: var(--font-mono); font-size: 0.78rem; }
+    .nav-right .who { opacity: 0.7; }
+
+    .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; letter-spacing: -0.03em; line-height: 1.15; margin: 8px 0 10px; }
+    h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+    .btn {
+      font: inherit; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      padding: 12px 20px; border-radius: 999px; border: 1px solid transparent; transition: all 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    }
+    .btn-primary { background: var(--tab); color: #FFF; }
+    .btn-primary:hover { background: var(--tab-deep); }
+    .btn-ghost { background: #FFF; color: var(--ink); border-color: var(--silver-line); }
+    .btn-ghost:hover { border-color: var(--silver); }
+    .btn-danger { background: #FFF; color: var(--danger); border-color: #F1CFCF; }
+    .btn-danger:hover { border-color: var(--danger); }
+    .btn-small { padding: 7px 14px; font-size: 0.8rem; }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    header .btn-ghost { background: transparent; color: #FFF; border-color: rgba(255,255,255,0.3); }
+    header .btn-ghost:hover { border-color: #FFF; }
+
+    input[type="email"], input[type="password"], input[type="search"] {
+      width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink);
+      background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px;
+      padding: 11px 14px; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    input:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* ---- Sign in ---- */
+    .login-wrap {
+      min-height: calc(100vh - 66px); display: grid; place-items: center; padding: 40px 16px;
+      background: radial-gradient(circle at top right, rgba(47,107,255,0.16), transparent 35%);
+    }
+    .login {
+      width: 100%; max-width: 400px; background: #FFF; border: 1px solid var(--silver-line);
+      border-radius: 16px; box-shadow: var(--shadow-sm); padding: 32px;
+    }
+    .login p { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 22px; }
+    .login label { display: block; font-weight: 600; font-size: 0.88rem; margin: 14px 0 6px; }
+    .login .btn { width: 100%; margin-top: 22px; }
+    .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 12px; min-height: 1.2em; }
+
+    /* ---- Team portal ---- */
+    .hub { max-width: 1040px; margin: 0 auto; padding: 48px 32px 80px; }
+    .hub-head { margin-bottom: 28px; }
+    .hub-head p { color: var(--ink-soft); font-size: 0.95rem; }
+    .tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .tool {
+      display: flex; flex-direction: column; gap: 6px; text-decoration: none;
+      background: #FFF; border: 1px solid var(--silver-line); border-radius: 16px;
+      box-shadow: var(--shadow-sm); padding: 24px;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    a.tool:hover, a.tool:focus-visible { border-color: var(--accent); transform: translateY(-2px); }
+    a.tool:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .tool .tag { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    .tool h2 { font-size: 1.2rem; }
+    .tool p { color: var(--ink-soft); font-size: 0.9rem; }
+    .tool .go { margin-top: 8px; font-weight: 600; font-size: 0.88rem; color: var(--accent); }
+    .tool.soon { border-style: dashed; box-shadow: none; background: transparent; }
+    .tool.soon .tag { color: var(--silver); }
+
+    @media (max-width: 600px) {
+      nav, .hub { padding-left: 16px; padding-right: 16px; }
+      .hub { padding-top: 32px; }
+      .nav-right .who { display: none; }
+    }
+  </style>
 </head>
-<body><p>Moved to <a href="/portal/client-form">/portal/client-form</a>.</p></body>
+<body>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+  <header>
+    <nav>
+      <a class="logo" href="home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER <small>TEAM PORTAL</small></a>
+      <div class="nav-right" id="navRight" hidden>
+        <span class="who" id="who"></span>
+        <button class="btn btn-ghost btn-small" id="signOut">Sign out</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Sign in -->
+  <div class="login-wrap" id="loginView" hidden>
+    <form class="login" id="loginForm">
+      <div class="eyebrow">Team only</div>
+      <h1>Team Portal</h1>
+      <p>Sign in with the Engler admin account to open the team pages.</p>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="username" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required />
+      <button class="btn btn-primary" type="submit" id="loginBtn">Sign in</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+
+  <!-- Team pages. Add a new <a class="tool"> card here for each new team page. -->
+  <main class="hub" id="hubView" hidden>
+    <div class="hub-head">
+      <div class="eyebrow">Team only</div>
+      <h1>Team Portal</h1>
+      <p>Everything the Engler team uses behind the scenes.</p>
+    </div>
+    <div class="tools">
+      <a class="tool" href="portal/client-form.html">
+        <span class="tag">Order form</span>
+        <h2>Order form responses</h2>
+        <p>Read client questionnaire submissions, see appraisals, and download uploaded files.</p>
+        <span class="go">Open →</span>
+      </a>
+      <div class="tool soon">
+        <span class="tag">Coming soon</span>
+        <h2>More team pages</h2>
+        <p>New employee pages will show up here as they're added.</p>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+    // Must match the config in client-form.html.
+    const FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyCrmEk6X74MWQH6olX2N5Q5Zd7NJGY_SDk',
+      authDomain: 'engler-questionnaire.firebaseapp.com',
+      projectId: 'engler-questionnaire',
+      storageBucket: 'engler-questionnaire.firebasestorage.app',
+      messagingSenderId: '477147439593',
+      appId: '1:477147439593:web:43ceb566517778c8fdeb78'
+    };
+
+    const auth = getAuth(initializeApp(FIREBASE_CONFIG));
+    setPersistence(auth, browserSessionPersistence);
+    const $ = id => document.getElementById(id);
+
+    // Team pages send people here to sign in with ?next=<page>, and get sent back after.
+    const next = new URLSearchParams(location.search).get('next');
+    const nextPage = next && /^[a-z0-9-]+$/.test(next) ? 'portal/' + next + '.html' : null;
+
+    $('loginForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      $('loginError').textContent = '';
+      $('loginBtn').disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+        $('password').value = '';
+      } catch (e) {
+        $('loginError').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(e.code)
+          ? 'Incorrect email or password.'
+          : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again in a few minutes.' : 'Sign-in failed: ' + e.code;
+      } finally {
+        $('loginBtn').disabled = false;
+      }
+    });
+
+    $('signOut').addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, user => {
+      if (user && nextPage) { location.replace(nextPage); return; }
+      $('loginView').hidden = !!user;
+      $('hubView').hidden = !user;
+      $('navRight').hidden = !user;
+      if (user) $('who').textContent = user.email;
+      else $('email').focus();
+    });
+  </script>
+</body>
 </html>

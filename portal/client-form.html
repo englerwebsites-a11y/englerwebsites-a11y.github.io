@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=">
-  <title>Engler — Questionnaire Responses</title>
+  <title>Engler — Order Form Responses</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
@@ -252,26 +252,12 @@
     <nav>
       <a class="logo" href="../home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER <small>RESPONSES</small></a>
       <div class="nav-right" id="navRight" hidden>
+        <a class="btn btn-ghost btn-small" href="../portal.html">← Team Portal</a>
         <span class="who" id="who"></span>
         <button class="btn btn-ghost btn-small" id="signOut">Sign out</button>
       </div>
     </nav>
   </header>
-
-  <!-- Sign in -->
-  <div class="login-wrap" id="loginView" hidden>
-    <form class="login" id="loginForm">
-      <div class="eyebrow">Team only</div>
-      <h1>Questionnaire responses</h1>
-      <p>Sign in with the Engler admin account to view client submissions.</p>
-      <label for="email">Email</label>
-      <input type="email" id="email" autocomplete="username" required />
-      <label for="password">Password</label>
-      <input type="password" id="password" autocomplete="current-password" required />
-      <button class="btn btn-primary" type="submit" id="loginBtn">Sign in</button>
-      <div class="login-error" id="loginError"></div>
-    </form>
-  </div>
 
   <!-- Dashboard -->
   <div class="dash" id="dashView" hidden>
@@ -290,7 +276,7 @@
   <script src="../appraisal.js"></script>
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    import { getAuth, setPersistence, browserSessionPersistence, signOut, onAuthStateChanged }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
     import { getFirestore, collection, query, orderBy, onSnapshot, doc, deleteDoc }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -661,26 +647,11 @@
     }
 
     // ---- Auth ----
-    $('loginForm').addEventListener('submit', async ev => {
-      ev.preventDefault();
-      $('loginError').textContent = '';
-      $('loginBtn').disabled = true;
-      try {
-        await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
-        $('password').value = '';
-      } catch (e) {
-        $('loginError').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(e.code)
-          ? 'Incorrect email or password.'
-          : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again in a few minutes.' : 'Sign-in failed: ' + e.code;
-      } finally {
-        $('loginBtn').disabled = false;
-      }
-    });
-
     $('signOut').addEventListener('click', () => signOut(auth));
 
     onAuthStateChanged(auth, user => {
-      $('loginView').hidden = !!user;
+      // Sign-in lives on the Team Portal, which sends people back here afterwards.
+      if (!user) { location.replace('../portal.html?next=client-form'); return; }
       $('dashView').hidden = !user;
       $('navRight').hidden = !user;
       if (unsubscribe) { unsubscribe(); unsubscribe = null; }
@@ -692,7 +663,6 @@
         submissions = [];
         selectedId = null;
         $('detail').replaceChildren(el('div', { class: 'placeholder', text: 'Select a submission to view it.' }));
-        $('email').focus();
       }
     });
   </script>
