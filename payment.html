@@ -331,7 +331,7 @@
       </div>
 
       <h2>Questions about your invoice?</h2>
-      <p>If something doesn't look right, or you'd rather pay another way, email us at <a href="mailto:support@englerwebsites.com">support@englerwebsites.com</a> or text us at <a href="sms:+15306912191">(530) 691-2191</a>.</p>
+      <p>If something doesn't look right, or you'd rather pay another way, email us at <a href="mailto:Support@EnglerWebsites.com">Support@EnglerWebsites.com</a> or text us at <a href="sms:+15306912191">(530) 691-2191</a>.</p>
     </div>
   </div>
 </section>
@@ -357,7 +357,7 @@
       <h2>Get in touch</h2>
       <ul>
         <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
-        <li><a href="mailto:support@englerwebsites.com">support@englerwebsites.com</a></li>
+        <li><a href="mailto:Support@EnglerWebsites.com">Support@EnglerWebsites.com</a></li>
         <li><a class="sf-quote" href="client-form.html">Get a quote</a></li>
       </ul>
     </div>
@@ -443,7 +443,7 @@
       payBtn.hidden = false; paySecure.hidden = false;
     } else {
       payBtn.hidden = true; paySecure.hidden = true; payText.hidden = false;
-      payText.textContent = code ? 'There’s nothing to pay online for this order. Questions? Email support@englerwebsites.com.' : 'Enter your order code above to pay online.';
+      payText.textContent = code ? 'There’s nothing to pay online for this order. Questions? Email Support@EnglerWebsites.com.' : 'Enter your order code above to pay online.';
     }
   }
 
@@ -464,7 +464,7 @@
         throw new Error((r && r.error) || 'Unknown error');
       })
       .catch(function(e){
-        payError.textContent = "We couldn't open checkout (" + e.message + "). Please try again, or email support@englerwebsites.com.";
+        payError.textContent = "We couldn't open checkout (" + e.message + "). Please try again, or email Support@EnglerWebsites.com.";
         payError.hidden = false;
         payBtn.disabled = false; payBtn.textContent = original;
       });
@@ -499,10 +499,10 @@
         return res.json();
       })
       .then(function(doc){
-        if (!doc){ showError("We couldn't find an amount for " + code + ". Check the code, or if your website isn't finished yet, your invoice may not be ready. Questions? Email support@englerwebsites.com."); return; }
+        if (!doc){ showError("We couldn't find an amount for " + code + ". Check the code, or if your website isn't finished yet, your invoice may not be ready. Questions? Email Support@EnglerWebsites.com."); return; }
         var f = doc.fields || {};
         var total = f.total ? Number(f.total.doubleValue != null ? f.total.doubleValue : f.total.integerValue) : NaN;
-        if (!(total >= 0)){ showError("Something's wrong with this order's amount. Please email support@englerwebsites.com."); return; }
+        if (!(total >= 0)){ showError("Something's wrong with this order's amount. Please email Support@EnglerWebsites.com."); return; }
         document.getElementById('orderResultCode').textContent = 'Order ' + code;
         document.getElementById('orderResultBusiness').textContent = (f.company && f.company.stringValue) || '';
         document.getElementById('orderResultAmount').textContent = money(total);
