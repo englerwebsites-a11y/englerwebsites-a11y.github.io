@@ -278,7 +278,7 @@
   <div class="dash" id="dashView" hidden>
     <aside class="list-panel">
       <div class="list-head"><h2>Submissions</h2><span class="count" id="count"></span></div>
-      <input type="search" id="search" placeholder="Search company or any answer…" />
+      <input type="search" id="search" placeholder="Search order number, company or any answer…" />
       <div class="list" id="list"></div>
     </aside>
     <main class="detail" id="detail">
@@ -289,6 +289,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="../appraisal.js"></script>
+  <script src="../order-number.js"></script>
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
@@ -530,6 +531,8 @@
       return card;
     }
 
+    const orderNo = sub => window.OrderNumber.orderNumber(sub.id);
+
     function fmtDate(sub) {
       const d = sub.submittedAt?.toDate?.();
       return d ? d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : 'Pending…';
@@ -549,8 +552,9 @@
       printBtn.onclick = () => printSubmission(sub);
       const txtBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Download .txt' });
       txtBtn.onclick = () => {
-        const a = el('a', { href: URL.createObjectURL(new Blob([sub.summary || ''], { type: 'text/plain' })),
-          download: `questionnaire_${(sub.companyName || 'client').replace(/[^\w-]+/g, '_')}.txt` });
+        const text = /^Order number:/m.test(sub.summary || '') ? sub.summary : `Order number: ${orderNo(sub)}\n${sub.summary || ''}`;
+        const a = el('a', { href: URL.createObjectURL(new Blob([text], { type: 'text/plain' })),
+          download: `questionnaire_${orderNo(sub)}_${(sub.companyName || 'client').replace(/[^\w-]+/g, '_')}.txt` });
         a.click();
         URL.revokeObjectURL(a.href);
       };
@@ -561,7 +565,7 @@
         el('div', {},
           el('div', { class: 'eyebrow', text: 'Submission' }),
           el('h1', { text: sub.companyName || 'Untitled' }),
-          el('div', { class: 'meta', text: `${fmtDate(sub)} · ID ${sub.id}` })),
+          el('div', { class: 'meta', text: `Order ${orderNo(sub)} · ${fmtDate(sub)}` })),
         el('div', { class: 'detail-actions' }, printBtn, txtBtn, delBtn));
 
       const cards = layout.length ? layout.map(sec => {
@@ -634,7 +638,7 @@
     // ---- List ----
     function renderList() {
       const q = $('search').value.trim().toLowerCase();
-      const shown = submissions.filter(s => !q || (s.summary || s.companyName || '').toLowerCase().includes(q));
+      const shown = submissions.filter(s => !q || orderNo(s).toLowerCase().includes(q) || (s.summary || s.companyName || '').toLowerCase().includes(q));
       $('count').textContent = `${shown.length}${q ? ' of ' + submissions.length : ''}`;
       const list = $('list');
       if (!shown.length) {
@@ -647,7 +651,7 @@
         const btn = el('button', { class: 'item' + (s.id === selectedId ? ' active' : ''), type: 'button' },
           n ? el('span', { class: 'clip', text: `📎 ${n}` }) : null,
           el('span', { class: 'name' }, isNew ? el('span', { class: 'new-dot', title: 'Not reviewed yet', 'aria-label': 'New' }) : null, s.companyName || 'Untitled'),
-          el('span', { class: 'date', text: `${fmtDate(s)} · ${money(appraise(s).total)}` }));
+          el('span', { class: 'date', text: `${orderNo(s)} · ${fmtDate(s)} · ${money(appraise(s).total)}` }));
         btn.onclick = () => showSubmission(s.id);
         return btn;
       }));

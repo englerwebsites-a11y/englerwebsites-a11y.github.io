@@ -296,7 +296,7 @@
   <div class="dash" id="dashView" hidden>
     <aside class="list-panel">
       <div class="list-head"><h2>Appraisals</h2><span class="count" id="count"></span></div>
-      <input type="search" id="search" placeholder="Search company…" />
+      <input type="search" id="search" placeholder="Search order number or company…" />
       <div class="list" id="list"></div>
     </aside>
     <main class="detail" id="detail">
@@ -307,6 +307,7 @@
   <div class="toast" id="toast"></div>
 
   <script src="../appraisal.js"></script>
+  <script src="../order-number.js"></script>
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
@@ -407,11 +408,8 @@
       const d = submittedDate(sub);
       return d ? d.toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Pending…';
     }
-    function invoiceNumber(sub) {
-      const d = submittedDate(sub) || new Date();
-      const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
-      return `ENG-${ymd}-${sub.id.slice(0, 4).toUpperCase()}`;
-    }
+    // One order number per order form; also used as the invoice number.
+    const invoiceNumber = sub => window.OrderNumber.orderNumber(sub.id);
 
     // ---- Storage (fees, discounts and edited items share one doc per submission) ----
     function readLocal(key) {
@@ -478,7 +476,7 @@
         el('div', {},
           el('div', { class: 'eyebrow', text: 'Appraisal' }),
           el('h1', { text: sub.companyName || 'Untitled' }),
-          el('div', { class: 'meta', text: `Submitted ${fmtDate(sub)} · Invoice ${invoiceNumber(sub)}` })),
+          el('div', { class: 'meta', text: `Order ${invoiceNumber(sub)} · Submitted ${fmtDate(sub)}` })),
         el('div', { class: 'detail-actions' }, dlBtn));
 
       const requests = el('section', { class: 'card' },
@@ -583,7 +581,7 @@
 
     function renderList() {
       const q = $('search').value.trim().toLowerCase();
-      const shown = submissions.filter(s => !q || (s.companyName || '').toLowerCase().includes(q));
+      const shown = submissions.filter(s => !q || invoiceNumber(s).toLowerCase().includes(q) || (s.companyName || '').toLowerCase().includes(q));
       $('count').textContent = `${shown.length}${q ? ' of ' + submissions.length : ''}`;
       const list = $('list');
       if (!shown.length) {
@@ -597,7 +595,7 @@
         const btn = el('button', { class: 'item' + (s.id === selectedId ? ' active' : ''), type: 'button' },
           tag ? el('span', { class: 'clip', text: tag }) : null,
           el('span', { class: 'name', text: s.companyName || 'Untitled' }),
-          el('span', { class: 'date', text: `${fmtDate(s)} · ${money(totalFor(s))}` }));
+          el('span', { class: 'date', text: `${invoiceNumber(s)} · ${fmtDate(s)} · ${money(totalFor(s))}` }));
         btn.onclick = () => showSubmission(s.id);
         return btn;
       }));
@@ -693,7 +691,7 @@
         [BUSINESS.place, BUSINESS.email, BUSINESS.phone, BUSINESS.site].forEach((l, i) => text(l, M, y + 31 + i * 13));
 
         const issued = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        const meta = [['Invoice number', invoiceNumber(sub)], ['Date issued', issued], ['Questionnaire received', submittedDate(sub) ? submittedDate(sub).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—'], ['Payment due', 'When your website is complete']];
+        const meta = [['Order number', invoiceNumber(sub)], ['Date issued', issued], ['Questionnaire received', submittedDate(sub) ? submittedDate(sub).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—'], ['Payment due', 'When your website is complete']];
         meta.forEach(([k, v], i) => {
           set(9, 'normal', SOFT); text(k, R - 150, y + 16 + i * 15, { align: 'right' });
           set(9.5, 'bold'); text(v, R, y + 16 + i * 15, { align: 'right' });
