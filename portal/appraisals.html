@@ -56,6 +56,10 @@
     }
     .logo .mark { width: 33px; height: 33px; border-radius: 8px; image-rendering: pixelated; }
     .logo small { font-family: var(--font-mono); font-weight: 400; font-size: 0.72rem; opacity: 0.6; letter-spacing: 0.08em; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo-sub { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; color: #FFF; opacity: 0.6; text-decoration: none; padding: 4px 6px; margin: -4px -6px; border-radius: 6px; transition: opacity .15s, background .15s; }
+    .logo-sub:hover, .logo-sub:focus-visible { opacity: 1; background: rgba(255,255,255,0.08); }
+    .logo-sub:focus-visible { outline: 2px solid #7CA6FF; outline-offset: 2px; }
     .nav-right { display: flex; align-items: center; gap: 14px; color: #FFF; font-family: var(--font-mono); font-size: 0.78rem; }
     .nav-right .who { opacity: 0.7; }
 
@@ -273,7 +277,10 @@
 <script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
   <header>
     <nav>
-      <a class="logo" href="../home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER <small>APPRAISALS</small></a>
+      <div class="brand">
+        <a class="logo" href="../home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+        <a class="logo-sub" href="../portal.html" title="Back to the Team Portal">PORTAL</a>
+      </div>
       <div class="nav-right" id="navRight" hidden>
         <span class="who" id="who"></span>
         <button class="btn btn-ghost btn-small" id="signOut">Sign out</button>
