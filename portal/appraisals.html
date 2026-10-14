@@ -253,6 +253,10 @@
     .items-sum { font-family: var(--font-mono); font-size: 0.85rem; color: var(--ink-soft); }
     .items-sum strong { color: var(--ink); font-weight: 500; }
     .unsaved { font-size: 0.8rem; color: #9A6A00; }
+    .pay-status { font-size: 0.95rem; margin-bottom: 8px; }
+    .pay-status.stale { color: #9A6A00; font-weight: 500; }
+    .pay-link { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 16px; overflow-wrap: anywhere; }
+    .pay-link a { color: var(--accent); }
     .fee-note { margin-top: 12px; font-size: 0.82rem; color: var(--ink-soft); }
     .fee-note.local { color: #9A6A00; }
     @media (max-width: 600px) {
@@ -312,7 +316,7 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, serverTimestamp }
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     // Must match the config in client-form.html.
@@ -327,6 +331,9 @@
     const SUBMISSIONS_COLLECTION = 'questionnaireSubmissions';
     // One doc per submission: { fees: [{ kind?, amount, reason, addedAt }], items?: [{ type, name, price }], updatedAt }.
     const FEES_COLLECTION = 'questionnaireFees';
+    // Public totals for the payment page, keyed by order number: { total, company, publishedAt }.
+    // Anyone with an order number can read its doc there, so it holds nothing else.
+    const TOTALS_COLLECTION = 'orderTotals';
     // Used when the Firestore rules don't allow the fees collection yet.
     const LOCAL_FEES_KEY = 'engler-appraisal-fees';
     const LOCAL_ITEMS_KEY = 'engler-appraisal-items';
@@ -353,6 +360,7 @@
     let feesShared = true;  // false when fees are kept in this browser only
     let selectedId = null;
     let stopWatching = [];
+    let published = {};     // order number -> published payment-page doc; null if it can't be read
 
     // Builds an element; text is always set via textContent because answers are
     // written by the public and must never be interpreted as HTML.
@@ -497,7 +505,62 @@
       const unpriced = reqItems.filter(i => !(Number(i.price) > 0));
       if (unpriced.length) appraisal.append(el('div', { class: 'ap-note', text: `No price yet: ${unpriced.map(i => i.name || 'Unnamed item').join(', ')}. Set a price in the invoice inventory.` }));
 
-      detail.replaceChildren(head, requests, itemsEditor(sub), appraisal);
+      detail.replaceChildren(head, requests, itemsEditor(sub), appraisal, paymentCard(sub));
+    }
+
+    // ---- Payment page ----
+    const round2 = n => Math.round(n * 100) / 100;
+    function paymentCard(sub) {
+      const code = invoiceNumber(sub);
+      const current = round2(totalFor(sub));
+      const pub = published && published[code];
+      const link = `https://englerwebsites.com/payment?order=${code}`;
+      const status = el('p', { class: 'pay-status' });
+      const actions = el('div', { class: 'detail-actions' });
+
+      const publish = el('button', { class: 'btn btn-primary btn-small', type: 'button' });
+      publish.onclick = async () => {
+        publish.disabled = true;
+        try {
+          await setDoc(doc(db, TOTALS_COLLECTION, code), {
+            total: current, company: (sub.companyName || '').slice(0, 200), publishedAt: serverTimestamp()
+          });
+          toast(`Payment page now shows ${money(current)} for ${code}.`);
+        } catch (e) {
+          console.error(e);
+          toast("Couldn't publish: " + (e.code === 'permission-denied' ? 'the Firebase rules need updating.' : e.code || e.message));
+          publish.disabled = false;
+        }
+      };
+      const remove = el('button', { class: 'btn btn-danger btn-small', type: 'button', text: 'Remove from payment page' });
+      remove.onclick = async () => {
+        if (!confirm(`Remove ${code} from the payment page? Clients entering it will be told the invoice isn't ready.`)) return;
+        remove.disabled = true;
+        try { await deleteDoc(doc(db, TOTALS_COLLECTION, code)); toast('Removed from the payment page.'); }
+        catch (e) { console.error(e); toast("Couldn't remove: " + (e.code || e.message)); remove.disabled = false; }
+      };
+      const open = el('a', { class: 'btn btn-ghost btn-small', href: link, target: '_blank', rel: 'noopener', text: 'Open payment page ↗' });
+
+      if (published === null) {
+        status.textContent = "Can't check the payment page right now. The Firebase rules may need updating.";
+      } else if (!pub) {
+        status.textContent = `Not on the payment page yet. A client who enters ${code} is told their invoice isn't ready.`;
+        publish.textContent = `Publish ${money(current)} to payment page`;
+        actions.append(publish);
+      } else if (round2(Number(pub.total)) === current) {
+        status.textContent = `A client who enters ${code} on the payment page sees ${money(current)}.`;
+        actions.append(open, remove);
+      } else {
+        status.classList.add('stale');
+        status.textContent = `The payment page shows ${money(pub.total)}, but the total is now ${money(current)}.`;
+        publish.textContent = `Update to ${money(current)}`;
+        actions.append(publish, open, remove);
+      }
+      return el('section', { class: 'card' },
+        el('div', { class: 'card-head' }, el('span', { class: 'num', text: '03' }), el('h2', { text: 'Payment page' })),
+        status,
+        el('p', { class: 'pay-link' }, 'Client link: ', el('a', { href: link, target: '_blank', rel: 'noopener', text: link.replace('https://', '') })),
+        actions);
     }
 
     function itemsEditor(sub) {
@@ -626,6 +689,14 @@
           : "Couldn't load order forms: " + (err.code || err.message);
         $('list').replaceChildren(el('div', { class: 'empty', text: msg }));
       }));
+      stopWatching.push(onSnapshot(collection(db, TOTALS_COLLECTION), snap => {
+        published = Object.fromEntries(snap.docs.map(d => [d.id, d.data()]));
+        refresh();
+      }, err => {
+        console.warn('Could not load payment page totals', err);
+        published = null;
+        refresh();
+      }));
       stopWatching.push(onSnapshot(collection(db, FEES_COLLECTION), snap => {
         feesShared = true;
         fees = Object.fromEntries(snap.docs.map(d => [d.id, d.data().fees || []]));
@@ -751,7 +822,7 @@
         // Notes
         set(8, 'bold', ACCENT); text('HOW TO PAY', M, y);
         set(9.5, 'normal', SOFT);
-        const notes = pdf.splitTextToSize(pdfText(`Pay online at ${BUSINESS.paymentUrl} once your website is finished. Questions about this invoice? Email ${BUSINESS.email} or text ${BUSINESS.phone}.`), R - M);
+        const notes = pdf.splitTextToSize(pdfText(`Pay online at ${BUSINESS.paymentUrl} with order code ${invoiceNumber(sub)} once your website is finished. Questions about this invoice? Email ${BUSINESS.email} or text ${BUSINESS.phone}.`), R - M);
         pdf.text(notes, M, y + 16);
         y += 16 + notes.length * 13 + 12;
         set(10, 'bold'); text('Thank you for choosing Engler.', M, y);

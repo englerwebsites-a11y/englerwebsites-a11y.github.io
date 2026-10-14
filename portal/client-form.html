@@ -626,6 +626,7 @@
         await deleteDoc(doc(db, SUBMISSIONS_COLLECTION, sub.id));
         deleteDoc(doc(db, REVIEWS_COLLECTION, sub.id)).catch(e => console.warn('Could not clear review mark', e));
         deleteDoc(doc(db, 'questionnaireFees', sub.id)).catch(e => console.warn('Could not clear fees', e));
+        deleteDoc(doc(db, 'orderTotals', orderNo(sub))).catch(e => console.warn('Could not clear payment page total', e));
         selectedId = null;
         toast('Submission deleted.');
       } catch (e) {

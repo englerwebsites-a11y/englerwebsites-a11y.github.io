@@ -189,6 +189,39 @@
     color: var(--silver-dark);
   }
   .footer-inner a{ color: var(--silver-dark); }
+
+  .order-lookup{ margin-top: 22px; }
+  .order-lookup label{ display:block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: var(--ink); }
+  .order-lookup .row{ display:flex; gap: 10px; }
+  .order-lookup input{
+    flex: 1; min-width: 0;
+    font-family: var(--font-mono); font-size: 1rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink); background: var(--bg); border: 1px solid var(--silver-line); border-radius: 12px; padding: 12px 14px;
+  }
+  .order-lookup input::placeholder{ text-transform: none; letter-spacing: 0; font-family: var(--font-body); color: var(--silver); }
+  .order-lookup input:focus{ outline: none; background: #FFFFFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .order-lookup button{
+    font: inherit; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+    padding: 12px 22px; border-radius: 999px; border: none;
+    background: var(--tab); color: #FFFFFF;
+  }
+  .order-lookup button:hover{ background: var(--tab-deep); }
+  .order-lookup button:disabled{ opacity: 0.6; cursor: wait; }
+  .order-lookup .hint{ margin-top: 8px; font-size: 0.84rem; color: var(--ink-soft); }
+  .order-result{
+    margin-top: 18px; padding: 22px 24px; border-radius: 18px;
+    background: linear-gradient(135deg, var(--accent-soft), rgba(47,107,255,0.10));
+    border: 1px solid rgba(47,107,255,0.3);
+  }
+  .order-result .order-label{ font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .order-result .order-business{ margin-top: 4px; font-weight: 600; color: var(--ink); }
+  .order-result .order-amount{ margin-top: 10px; font-family: var(--font-display); font-weight: 800; font-size: 2.2rem; letter-spacing: -0.02em; color: var(--ink); line-height: 1.1; }
+  .order-result .order-note{ margin-top: 6px; font-size: 0.84rem; color: var(--ink-soft); }
+  .order-error{ margin-top: 14px; padding: 14px 16px; border-radius: 12px; background: #FDF3F3; border: 1px solid #F1CFCF; color: #A33A3A; font-size: 0.9rem; }
+  @media (max-width: 480px){
+    .order-lookup .row{ flex-direction: column; }
+  }
+
   .pay-slot{
     margin-top: 24px;
     min-height: 220px;
@@ -242,7 +275,24 @@
 <section class="policy-section">
   <div class="wrap">
     <div class="policy-card">
-      <p class="intro">Once your website is finished and you've approved it, you can pay your invoice here. Have your invoice handy so you can check the amount before you pay.</p>
+      <p class="intro">Once your website is finished and you've approved it, you can pay your invoice here. Enter the order code from your confirmation email or invoice to see the amount due.</p>
+
+      <form class="order-lookup" id="orderLookup" novalidate>
+        <label for="orderCode">Order code</label>
+        <div class="row">
+          <input id="orderCode" name="order" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20" placeholder="e.g. ENG-7K3Q-9XWD">
+          <button type="submit" id="orderBtn">Find my order</button>
+        </div>
+        <p class="hint">It starts with ENG- and is in your confirmation email.</p>
+      </form>
+
+      <div class="order-result" id="orderResult" hidden aria-live="polite">
+        <div class="order-label" id="orderResultCode"></div>
+        <div class="order-business" id="orderResultBusiness"></div>
+        <div class="order-amount" id="orderResultAmount"></div>
+        <div class="order-note">Amount due for your website. Pay it below.</div>
+      </div>
+      <div class="order-error" id="orderError" hidden role="alert"></div>
 
       <!-- PAYMENT SYSTEM: replace the placeholder below with your payment provider's embed or button code. -->
       <div class="pay-slot" id="payment">
@@ -289,5 +339,65 @@
 </footer>
 
 <script src="site-nav.js"></script>
+<script>
+// Looks up an order's published total. The Appraisals page (portal/appraisals.html) publishes
+// each order's total to the public orderTotals collection, keyed by order number; nothing else
+// about the order is public.
+(function(){
+  var API = 'https://firestore.googleapis.com/v1/projects/engler-questionnaire/databases/(default)/documents/orderTotals/';
+  var KEY = 'AIzaSyCrmEk6X74MWQH6olX2N5Q5Zd7NJGY_SDk';
+  var form = document.getElementById('orderLookup');
+  var input = document.getElementById('orderCode');
+  var btn = document.getElementById('orderBtn');
+  var result = document.getElementById('orderResult');
+  var error = document.getElementById('orderError');
+
+  // Accepts codes typed loosely: any case, with or without ENG- and dashes, and the
+  // look-alike letters O, I and L for 0 and 1.
+  function normalize(raw){
+    var c = String(raw || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+    if (c.indexOf('ENG') === 0) c = c.slice(3);
+    c = c.replace(/O/g, '0').replace(/[IL]/g, '1');
+    if (!/^[0-9A-HJKMNP-TV-Z]{8}$/.test(c)) return null;
+    return 'ENG-' + c.slice(0, 4) + '-' + c.slice(4);
+  }
+  function money(n){
+    return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function showError(msg){ result.hidden = true; error.textContent = msg; error.hidden = false; }
+
+  function lookup(raw){
+    error.hidden = true;
+    var code = normalize(raw);
+    if (!code){ showError("That doesn't look like an order code. It should look like ENG-7K3Q-9XWD."); return; }
+    input.value = code;
+    btn.disabled = true;
+    fetch(API + encodeURIComponent(code) + '?key=' + KEY)
+      .then(function(res){
+        if (res.status === 404 || res.status === 403) return null;
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(doc){
+        if (!doc){ showError("We couldn't find an amount for " + code + ". Check the code, or if your website isn't finished yet, your invoice may not be ready. Questions? Email EnglerWebsites@gmail.com."); return; }
+        var f = doc.fields || {};
+        var total = f.total ? Number(f.total.doubleValue != null ? f.total.doubleValue : f.total.integerValue) : NaN;
+        if (!(total >= 0)){ showError("Something's wrong with this order's amount. Please email EnglerWebsites@gmail.com."); return; }
+        document.getElementById('orderResultCode').textContent = 'Order ' + code;
+        document.getElementById('orderResultBusiness').textContent = (f.company && f.company.stringValue) || '';
+        document.getElementById('orderResultAmount').textContent = money(total);
+        result.hidden = false;
+        try { history.replaceState(null, '', location.pathname + '?order=' + code); } catch (e) {}
+      })
+      .catch(function(){ showError("We couldn't look up your order right now. Please try again in a minute."); })
+      .then(function(){ btn.disabled = false; });
+  }
+
+  form.addEventListener('submit', function(e){ e.preventDefault(); lookup(input.value); });
+  var fromUrl = new URLSearchParams(location.search).get('order');
+  if (fromUrl){ input.value = fromUrl; lookup(fromUrl); }
+})();
+</script>
+
 </body>
 </html>
