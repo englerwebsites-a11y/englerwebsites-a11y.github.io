@@ -190,6 +190,7 @@
   }
   .footer-inner a{ color: var(--silver-dark); }
 
+  [hidden]{ display: none !important; }
   .order-lookup{ margin-top: 22px; }
   .order-lookup label{ display:block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; color: var(--ink); }
   .order-lookup .row{ display:flex; gap: 10px; }
@@ -253,6 +254,7 @@
   .pay-btn:disabled{ opacity: 0.6; cursor: wait; transform: none; }
   .pay-secure{ font-size: 0.8rem !important; color: var(--silver-dark); }
   .pay-error{ color: #A33A3A; }
+  .checkout-wrap{ margin-top: 24px; border: 1px solid var(--silver-line); border-radius: 18px; padding: 8px; background: #FFFFFF; min-height: 200px; }
   .pay-notice{ margin-top: 18px; padding: 14px 16px; border-radius: 12px; background: var(--bg-soft); border: 1px solid var(--silver-line); font-size: 0.92rem; color: var(--ink-soft); }
   .pay-notice.paid{ background: #E9F7F0; border-color: #BFE5D2; color: #1D6B4A; }
   .pay-notice strong{ display: block; color: inherit; }
@@ -315,13 +317,17 @@
       </div>
       <div class="pay-notice" id="cancelNotice" hidden role="status">Payment cancelled. You haven't been charged. You can try again below whenever you're ready.</div>
 
-      <!-- Payments go through Stripe Checkout, started by the Apps Script (startCheckout below). -->
+      <!-- Payments go through Stripe Checkout, started by the Apps Script (startCheckout below):
+           embedded in #checkout when the script has a publishable key, otherwise on Stripe's page. -->
       <div class="pay-slot" id="payment">
         <span class="pay-slot-label">Online payment</span>
         <p id="paySlotText">Enter your order code above to pay online.</p>
         <button type="button" class="pay-btn" id="payBtn" hidden></button>
         <p class="pay-secure" id="paySecure" hidden>Secure checkout by Stripe. Cards, Apple Pay and Google Pay accepted.</p>
         <p class="pay-error" id="payError" hidden role="alert"></p>
+      </div>
+      <div class="checkout-wrap" id="checkoutWrap" hidden>
+        <div id="checkout"></div>
       </div>
 
       <h2>Questions about your invoice?</h2>
@@ -381,8 +387,53 @@
   var paySecure = document.getElementById('paySecure');
   var payError = document.getElementById('payError');
   var payOrder = null;
+  var checkout = null;
+  var stripeReady = null;
+
+  function loadStripe(){
+    stripeReady = stripeReady || new Promise(function(resolve, reject){
+      if (window.Stripe) return resolve(window.Stripe);
+      var tag = document.createElement('script');
+      tag.src = 'https://js.stripe.com/v3/';
+      tag.onload = function(){ resolve(window.Stripe); };
+      tag.onerror = function(){ stripeReady = null; reject(new Error('Could not load Stripe')); };
+      document.head.appendChild(tag);
+    });
+    return stripeReady;
+  }
+  function closeCheckout(){
+    if (checkout){ try { checkout.destroy(); } catch (e) {} checkout = null; }
+    document.getElementById('checkoutWrap').hidden = true;
+    document.getElementById('payment').hidden = false;
+  }
+  function showPaid(){
+    closeCheckout();
+    document.getElementById('payment').hidden = true;
+    document.getElementById('cancelNotice').hidden = true;
+    var note = document.getElementById('paidNotice');
+    note.hidden = false;
+    note.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // Shows Stripe's payment form inside the page.
+  function mountCheckout(r){
+    return loadStripe().then(function(Stripe){
+      return Stripe(r.publishableKey).initEmbeddedCheckout({
+        fetchClientSecret: function(){ return Promise.resolve(r.clientSecret); },
+        onComplete: showPaid
+      });
+    }).then(function(c){
+      closeCheckout();
+      checkout = c;
+      document.getElementById('payment').hidden = true;
+      var wrap = document.getElementById('checkoutWrap');
+      wrap.hidden = false;
+      c.mount('#checkout');
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   function setPayable(code, total){
+    closeCheckout();
     payOrder = code;
     payError.hidden = true;
     if (code && total >= 0.5){
@@ -405,6 +456,9 @@
     fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'checkout', orderNo: payOrder }) })
       .then(function(res){ return res.json(); })
       .then(function(r){
+        if (r && r.ok && r.clientSecret && r.publishableKey){
+          return mountCheckout(r).then(function(){ payBtn.disabled = false; payBtn.textContent = original; });
+        }
         if (r && r.ok && r.url){ location.href = r.url; return; }
         throw new Error((r && r.error) || 'Unknown error');
       })
