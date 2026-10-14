@@ -369,7 +369,7 @@
         <div class="field email-files">
           <label class="toggle-row">
             <div class="toggle-text">
-              <span>I plan on submitting files through email to <strong class="email-addr">Support@EnglerWebsites.com</strong></span>
+              <span>I plan on submitting files through email to <strong class="email-addr">support@englerwebsites.com</strong></span>
               <em class="badge">Recommended</em>
             </div>
             <input type="checkbox" class="switch" id="emailFiles" name="Files Via Email" value="Yes" role="switch" />
@@ -529,7 +529,7 @@
     <h2>Thank you!</h2>
     <p>We've got your answers and will be in touch shortly to schedule a kickoff call.</p>
     <p class="thanks-order" id="thanksOrder" hidden>Your order number is <strong id="thanksOrderNo"></strong><br>Please mention it whenever you contact us about this project.</p>
-    <p class="thanks-email" id="thanksEmail" hidden>We'll keep an eye out for your email with your files at Support@EnglerWebsites.com.</p>
+    <p class="thanks-email" id="thanksEmail" hidden>We'll keep an eye out for your email with your files at support@englerwebsites.com.</p>
     <p class="thanks-files" id="thanksFiles" hidden></p>
   </div>
 
@@ -554,7 +554,7 @@
       <h2>Get in touch</h2>
       <ul>
         <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
-        <li><a href="mailto:Support@EnglerWebsites.com">Support@EnglerWebsites.com</a></li>
+        <li><a href="mailto:support@englerwebsites.com">support@englerwebsites.com</a></li>
         <li><a class="sf-quote" href="client-form.html">Get a quote</a></li>
       </ul>
     </div>
@@ -794,7 +794,7 @@
       document.getElementById('thanksEmail').hidden = !document.getElementById('emailFiles').checked;
       if (failedFiles.length) {
         const note = document.getElementById('thanksFiles');
-        note.textContent = `Your answers were saved, but we couldn't receive ${failedFiles.join(', ')}. Please email ${failedFiles.length > 1 ? 'those files' : 'that file'} to Support@EnglerWebsites.com.`;
+        note.textContent = `Your answers were saved, but we couldn't receive ${failedFiles.join(', ')}. Please email ${failedFiles.length > 1 ? 'those files' : 'that file'} to support@englerwebsites.com.`;
         note.hidden = false;
       }
       form.parentElement.style.display = 'none';
@@ -948,7 +948,7 @@
         showThanks(files.filter(f => f.error).map(f => f.name), window.OrderNumber.orderNumber(docRef.id));
       } catch (e) {
         console.error('Questionnaire submit failed', e);
-        toast("Couldn't send. Downloading a copy for you to email to Support@EnglerWebsites.com instead.");
+        toast("Couldn't send. Downloading a copy for you to email to support@englerwebsites.com instead.");
         download(toText({ ...data, 'Primary Contacts': contacts }), `questionnaire_${company}.txt`);
       } finally {
         submitBtn.disabled = false;
