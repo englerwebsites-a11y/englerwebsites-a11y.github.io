@@ -378,7 +378,6 @@
 // about the order is public.
 (function(){
   var API = 'https://firestore.googleapis.com/v1/projects/engler-questionnaire/databases/(default)/documents/orderTotals/';
-  var KEY = 'AIzaSyCrmEk6X74MWQH6olX2N5Q5Zd7NJGY_SDk';
   var form = document.getElementById('orderLookup');
   var input = document.getElementById('orderCode');
   var btn = document.getElementById('orderBtn');
@@ -494,7 +493,7 @@
     if (!code){ showError("That doesn't look like an order code. It should look like ENG-7K3Q-9XWD."); return; }
     input.value = code;
     btn.disabled = true;
-    fetch(API + encodeURIComponent(code) + '?key=' + KEY)
+    fetch(API + encodeURIComponent(code))
       .then(function(res){
         if (res.status === 404 || res.status === 403) return null;
         if (!res.ok) throw new Error('HTTP ' + res.status);
