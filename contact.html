@@ -375,7 +375,7 @@
       <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6l8.5 7 8.5-7"/></svg></div>
       <h3>Email us directly</h3>
       <p>Skip the form below and just email</p>
-      <a class="action-link" href="mailto:support@englerwebsites.com">support@englerwebsites.com</a>
+      <a class="action-link" href="mailto:englerwebsites@gmail.com">englerwebsites@gmail.com</a>
     </div>
   </div>
 </section>
@@ -455,7 +455,7 @@
       <h2>Get in touch</h2>
       <ul>
         <li><a href="sms:+15306912191">(530) 691-2191</a><span>Text to schedule a call</span></li>
-        <li><a href="mailto:support@englerwebsites.com">support@englerwebsites.com</a></li>
+        <li><a href="mailto:englerwebsites@gmail.com">englerwebsites@gmail.com</a></li>
         <li><a class="sf-quote" href="client-form.html">Get a quote</a></li>
       </ul>
     </div>
@@ -520,8 +520,8 @@
       contactForm.hidden = true;
       successEl.hidden = false;
     } catch (err) {
-      const fallback = `mailto:support@englerwebsites.com?subject=${encodeURIComponent('Website inquiry from ' + (name || 'a visitor'))}`;
-      setStatus(`Sorry, that didn't go through. Please try again, or email us directly at <a href="${fallback}">support@englerwebsites.com</a>.`, true);
+      const fallback = `mailto:englerwebsites@gmail.com?subject=${encodeURIComponent('Website inquiry from ' + (name || 'a visitor'))}`;
+      setStatus(`Sorry, that didn't go through. Please try again, or email us directly at <a href="${fallback}">englerwebsites@gmail.com</a>.`, true);
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Send →';
