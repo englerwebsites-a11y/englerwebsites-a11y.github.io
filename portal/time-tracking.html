@@ -144,6 +144,16 @@
     .btn-in:hover { background: #17855A; }
     .btn-out { background: var(--danger); color: #FFF; }
     .btn-out:hover { background: #BC3737; }
+    .clock-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .clock-btns .btn-big { min-width: 170px; }
+    .btn-pause { background: #FFF; color: var(--ink); border-color: var(--silver-line); }
+    .btn-pause:hover { border-color: var(--silver); }
+    .btn-resume { background: var(--accent); color: #FFF; }
+    .btn-resume:hover { background: #2458D6; }
+    .clock .timer.paused { color: #B7791F; }
+    .person .pstate.paused { color: #B7791F; }
+    .person .pstate.paused::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 2px; background: #B7791F; margin-right: 6px; vertical-align: 1px; }
+    .live-dot.paused { background: #B7791F; border-radius: 2px; }
 
     .what { margin-top: 18px; text-align: left; }
     .what label { display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 6px; }
@@ -248,7 +258,10 @@
           <div class="clock" id="clock">
             <div class="status" id="status">Choose your name to get started.</div>
             <div class="timer idle" id="timer">0:00:00</div>
-            <button class="btn btn-big btn-in" type="button" id="checkBtn" disabled>Check in</button>
+            <div class="clock-btns">
+              <button class="btn btn-big btn-pause" type="button" id="pauseBtn" hidden>Pause</button>
+              <button class="btn btn-big btn-in" type="button" id="checkBtn" disabled>Check in</button>
+            </div>
             <form class="what" id="whatForm" hidden>
               <label for="whatText">What you did</label>
               <div class="sub" id="whatSub"></div>
@@ -287,7 +300,7 @@
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
     import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp }
+    import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp, Timestamp }
       from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
     // Must match the config in client-form.html.
@@ -299,7 +312,9 @@
       messagingSenderId: '477147439593',
       appId: '1:477147439593:web:43ceb566517778c8fdeb78'
     };
-    // One doc per work session: { person, start, end (null while checked in), description, updatedAt }.
+    // One doc per stretch of work: { person, session, start, end (null while working), paused, description, updatedAt }.
+    // Pausing ends the current stretch with paused: true; resuming starts a new stretch with the same session ID.
+    // A session's description lives on its last stretch.
     const ENTRIES = 'timeEntries';
     const PEOPLE = ['Zay', 'Gabe', 'Joel'];
     const LAST_PERSON_KEY = 'engler-time-person';
@@ -312,7 +327,8 @@
     const $ = id => document.getElementById(id);
     let selected = null;
     let weekEntries = [];   // sessions that started this week
-    let openEntries = [];   // sessions still checked in (any start date)
+    let openEntries = [];   // stretches still running (any start date)
+    let pausedEntries = []; // stretches that ended with a pause (any start date)
     let pendingId = null;   // session just checked out, waiting for "what you did"
     let editingId = null;
     let stopWatching = [];
@@ -360,16 +376,29 @@
     function allEntries() {
       const byId = new Map(weekEntries.map(e => [e.id, e]));
       openEntries.forEach(e => byId.set(e.id, e));
+      pausedEntries.forEach(e => byId.set(e.id, e));
       return [...byId.values()];
     }
+    const sessionOf = e => e.session || e.id;
+    const stretches = sid => allEntries().filter(e => sessionOf(e) === sid && e.start).sort((a, b) => ms(a.start) - ms(b.start));
+    const lenOf = e => (e.end ? ms(e.end) : Date.now()) - ms(e.start);
+    const worked = sid => stretches(sid).reduce((t, e) => t + lenOf(e), 0);
+    // The person's paused stretch, if their latest stretch ended with a pause.
+    function pausedFor(p) {
+      if (openFor(p)) return null;
+      const mine = allEntries().filter(e => e.person === p && e.start).sort((a, b) => ms(b.start) - ms(a.start));
+      return mine[0] && mine[0].paused ? mine[0] : null;
+    }
+    const stateOf = p => openFor(p) ? 'working' : pausedFor(p) ? 'paused' : 'idle';
 
     // ---- People ----
     function renderPeople() {
       $('people').replaceChildren(...PEOPLE.map(p => {
-        const open = openFor(p);
+        const st = stateOf(p);
         const b = el('button', { class: 'person', type: 'button', 'aria-pressed': String(p === selected) },
           el('span', { class: 'pname', text: p }),
-          el('span', { class: 'pstate' + (open ? ' on' : ''), text: open ? 'Checked in' : 'Not checked in' }));
+          el('span', { class: 'pstate' + (st === 'working' ? ' on' : st === 'paused' ? ' paused' : ''),
+            text: st === 'working' ? 'Checked in' : st === 'paused' ? 'On a break' : 'Not checked in' }));
         b.onclick = () => {
           selected = p; pendingId = null; $('whatForm').hidden = true; $('err').hidden = true;
           try { localStorage.setItem(LAST_PERSON_KEY, p); } catch (e) {}
@@ -380,53 +409,85 @@
     }
 
     function renderClock() {
-      const btn = $('checkBtn'), timer = $('timer'), status = $('status');
+      const btn = $('checkBtn'), pause = $('pauseBtn'), timer = $('timer'), status = $('status');
+      timer.classList.remove('paused');
       if (!selected) {
-        btn.hidden = false;
+        btn.hidden = false; pause.hidden = true;
         status.textContent = 'Choose your name to get started.';
         timer.textContent = '0:00:00'; timer.classList.add('idle');
         btn.disabled = true; btn.textContent = 'Check in'; btn.className = 'btn btn-big btn-in';
         return;
       }
-      const open = openFor(selected);
-      btn.disabled = false;
-      if (open) {
-        const start = ms(open.start);
-        status.textContent = `${selected}, you checked in at ${fmtTime(new Date(start))}.`;
-        timer.textContent = hms(Date.now() - start); timer.classList.remove('idle');
+      btn.disabled = false; pause.disabled = false;
+      const open = openFor(selected), paused = pausedFor(selected);
+      if (open || paused) {
+        const cur = open || paused, sid = sessionOf(cur), first = stretches(sid)[0] || cur;
+        timer.textContent = hms(worked(sid)); timer.classList.remove('idle');
+        if (open) {
+          status.textContent = `${selected}, you checked in at ${fmtTime(new Date(ms(first.start)))}.`;
+          pause.textContent = 'Pause'; pause.className = 'btn btn-big btn-pause';
+        } else {
+          status.textContent = `On a break since ${fmtTime(new Date(ms(paused.end)))}. Time isn't counting.`;
+          timer.classList.add('paused');
+          pause.textContent = 'Resume'; pause.className = 'btn btn-big btn-resume';
+        }
+        pause.hidden = false; btn.hidden = false;
         btn.textContent = 'Check out'; btn.className = 'btn btn-big btn-out';
-      } else {
-        status.textContent = pendingId ? `Checked out. Nice work, ${selected}!` : `Ready when you are, ${selected}.`;
-        timer.textContent = pendingId ? timer.textContent : '0:00:00';
-        timer.classList.add('idle');
-        btn.textContent = 'Check in'; btn.className = 'btn btn-big btn-in';
-        btn.hidden = !!pendingId;
         return;
       }
-      btn.hidden = false;
+      pause.hidden = true;
+      status.textContent = pendingId ? `Checked out. Nice work, ${selected}!` : `Ready when you are, ${selected}.`;
+      if (!pendingId) timer.textContent = '0:00:00';
+      timer.classList.add('idle');
+      btn.textContent = 'Check in'; btn.className = 'btn btn-big btn-in';
+      btn.hidden = !!pendingId;
+    }
+
+    // Starts a stretch of work: a new session, or another stretch of an existing one.
+    function startStretch(person, session) {
+      const ref = doc(collection(db, ENTRIES));
+      return setDoc(ref, { person, session: session || ref.id, start: serverTimestamp(), end: null, paused: false, description: '', updatedAt: serverTimestamp() });
     }
 
     $('checkBtn').onclick = async () => {
       if (!selected) return;
-      const btn = $('checkBtn'); btn.disabled = true; $('err').hidden = true;
-      const open = openFor(selected);
+      const btn = $('checkBtn'); btn.disabled = true; $('pauseBtn').disabled = true; $('err').hidden = true;
+      const open = openFor(selected), paused = pausedFor(selected);
       try {
-        if (!open) {
-          if (openEntries.some(e => e.person === selected)) return;
-          await addDoc(collection(db, ENTRIES), { person: selected, start: serverTimestamp(), end: null, description: '', updatedAt: serverTimestamp() });
+        if (!open && !paused) {
+          await startStretch(selected);
           toast(`Checked in, ${selected}.`);
         } else {
-          const worked = Date.now() - ms(open.start);
-          await updateDoc(doc(db, ENTRIES, open.id), { end: serverTimestamp(), updatedAt: serverTimestamp() });
-          pendingId = open.id;
-          $('timer').textContent = hms(worked);
-          $('whatSub').textContent = `${hm(worked)} worked, ${fmtTime(new Date(ms(open.start)))} to ${fmtTime(new Date())}.`;
+          const cur = open || paused, sid = sessionOf(cur);
+          const total = worked(sid), first = stretches(sid)[0] || cur;
+          if (open) await updateDoc(doc(db, ENTRIES, open.id), { end: serverTimestamp(), paused: false, updatedAt: serverTimestamp() });
+          else await updateDoc(doc(db, ENTRIES, paused.id), { paused: false, updatedAt: serverTimestamp() });
+          pendingId = cur.id;
+          const breaks = stretches(sid).length - 1;
+          $('timer').textContent = hms(total);
+          $('whatSub').textContent = `${hm(total)} worked, starting ${fmtTime(new Date(ms(first.start)))}` + (breaks ? ` (${breaks} break${breaks > 1 ? 's' : ''}).` : '.');
           $('whatText').value = '';
           $('whatForm').hidden = false;
           $('whatText').focus();
         }
       } catch (e) { showError(e); }
-      finally { btn.disabled = false; render(); }
+      finally { btn.disabled = false; $('pauseBtn').disabled = false; render(); }
+    };
+
+    $('pauseBtn').onclick = async () => {
+      if (!selected) return;
+      const pause = $('pauseBtn'); pause.disabled = true; $('checkBtn').disabled = true; $('err').hidden = true;
+      const open = openFor(selected), paused = pausedFor(selected);
+      try {
+        if (open) {
+          await updateDoc(doc(db, ENTRIES, open.id), { end: serverTimestamp(), paused: true, updatedAt: serverTimestamp() });
+          toast('Paused. Time stops counting until you resume.');
+        } else if (paused) {
+          await startStretch(selected, sessionOf(paused));
+          toast('Welcome back. Time is counting again.');
+        }
+      } catch (e) { showError(e); }
+      finally { pause.disabled = false; $('checkBtn').disabled = false; render(); }
     };
 
     $('whatForm').onsubmit = async ev => {
@@ -459,49 +520,66 @@
       const sum = k => PEOPLE.reduce((t, p) => t + totals[p][k], 0);
       $('metrics').replaceChildren(
         ...PEOPLE.map(p => el('tr', {},
-          el('td', {}, p, openFor(p) ? el('span', { class: 'live-dot', title: 'Checked in now' }) : null),
+          el('td', {}, p, openFor(p) ? el('span', { class: 'live-dot', title: 'Checked in now' })
+            : pausedFor(p) ? el('span', { class: 'live-dot paused', title: 'On a break' }) : null),
           el('td', { text: hm(totals[p].today) }),
           el('td', { text: hm(totals[p].week) }))),
         el('tr', { class: 'total' }, el('td', { text: 'Team' }), el('td', { text: hm(sum('today')) }), el('td', { text: hm(sum('week')) })));
       const w0 = startOfWeek(), w1 = new Date(+w0 + 6 * 864e5);
-      $('weekLabel').textContent = `Week of ${fmtDay(w0)} – ${fmtDay(w1)}. Totals update live while someone is checked in.`;
+      $('weekLabel').textContent = `Week of ${fmtDay(w0)} – ${fmtDay(w1)}. Totals update live while someone is checked in; breaks don't count.`;
     }
 
     // ---- Log ----
     function renderLog() {
-      const list = allEntries().filter(e => e.start).sort((a, b) => ms(b.start) - ms(a.start));
+      const sessions = new Map();
+      allEntries().filter(e => e.start).forEach(e => {
+        const sid = sessionOf(e); if (!sessions.has(sid)) sessions.set(sid, []); sessions.get(sid).push(e);
+      });
+      const list = [...sessions.entries()].map(([sid, parts]) => {
+        parts.sort((a, b) => ms(a.start) - ms(b.start));
+        const last = parts[parts.length - 1];
+        return { sid, parts, first: parts[0], last, person: parts[0].person,
+          state: !last.end ? 'working' : last.paused ? 'paused' : 'done',
+          description: (parts.slice().reverse().find(p => p.description) || {}).description || '' };
+      }).sort((a, b) => ms(b.first.start) - ms(a.first.start));
       if (!list.length) { $('log').replaceChildren(el('div', { class: 'empty', text: 'No time logged this week yet.' })); return; }
-      $('log').replaceChildren(...list.map(e => {
-        const a = new Date(ms(e.start)), b = e.end ? new Date(ms(e.end)) : null;
+      $('log').replaceChildren(...list.map(se => {
+        const a = new Date(ms(se.first.start)), total = se.parts.reduce((t, e) => t + lenOf(e), 0), breaks = se.parts.length - 1;
+        const endTxt = se.state === 'working' ? 'now' : se.state === 'paused' ? 'on a break' : fmtTime(new Date(ms(se.last.end)));
         const row = el('div', { class: 'entry' },
-          el('div', { class: 'who', text: e.person }),
-          el('div', { class: 'when', text: `${fmtDay(a)} · ${fmtTime(a)} – ${b ? fmtTime(b) : 'now'}` }),
-          el('div', { class: 'dur', text: hm((b ? +b : Date.now()) - +a) }));
-        if (editingId === e.id) {
-          const ta = el('textarea', { maxlength: '2000' }); ta.value = e.description || '';
+          el('div', { class: 'who', text: se.person }),
+          el('div', { class: 'when', text: `${fmtDay(a)} · ${fmtTime(a)} – ${endTxt}` + (breaks ? ` · ${breaks} break${breaks > 1 ? 's' : ''}` : '') }),
+          el('div', { class: 'dur', text: hm(total) }));
+        if (editingId === se.sid) {
+          const ta = el('textarea', { maxlength: '2000' }); ta.value = se.description;
           const save = el('button', { class: 'btn btn-primary btn-small', type: 'button', text: 'Save' });
           const cancel = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Cancel' });
           save.onclick = async () => {
-            try { await updateDoc(doc(db, ENTRIES, e.id), { description: ta.value.trim().slice(0, 2000), updatedAt: serverTimestamp() }); toast('Saved.'); editingId = null; render(); }
-            catch (err) { showError(err); }
+            try {
+              const batch = writeBatch(db);
+              se.parts.forEach(p => batch.update(doc(db, ENTRIES, p.id), { description: p === se.last ? ta.value.trim().slice(0, 2000) : '', updatedAt: serverTimestamp() }));
+              await batch.commit(); toast('Saved.'); editingId = null; render();
+            } catch (err) { showError(err); }
           };
           cancel.onclick = () => { editingId = null; render(); };
           row.append(el('div', { class: 'edit' }, ta, el('div', { class: 'what' }, el('div', { class: 'row' }, cancel, save))));
           setTimeout(() => ta.focus(), 0);
         } else {
-          if (b) row.append(el('div', { class: 'desc' + (e.description ? '' : ' none'), text: e.description || 'No description yet' }));
-          else row.append(el('div', { class: 'desc', text: 'Checked in now' }));
+          if (se.state === 'done') row.append(el('div', { class: 'desc' + (se.description ? '' : ' none'), text: se.description || 'No description yet' }));
+          else row.append(el('div', { class: 'desc', text: se.state === 'working' ? 'Checked in now' : 'On a break' }));
           const acts = el('div', { class: 'actions' });
-          if (b) {
-            const ed = el('button', { class: 'linkbtn', type: 'button', text: e.description ? 'Edit' : 'Add what you did' });
-            ed.onclick = () => { editingId = e.id; render(); };
+          if (se.state === 'done') {
+            const ed = el('button', { class: 'linkbtn', type: 'button', text: se.description ? 'Edit' : 'Add what you did' });
+            ed.onclick = () => { editingId = se.sid; render(); };
             acts.append(ed);
           }
           const del = el('button', { class: 'linkbtn danger', type: 'button', text: 'Delete' });
           del.onclick = async () => {
-            if (!confirm(`Delete ${e.person}'s ${hm((b ? +b : Date.now()) - +a)} session from ${fmtDay(a)}?`)) return;
-            try { await deleteDoc(doc(db, ENTRIES, e.id)); toast('Deleted.'); if (pendingId === e.id) { pendingId = null; $('whatForm').hidden = true; } }
-            catch (err) { showError(err); }
+            if (!confirm(`Delete ${se.person}'s ${hm(total)} session from ${fmtDay(a)}?`)) return;
+            try {
+              const batch = writeBatch(db); se.parts.forEach(p => batch.delete(doc(db, ENTRIES, p.id))); await batch.commit();
+              toast('Deleted.'); if (se.parts.some(p => p.id === pendingId)) { pendingId = null; $('whatForm').hidden = true; }
+            } catch (err) { showError(err); }
           };
           acts.append(del);
           row.append(acts);
@@ -524,6 +602,8 @@
         snap => { weekEntries = snap.docs.map(d => ({ id: d.id, ...data(d) })); render(); }, fail));
       stopWatching.push(onSnapshot(query(collection(db, ENTRIES), where('end', '==', null)),
         snap => { openEntries = snap.docs.map(d => ({ id: d.id, ...data(d) })); render(); }, fail));
+      stopWatching.push(onSnapshot(query(collection(db, ENTRIES), where('paused', '==', true)),
+        snap => { pausedEntries = snap.docs.map(d => ({ id: d.id, ...data(d) })); render(); }, fail));
     }
 
     // ---- Auth ----
@@ -549,7 +629,7 @@
       $('ttView').hidden = !user;
       $('navRight').hidden = !user;
       stopWatching.forEach(stop => stop()); stopWatching = [];
-      weekEntries = []; openEntries = []; pendingId = null; editingId = null;
+      weekEntries = []; openEntries = []; pausedEntries = []; pendingId = null; editingId = null;
       if (user) {
         $('who').textContent = user.email;
         try { const p = localStorage.getItem(LAST_PERSON_KEY); if (PEOPLE.includes(p)) selected = p; } catch (e) {}
