@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Engler — Time Tracking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --bg-soft: #F0F3F8;
+      --tab: #16233B;
+      --tab-deep: #0D1729;
+      --ink: #16233B;
+      --ink-soft: #5F6776;
+      --silver: #9BA3B0;
+      --silver-line: #DDE2EA;
+      --accent: #2F6BFF;
+      --accent-soft: #E9F0FF;
+      --danger: #D64545;
+      --ok: #1F9D6B;
+      --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+      --font-display: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(22,35,59,0.96);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+    }
+    nav {
+      max-width: 1240px; margin: 0 auto; padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo {
+      font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;
+      letter-spacing: -0.02em; color: #FFF; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo .mark { width: 33px; height: 33px; border-radius: 8px; image-rendering: pixelated; }
+    .logo small { font-family: var(--font-mono); font-weight: 400; font-size: 0.72rem; opacity: 0.6; letter-spacing: 0.08em; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo-sub { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; color: #FFF; opacity: 0.6; text-decoration: none; padding: 4px 6px; margin: -4px -6px; border-radius: 6px; transition: opacity .15s, background .15s; }
+    .logo-sub:hover, .logo-sub:focus-visible { opacity: 1; background: rgba(255,255,255,0.08); }
+    .logo-sub:focus-visible { outline: 2px solid #7CA6FF; outline-offset: 2px; }
+    .nav-right { display: flex; align-items: center; gap: 14px; color: #FFF; font-family: var(--font-mono); font-size: 0.78rem; }
+    .nav-right .who { opacity: 0.7; }
+
+    .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; letter-spacing: -0.03em; line-height: 1.15; margin: 8px 0 10px; }
+    h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+    .btn {
+      font: inherit; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      padding: 12px 20px; border-radius: 999px; border: 1px solid transparent; transition: all 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    }
+    .btn-primary { background: var(--tab); color: #FFF; }
+    .btn-primary:hover { background: var(--tab-deep); }
+    .btn-ghost { background: #FFF; color: var(--ink); border-color: var(--silver-line); }
+    .btn-ghost:hover { border-color: var(--silver); }
+    .btn-danger { background: #FFF; color: var(--danger); border-color: #F1CFCF; }
+    .btn-danger:hover { border-color: var(--danger); }
+    .btn-small { padding: 7px 14px; font-size: 0.8rem; }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    header .btn-ghost { background: transparent; color: #FFF; border-color: rgba(255,255,255,0.3); }
+    header .btn-ghost:hover { border-color: #FFF; }
+
+    input[type="email"], input[type="password"], input[type="search"] {
+      width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink);
+      background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px;
+      padding: 11px 14px; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    input:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* ---- Sign in ---- */
+    .login-wrap {
+      min-height: calc(100vh - 66px); display: grid; place-items: center; padding: 40px 16px;
+      background: radial-gradient(circle at top right, rgba(47,107,255,0.16), transparent 35%);
+    }
+    .login {
+      width: 100%; max-width: 400px; background: #FFF; border: 1px solid var(--silver-line);
+      border-radius: 16px; box-shadow: var(--shadow-sm); padding: 32px;
+    }
+    .login p { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 22px; }
+    .login label { display: block; font-weight: 600; font-size: 0.88rem; margin: 14px 0 6px; }
+    .login .btn { width: 100%; margin-top: 22px; }
+    .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 12px; min-height: 1.2em; }
+
+
+    section.card {
+      background: #FFF; border: 1px solid var(--silver-line); border-radius: 16px;
+      box-shadow: var(--shadow-sm); padding: 28px;
+    }
+    .card-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--silver-line); }
+    .card-head .num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+
+    /* ---- Time tracking ---- */
+    .tt { max-width: 1240px; margin: 0 auto; padding: 32px 32px 80px; }
+    .tt-head { margin-bottom: 24px; }
+    .tt-head p { color: var(--ink-soft); font-size: 0.95rem; }
+    .tt-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+    .tt-main { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+
+    .people { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .person {
+      font: inherit; cursor: pointer; text-align: center;
+      background: var(--bg); border: 1.5px solid var(--silver-line); border-radius: 14px; padding: 18px 10px;
+      transition: border-color .15s, background .15s, box-shadow .15s;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .person:hover { border-color: var(--silver); }
+    .person[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .person .pname { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; }
+    .person .pstate { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
+    .person .pstate.on { color: var(--ok); }
+    .person .pstate.on::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; }
+
+    .clock { margin-top: 22px; padding: 26px 20px; border-radius: 14px; background: var(--bg); text-align: center; }
+    .clock .status { font-size: 0.95rem; color: var(--ink-soft); min-height: 1.5em; }
+    .clock .timer { font-family: var(--font-mono); font-size: 2.6rem; font-weight: 500; letter-spacing: 0.02em; margin: 6px 0 16px; color: var(--ink); }
+    .clock .timer.idle { color: var(--silver); }
+    .btn-big { padding: 15px 34px; font-size: 1rem; min-width: 200px; }
+    .btn-in { background: var(--ok); color: #FFF; }
+    .btn-in:hover { background: #17855A; }
+    .btn-out { background: var(--danger); color: #FFF; }
+    .btn-out:hover { background: #BC3737; }
+
+    .what { margin-top: 18px; text-align: left; }
+    .what label { display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 6px; }
+    .what .sub { font-size: 0.84rem; color: var(--ink-soft); margin-bottom: 10px; }
+    textarea {
+      width: 100%; min-height: 110px; resize: vertical; font: inherit; font-size: 0.95rem; color: var(--ink);
+      background: #FFF; border: 1px solid var(--silver-line); border-radius: 10px; padding: 11px 14px;
+    }
+    textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .what .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+
+    .metrics { position: sticky; top: 90px; }
+    .mtable { width: 100%; border-collapse: collapse; }
+    .mtable th { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; text-align: right; padding: 0 0 10px; }
+    .mtable th:first-child { text-align: left; }
+    .mtable td { padding: 12px 0; border-top: 1px solid var(--silver-line); font-family: var(--font-mono); font-size: 0.95rem; text-align: right; }
+    .mtable td:first-child { font-family: var(--font-display); font-weight: 700; text-align: left; }
+    .mtable tr.total td { font-weight: 600; color: var(--accent); }
+    .mtable tr.total td:first-child { font-family: var(--font-mono); font-weight: 500; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .mnote { margin-top: 12px; font-size: 0.8rem; color: var(--ink-soft); }
+    .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-left: 6px; vertical-align: 2px; }
+
+    .log { display: flex; flex-direction: column; }
+    .entry { display: grid; grid-template-columns: 90px 1fr auto; gap: 4px 16px; padding: 14px 0; border-top: 1px solid var(--silver-line); }
+    .entry:first-child { border-top: none; padding-top: 0; }
+    .entry .who { font-family: var(--font-display); font-weight: 700; }
+    .entry .when { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-soft); }
+    .entry .dur { font-family: var(--font-mono); font-size: 0.95rem; text-align: right; }
+    .entry .desc { grid-column: 2 / -1; font-size: 0.92rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .entry .desc.none { color: #9A6A00; font-style: italic; }
+    .entry .actions { grid-column: 2 / -1; display: flex; gap: 12px; }
+    .linkbtn { font: inherit; font-size: 0.8rem; background: none; border: none; padding: 0; color: var(--accent); cursor: pointer; }
+    .linkbtn.danger { color: var(--danger); }
+    .linkbtn:hover { text-decoration: underline; }
+    .entry .edit { grid-column: 2 / -1; }
+    .empty { color: var(--ink-soft); font-size: 0.9rem; padding: 8px 0; }
+    .err { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #FDF3F3; border: 1px solid #F1CFCF; color: #A33A3A; font-size: 0.88rem; }
+
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+      background: var(--tab-deep); color: #FFF; padding: 12px 20px; border-radius: 999px;
+      font-size: 0.88rem; box-shadow: 0 12px 30px rgba(0,0,0,0.2); transition: transform 0.3s ease; z-index: 50;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 900px) {
+      .tt-grid { grid-template-columns: 1fr; }
+      .metrics { position: static; }
+    }
+    @media (max-width: 600px) {
+      nav, .tt { padding-left: 16px; padding-right: 16px; }
+      .nav-right .who { display: none; }
+      section.card { padding: 22px 18px; }
+      .clock .timer { font-size: 2.1rem; }
+      .entry { grid-template-columns: 1fr auto; }
+      .entry .when { grid-column: 1 / -1; grid-row: 2; }
+      .entry .desc, .entry .actions, .entry .edit { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="../home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+        <a class="logo-sub" href="../portal.html" title="Back to the Team Portal">PORTAL</a>
+      </div>
+      <div class="nav-right" id="navRight" hidden>
+        <span class="who" id="who"></span>
+        <button class="btn btn-ghost btn-small" id="signOut">Sign out</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Sign in -->
+  <div class="login-wrap" id="loginView" hidden>
+    <form class="login" id="loginForm">
+      <div class="eyebrow">Team only</div>
+      <h1>Time Tracking</h1>
+      <p>Sign in with the Engler admin account to check in and out.</p>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="username" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required />
+      <button class="btn btn-primary" type="submit" id="loginBtn">Sign in</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+
+  <main class="tt" id="ttView" hidden>
+    <div class="tt-head">
+      <div class="eyebrow">Team only</div>
+      <h1>Time Tracking</h1>
+      <p>Pick your name, check in when you start, and check out when you're done.</p>
+    </div>
+    <div class="tt-grid">
+      <div class="tt-main">
+        <section class="card">
+          <div class="card-head"><span class="num">01</span><h2>Who's working?</h2></div>
+          <div class="people" id="people" role="group" aria-label="Team member"></div>
+          <div class="clock" id="clock">
+            <div class="status" id="status">Choose your name to get started.</div>
+            <div class="timer idle" id="timer">0:00:00</div>
+            <button class="btn btn-big btn-in" type="button" id="checkBtn" disabled>Check in</button>
+            <form class="what" id="whatForm" hidden>
+              <label for="whatText">What you did</label>
+              <div class="sub" id="whatSub"></div>
+              <textarea id="whatText" maxlength="2000" placeholder="e.g. Built the menu page for Hearth &amp; Rye and fixed the mobile header."></textarea>
+              <div class="row">
+                <button class="btn btn-ghost btn-small" type="button" id="whatLater">Add it later</button>
+                <button class="btn btn-primary btn-small" type="submit" id="whatSave">Save</button>
+              </div>
+            </form>
+            <div class="err" id="err" hidden role="alert"></div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><span class="num">02</span><h2>This week's log</h2></div>
+          <div class="log" id="log"></div>
+        </section>
+      </div>
+
+      <aside class="metrics">
+        <section class="card">
+          <div class="card-head"><span class="num">⏱</span><h2>Hours</h2></div>
+          <table class="mtable">
+            <thead><tr><th>Name</th><th>Today</th><th>This week</th></tr></thead>
+            <tbody id="metrics"></tbody>
+          </table>
+          <p class="mnote" id="weekLabel"></p>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    // Must match the config in client-form.html.
+    const FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyCrmEk6X74MWQH6olX2N5Q5Zd7NJGY_SDk',
+      authDomain: 'engler-questionnaire.firebaseapp.com',
+      projectId: 'engler-questionnaire',
+      storageBucket: 'engler-questionnaire.firebasestorage.app',
+      messagingSenderId: '477147439593',
+      appId: '1:477147439593:web:43ceb566517778c8fdeb78'
+    };
+    // One doc per work session: { person, start, end (null while checked in), description, updatedAt }.
+    const ENTRIES = 'timeEntries';
+    const PEOPLE = ['Zay', 'Gabe', 'Joel'];
+    const LAST_PERSON_KEY = 'engler-time-person';
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    setPersistence(auth, browserSessionPersistence);
+
+    const $ = id => document.getElementById(id);
+    let selected = null;
+    let weekEntries = [];   // sessions that started this week
+    let openEntries = [];   // sessions still checked in (any start date)
+    let pendingId = null;   // session just checked out, waiting for "what you did"
+    let editingId = null;
+    let stopWatching = [];
+
+    function el(tag, attrs = {}, ...children) {
+      const node = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') node.className = v;
+        else if (k === 'text') node.textContent = v;
+        else node.setAttribute(k, v);
+      }
+      for (const c of children) if (c != null) node.append(c);
+      return node;
+    }
+    function toast(msg) {
+      $('toast').textContent = msg; $('toast').classList.add('show');
+      clearTimeout(toast.t); toast.t = setTimeout(() => $('toast').classList.remove('show'), 2600);
+    }
+    function showError(e) {
+      console.error(e);
+      $('err').textContent = e && e.code === 'permission-denied'
+        ? "Time tracking isn't allowed by the Firebase rules yet. Ask Claude to publish the timeEntries rule."
+        : "Something went wrong: " + (e && (e.code || e.message) || e);
+      $('err').hidden = false;
+    }
+
+    // ---- Time helpers ----
+    const ms = t => t ? t.toMillis() : null;
+    function startOfDay(d = new Date()) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+    function startOfWeek(d = new Date()) {        // Monday 00:00, local time
+      const x = startOfDay(d); const day = (x.getDay() + 6) % 7; x.setDate(x.getDate() - day); return x;
+    }
+    function overlap(a, b, from, to) { return Math.max(0, Math.min(b, to) - Math.max(a, from)); }
+    function hms(t) {
+      const s = Math.max(0, Math.floor(t / 1000));
+      return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+    }
+    function hm(t) {
+      const m = Math.round(t / 60000); return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`;
+    }
+    const fmtTime = d => d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    const fmtDay = d => d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    const data = d => d.data({ serverTimestamps: 'estimate' });
+    const openFor = p => openEntries.find(e => e.person === p);
+    function allEntries() {
+      const byId = new Map(weekEntries.map(e => [e.id, e]));
+      openEntries.forEach(e => byId.set(e.id, e));
+      return [...byId.values()];
+    }
+
+    // ---- People ----
+    function renderPeople() {
+      $('people').replaceChildren(...PEOPLE.map(p => {
+        const open = openFor(p);
+        const b = el('button', { class: 'person', type: 'button', 'aria-pressed': String(p === selected) },
+          el('span', { class: 'pname', text: p }),
+          el('span', { class: 'pstate' + (open ? ' on' : ''), text: open ? 'Checked in' : 'Not checked in' }));
+        b.onclick = () => {
+          selected = p; pendingId = null; $('whatForm').hidden = true; $('err').hidden = true;
+          try { localStorage.setItem(LAST_PERSON_KEY, p); } catch (e) {}
+          render();
+        };
+        return b;
+      }));
+    }
+
+    function renderClock() {
+      const btn = $('checkBtn'), timer = $('timer'), status = $('status');
+      if (!selected) {
+        btn.hidden = false;
+        status.textContent = 'Choose your name to get started.';
+        timer.textContent = '0:00:00'; timer.classList.add('idle');
+        btn.disabled = true; btn.textContent = 'Check in'; btn.className = 'btn btn-big btn-in';
+        return;
+      }
+      const open = openFor(selected);
+      btn.disabled = false;
+      if (open) {
+        const start = ms(open.start);
+        status.textContent = `${selected}, you checked in at ${fmtTime(new Date(start))}.`;
+        timer.textContent = hms(Date.now() - start); timer.classList.remove('idle');
+        btn.textContent = 'Check out'; btn.className = 'btn btn-big btn-out';
+      } else {
+        status.textContent = pendingId ? `Checked out. Nice work, ${selected}!` : `Ready when you are, ${selected}.`;
+        timer.textContent = pendingId ? timer.textContent : '0:00:00';
+        timer.classList.add('idle');
+        btn.textContent = 'Check in'; btn.className = 'btn btn-big btn-in';
+        btn.hidden = !!pendingId;
+        return;
+      }
+      btn.hidden = false;
+    }
+
+    $('checkBtn').onclick = async () => {
+      if (!selected) return;
+      const btn = $('checkBtn'); btn.disabled = true; $('err').hidden = true;
+      const open = openFor(selected);
+      try {
+        if (!open) {
+          if (openEntries.some(e => e.person === selected)) return;
+          await addDoc(collection(db, ENTRIES), { person: selected, start: serverTimestamp(), end: null, description: '', updatedAt: serverTimestamp() });
+          toast(`Checked in, ${selected}.`);
+        } else {
+          const worked = Date.now() - ms(open.start);
+          await updateDoc(doc(db, ENTRIES, open.id), { end: serverTimestamp(), updatedAt: serverTimestamp() });
+          pendingId = open.id;
+          $('timer').textContent = hms(worked);
+          $('whatSub').textContent = `${hm(worked)} worked, ${fmtTime(new Date(ms(open.start)))} to ${fmtTime(new Date())}.`;
+          $('whatText').value = '';
+          $('whatForm').hidden = false;
+          $('whatText').focus();
+        }
+      } catch (e) { showError(e); }
+      finally { btn.disabled = false; render(); }
+    };
+
+    $('whatForm').onsubmit = async ev => {
+      ev.preventDefault();
+      const text = $('whatText').value.trim();
+      if (!text) { $('whatText').focus(); toast('Write a few words about what you did.'); return; }
+      $('whatSave').disabled = true;
+      try {
+        await updateDoc(doc(db, ENTRIES, pendingId), { description: text.slice(0, 2000), updatedAt: serverTimestamp() });
+        toast('Saved.');
+        pendingId = null; $('whatForm').hidden = true;
+      } catch (e) { showError(e); }
+      finally { $('whatSave').disabled = false; render(); }
+    };
+    $('whatLater').onclick = () => {
+      pendingId = null; $('whatForm').hidden = true; render();
+      toast('You can add it from this week\'s log.');
+    };
+
+    // ---- Metrics ----
+    function renderMetrics() {
+      const now = Date.now(), day0 = +startOfDay(), week0 = +startOfWeek();
+      const totals = Object.fromEntries(PEOPLE.map(p => [p, { today: 0, week: 0 }]));
+      allEntries().forEach(e => {
+        const a = ms(e.start), b = e.end ? ms(e.end) : now;
+        if (a == null || !totals[e.person]) return;
+        totals[e.person].today += overlap(a, b, day0, now);
+        totals[e.person].week += overlap(a, b, week0, now);
+      });
+      const sum = k => PEOPLE.reduce((t, p) => t + totals[p][k], 0);
+      $('metrics').replaceChildren(
+        ...PEOPLE.map(p => el('tr', {},
+          el('td', {}, p, openFor(p) ? el('span', { class: 'live-dot', title: 'Checked in now' }) : null),
+          el('td', { text: hm(totals[p].today) }),
+          el('td', { text: hm(totals[p].week) }))),
+        el('tr', { class: 'total' }, el('td', { text: 'Team' }), el('td', { text: hm(sum('today')) }), el('td', { text: hm(sum('week')) })));
+      const w0 = startOfWeek(), w1 = new Date(+w0 + 6 * 864e5);
+      $('weekLabel').textContent = `Week of ${fmtDay(w0)} – ${fmtDay(w1)}. Totals update live while someone is checked in.`;
+    }
+
+    // ---- Log ----
+    function renderLog() {
+      const list = allEntries().filter(e => e.start).sort((a, b) => ms(b.start) - ms(a.start));
+      if (!list.length) { $('log').replaceChildren(el('div', { class: 'empty', text: 'No time logged this week yet.' })); return; }
+      $('log').replaceChildren(...list.map(e => {
+        const a = new Date(ms(e.start)), b = e.end ? new Date(ms(e.end)) : null;
+        const row = el('div', { class: 'entry' },
+          el('div', { class: 'who', text: e.person }),
+          el('div', { class: 'when', text: `${fmtDay(a)} · ${fmtTime(a)} – ${b ? fmtTime(b) : 'now'}` }),
+          el('div', { class: 'dur', text: hm((b ? +b : Date.now()) - +a) }));
+        if (editingId === e.id) {
+          const ta = el('textarea', { maxlength: '2000' }); ta.value = e.description || '';
+          const save = el('button', { class: 'btn btn-primary btn-small', type: 'button', text: 'Save' });
+          const cancel = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Cancel' });
+          save.onclick = async () => {
+            try { await updateDoc(doc(db, ENTRIES, e.id), { description: ta.value.trim().slice(0, 2000), updatedAt: serverTimestamp() }); toast('Saved.'); editingId = null; render(); }
+            catch (err) { showError(err); }
+          };
+          cancel.onclick = () => { editingId = null; render(); };
+          row.append(el('div', { class: 'edit' }, ta, el('div', { class: 'what' }, el('div', { class: 'row' }, cancel, save))));
+          setTimeout(() => ta.focus(), 0);
+        } else {
+          if (b) row.append(el('div', { class: 'desc' + (e.description ? '' : ' none'), text: e.description || 'No description yet' }));
+          else row.append(el('div', { class: 'desc', text: 'Checked in now' }));
+          const acts = el('div', { class: 'actions' });
+          if (b) {
+            const ed = el('button', { class: 'linkbtn', type: 'button', text: e.description ? 'Edit' : 'Add what you did' });
+            ed.onclick = () => { editingId = e.id; render(); };
+            acts.append(ed);
+          }
+          const del = el('button', { class: 'linkbtn danger', type: 'button', text: 'Delete' });
+          del.onclick = async () => {
+            if (!confirm(`Delete ${e.person}'s ${hm((b ? +b : Date.now()) - +a)} session from ${fmtDay(a)}?`)) return;
+            try { await deleteDoc(doc(db, ENTRIES, e.id)); toast('Deleted.'); if (pendingId === e.id) { pendingId = null; $('whatForm').hidden = true; } }
+            catch (err) { showError(err); }
+          };
+          acts.append(del);
+          row.append(acts);
+        }
+        return row;
+      }));
+    }
+
+    function render() {
+      renderPeople(); renderClock(); renderMetrics();
+      const typing = document.activeElement && document.activeElement.closest('#log textarea, #log');
+      if (!(editingId && typing)) renderLog();
+    }
+    // Keep the running timer and live totals ticking.
+    setInterval(() => { if (!$('ttView').hidden) { renderClock(); renderMetrics(); } }, 1000);
+
+    function startListening() {
+      const fail = e => showError(e);
+      stopWatching.push(onSnapshot(query(collection(db, ENTRIES), where('start', '>=', Timestamp.fromDate(startOfWeek())), orderBy('start', 'desc')),
+        snap => { weekEntries = snap.docs.map(d => ({ id: d.id, ...data(d) })); render(); }, fail));
+      stopWatching.push(onSnapshot(query(collection(db, ENTRIES), where('end', '==', null)),
+        snap => { openEntries = snap.docs.map(d => ({ id: d.id, ...data(d) })); render(); }, fail));
+    }
+
+    // ---- Auth ----
+    $('loginForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      $('loginError').textContent = '';
+      $('loginBtn').disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+        $('password').value = '';
+      } catch (e) {
+        $('loginError').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(e.code)
+          ? 'Incorrect email or password.'
+          : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again in a few minutes.' : 'Sign-in failed: ' + e.code;
+      } finally {
+        $('loginBtn').disabled = false;
+      }
+    });
+    $('signOut').addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, user => {
+      $('loginView').hidden = !!user;
+      $('ttView').hidden = !user;
+      $('navRight').hidden = !user;
+      stopWatching.forEach(stop => stop()); stopWatching = [];
+      weekEntries = []; openEntries = []; pendingId = null; editingId = null;
+      if (user) {
+        $('who').textContent = user.email;
+        try { const p = localStorage.getItem(LAST_PERSON_KEY); if (PEOPLE.includes(p)) selected = p; } catch (e) {}
+        render();
+        startListening();
+      } else {
+        $('email').focus();
+      }
+    });
+  </script>
+</body>
+</html>
