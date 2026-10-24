@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Engler — Expenses & Reimbursements</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --bg-soft: #F0F3F8;
+      --tab: #16233B;
+      --tab-deep: #0D1729;
+      --ink: #16233B;
+      --ink-soft: #5F6776;
+      --silver: #9BA3B0;
+      --silver-line: #DDE2EA;
+      --accent: #2F6BFF;
+      --accent-soft: #E9F0FF;
+      --danger: #D64545;
+      --ok: #1F9D6B;
+      --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+      --font-display: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(22,35,59,0.96);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+    }
+    nav {
+      max-width: 1240px; margin: 0 auto; padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo {
+      font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;
+      letter-spacing: -0.02em; color: #FFF; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo .mark { width: 33px; height: 33px; border-radius: 8px; image-rendering: pixelated; }
+    .logo small { font-family: var(--font-mono); font-weight: 400; font-size: 0.72rem; opacity: 0.6; letter-spacing: 0.08em; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo-sub { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; color: #FFF; opacity: 0.6; text-decoration: none; padding: 4px 6px; margin: -4px -6px; border-radius: 6px; transition: opacity .15s, background .15s; }
+    .logo-sub:hover, .logo-sub:focus-visible { opacity: 1; background: rgba(255,255,255,0.08); }
+    .logo-sub:focus-visible { outline: 2px solid #7CA6FF; outline-offset: 2px; }
+    .nav-right { display: flex; align-items: center; gap: 14px; color: #FFF; font-family: var(--font-mono); font-size: 0.78rem; }
+    .nav-right .who { opacity: 0.7; }
+
+    .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; letter-spacing: -0.03em; line-height: 1.15; margin: 8px 0 10px; }
+    h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+    .btn {
+      font: inherit; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      padding: 12px 20px; border-radius: 999px; border: 1px solid transparent; transition: all 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    }
+    .btn-primary { background: var(--tab); color: #FFF; }
+    .btn-primary:hover { background: var(--tab-deep); }
+    .btn-ghost { background: #FFF; color: var(--ink); border-color: var(--silver-line); }
+    .btn-ghost:hover { border-color: var(--silver); }
+    .btn-danger { background: #FFF; color: var(--danger); border-color: #F1CFCF; }
+    .btn-danger:hover { border-color: var(--danger); }
+    .btn-small { padding: 7px 14px; font-size: 0.8rem; }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    header .btn-ghost { background: transparent; color: #FFF; border-color: rgba(255,255,255,0.3); }
+    header .btn-ghost:hover { border-color: #FFF; }
+
+    input[type="email"], input[type="password"], input[type="search"] {
+      width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink);
+      background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px;
+      padding: 11px 14px; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    input:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* ---- Sign in ---- */
+    .login-wrap {
+      min-height: calc(100vh - 66px); display: grid; place-items: center; padding: 40px 16px;
+      background: radial-gradient(circle at top right, rgba(47,107,255,0.16), transparent 35%);
+    }
+    .login {
+      width: 100%; max-width: 400px; background: #FFF; border: 1px solid var(--silver-line);
+      border-radius: 16px; box-shadow: var(--shadow-sm); padding: 32px;
+    }
+    .login p { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 22px; }
+    .login label { display: block; font-weight: 600; font-size: 0.88rem; margin: 14px 0 6px; }
+    .login .btn { width: 100%; margin-top: 22px; }
+    .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 12px; min-height: 1.2em; }
+
+
+    section.card { background: #FFF; border: 1px solid var(--silver-line); border-radius: 16px; box-shadow: var(--shadow-sm); padding: 28px; }
+    .card-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--silver-line); }
+    .card-head .num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+    .card-head .head-act { margin-left: auto; }
+    .page { max-width: 1240px; margin: 0 auto; padding: 32px 32px 80px; }
+    .page-head { margin-bottom: 24px; }
+    .page-head p { color: var(--ink-soft); font-size: 0.95rem; }
+    .err { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #FDF3F3; border: 1px solid #F1CFCF; color: #A33A3A; font-size: 0.88rem; }
+
+    .ex-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+    .ex-main { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+    .side { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 24px; }
+    .xform { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .xform label { display: block; font-weight: 600; font-size: 0.82rem; margin-bottom: 5px; }
+    .xform input, .xform select, .xform textarea { width: 100%; font: inherit; font-size: 0.92rem; color: var(--ink); background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px; padding: 9px 10px; }
+    .xform textarea { min-height: 60px; resize: vertical; }
+    .xform input:focus, .xform select:focus, .xform textarea:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .xform .span2 { grid-column: span 2; }
+    .xform .wide { grid-column: 1 / -1; }
+    .money { position: relative; }
+    .money span { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); }
+    .money input { padding-left: 22px; }
+    .xform .row { grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
+    .xform .hint { margin-right: auto; font-size: 0.8rem; color: var(--ink-soft); }
+    .ferr { grid-column: 1 / -1; color: var(--danger); font-size: 0.85rem; }
+
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .tab { font: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--silver-line); background: #FFF; color: var(--ink-soft); }
+    .tab[aria-pressed="true"] { background: var(--tab); border-color: var(--tab); color: #FFF; }
+    .tab .n { font-family: var(--font-mono); font-weight: 400; margin-left: 4px; opacity: 0.75; }
+
+    .xlist { display: flex; flex-direction: column; }
+    .xrow { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; padding: 14px 0; border-top: 1px solid var(--silver-line); }
+    .xrow:first-child { border-top: none; padding-top: 0; }
+    .xrow .item { font-weight: 600; overflow-wrap: anywhere; }
+    .xrow .meta { font-family: var(--font-mono); font-size: 0.76rem; color: var(--ink-soft); }
+    .xrow .amt { font-family: var(--font-mono); font-size: 1.05rem; font-weight: 500; text-align: right; }
+    .xrow .notes { grid-column: 1 / -1; font-size: 0.88rem; color: var(--ink-soft); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .xrow .ctl { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .xrow .ctl select { font: inherit; font-size: 0.82rem; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--silver-line); background: #FFF; color: var(--ink); }
+    .xrow .ctl .when { font-size: 0.76rem; color: var(--ink-soft); }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; }
+    .st-pending { background: #EEF1F6; color: #4A5568; }
+    .st-approved { background: #FBEED3; color: #8A5A12; }
+    .st-reimbursed { background: #E2F5EC; color: #17724F; }
+    .st-denied { background: #FBE4E4; color: #A33A3A; }
+    .flag { display: inline-block; margin-left: 6px; font-size: 0.7rem; color: #A33A3A; font-family: var(--font-mono); }
+    .linkbtn { font: inherit; font-size: 0.8rem; background: none; border: none; padding: 0; color: var(--danger); cursor: pointer; margin-left: auto; }
+    .linkbtn:hover { text-decoration: underline; }
+    .empty { color: var(--ink-soft); font-size: 0.9rem; padding: 8px 0; }
+
+    .mtable { width: 100%; border-collapse: collapse; }
+    .mtable th { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; text-align: right; padding: 0 0 10px; }
+    .mtable th:first-child { text-align: left; }
+    .mtable td { padding: 11px 0; border-top: 1px solid var(--silver-line); font-family: var(--font-mono); font-size: 0.88rem; text-align: right; }
+    .mtable td:first-child { font-family: var(--font-display); font-weight: 700; text-align: left; font-size: 0.95rem; }
+    .mtable tr.total td { font-weight: 600; color: var(--accent); }
+    .mtable tr.total td:first-child { font-family: var(--font-mono); font-weight: 500; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .mnote { margin-top: 12px; font-size: 0.8rem; color: var(--ink-soft); line-height: 1.5; }
+    .rule { font-size: 0.85rem; line-height: 1.55; color: var(--ink-soft); }
+    .rule strong { color: var(--ink); }
+    @media (max-width: 900px) { .ex-grid { grid-template-columns: 1fr; } .side { position: static; } }
+    @media (max-width: 600px) { .xform { grid-template-columns: 1fr 1fr; } .xform .span2 { grid-column: 1 / -1; } }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+      background: var(--tab-deep); color: #FFF; padding: 12px 20px; border-radius: 999px;
+      font-size: 0.88rem; box-shadow: 0 12px 30px rgba(0,0,0,0.2); transition: transform 0.3s ease; z-index: 50;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      nav, .page { padding-left: 16px; padding-right: 16px; }
+      .nav-right .who { display: none; }
+      section.card { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="../home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+        <a class="logo-sub" href="../portal.html" title="Back to the Team Portal">PORTAL</a>
+      </div>
+      <div class="nav-right" id="navRight" hidden>
+        <span class="who" id="who"></span>
+        <button class="btn btn-ghost btn-small" id="signOut">Sign out</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Sign in -->
+  <div class="login-wrap" id="loginView" hidden>
+    <form class="login" id="loginForm">
+      <div class="eyebrow">Team only</div>
+      <h1>Expenses & Reimbursements</h1>
+      <p>Sign in with the Engler admin account to log and review company purchases.</p>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="username" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required />
+      <button class="btn btn-primary" type="submit" id="loginBtn">Sign in</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+
+  <main class="page" id="pageView" hidden>
+    <div class="page-head">
+      <div class="eyebrow">Team only</div>
+      <h1>Expenses &amp; Reimbursements</h1>
+      <p>Log company purchases, then mark them approved, reimbursed or denied.</p>
+    </div>
+    <div class="ex-grid">
+      <div class="ex-main">
+        <section class="card">
+          <div class="card-head"><span class="num">01</span><h2>Log a purchase</h2></div>
+          <form class="xform" id="xform" novalidate>
+            <div><label for="xWho">Who paid</label><select id="xWho"></select></div>
+            <div><label for="xDate">Date</label><input type="date" id="xDate"></div>
+            <div class="span2"><label for="xItem">What was bought</label><input type="text" id="xItem" maxlength="120" placeholder="e.g. Domain renewal for englerwebsites.com"></div>
+            <div><label for="xAmount">Amount</label><div class="money"><span>$</span><input type="number" id="xAmount" min="0.01" step="0.01" inputmode="decimal" placeholder="0.00"></div></div>
+            <div><label for="xCat">Category</label><select id="xCat"></select></div>
+            <div class="span2"><label for="xPre">Okayed by the team before buying?</label><select id="xPre">
+              <option value="yes">Yes, the team approved it first</option>
+              <option value="under15">Not needed (under $15 or a subscription)</option>
+              <option value="no">No</option></select></div>
+            <div class="wide"><label for="xNotes">Notes (optional)</label><textarea id="xNotes" maxlength="1000" placeholder="Where it was bought, which client it was for, receipt location…"></textarea></div>
+            <div class="ferr" id="xErr" hidden role="alert"></div>
+            <div class="row"><span class="hint">New purchases start as “Pending review”.</span><button class="btn btn-primary btn-small" type="submit" id="xSave">Add purchase</button></div>
+          </form>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><span class="num">02</span><h2>Purchases</h2></div>
+          <div class="tabs" id="tabs" role="group" aria-label="Filter by status"></div>
+          <div class="xlist" id="xlist"></div>
+          <div class="err" id="err" hidden role="alert"></div>
+        </section>
+      </div>
+
+      <aside class="side">
+        <section class="card">
+          <div class="card-head"><span class="num">$</span><h2>Who's owed</h2></div>
+          <table class="mtable">
+            <thead><tr><th>Name</th><th>Owed</th><th>Pending</th><th>Paid back</th></tr></thead>
+            <tbody id="totals"></tbody>
+          </table>
+          <p class="mnote"><strong>Owed</strong> is approved and awaiting reimbursement. <strong>Pending</strong> hasn't been reviewed yet. <strong>Paid back</strong> is everything already reimbursed.</p>
+        </section>
+        <section class="card">
+          <div class="card-head"><span class="num">§</span><h2>From the contract</h2></div>
+          <p class="rule">Check with the team <strong>before</strong> any purchase over <strong>$15</strong> (not subscriptions) for it to qualify for reimbursement. Reimbursements are paid from order sales first.</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, addDoc, updateDoc, deleteDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    // Must match the config in client-form.html.
+    const FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyCrmEk6X74MWQH6olX2N5Q5Zd7NJGY_SDk',
+      authDomain: 'engler-questionnaire.firebaseapp.com',
+      projectId: 'engler-questionnaire',
+      storageBucket: 'engler-questionnaire.firebasestorage.app',
+      messagingSenderId: '477147439593',
+      appId: '1:477147439593:web:43ceb566517778c8fdeb78'
+    };
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    setPersistence(auth, browserSessionPersistence);
+
+    const $ = id => document.getElementById(id);
+    function el(tag, attrs = {}, ...children) {
+      const node = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') node.className = v;
+        else if (k === 'text') node.textContent = v;
+        else node.setAttribute(k, v);
+      }
+      for (const c of children) if (c != null) node.append(c);
+      return node;
+    }
+    function toast(msg) {
+      $('toast').textContent = msg; $('toast').classList.add('show');
+      clearTimeout(toast.t); toast.t = setTimeout(() => $('toast').classList.remove('show'), 2600);
+    }
+
+    // One doc per purchase in "expenses":
+    // { person, date (YYYY-MM-DD), item, amount, category, preApproved ('yes'|'under15'|'no'), notes,
+    //   status ('pending'|'approved'|'reimbursed'|'denied'), createdAt, updatedAt, statusChangedAt }.
+    const EXPENSES = 'expenses';
+    const PEOPLE = ['Zay', 'Gabe', 'Joel'];
+    const CATEGORIES = ['Software / subscription', 'Domain / hosting', 'Equipment', 'Marketing', 'Supplies', 'Other'];
+    const STATUS = {
+      pending: 'Pending review',
+      approved: 'Approved — awaiting reimbursement',
+      reimbursed: 'Reimbursed',
+      denied: 'Denied'
+    };
+    const LAST_PERSON_KEY = 'engler-time-person';
+    let expenses = [];
+    let filter = 'all';
+    let stop = null;
+
+    const money = n => '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const pad = n => String(n).padStart(2, '0');
+    const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+    const fmtDate = s => new Date(s + 'T12:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    function showError(e) {
+      console.error(e);
+      $('err').textContent = e && e.code === 'permission-denied'
+        ? "Expenses aren't allowed by the Firebase rules yet. Ask Claude to publish the expenses rule."
+        : 'Something went wrong: ' + (e && (e.code || e.message) || e);
+      $('err').hidden = false;
+    }
+
+    // ---- Form ----
+    $('xWho').replaceChildren(...PEOPLE.map(p => el('option', { value: p, text: p })));
+    $('xCat').replaceChildren(...CATEGORIES.map(c => el('option', { value: c, text: c })));
+    function resetForm() {
+      try { const p = localStorage.getItem(LAST_PERSON_KEY); if (PEOPLE.includes(p)) $('xWho').value = p; } catch (e) {}
+      $('xDate').value = today(); $('xDate').max = today();
+      $('xItem').value = ''; $('xAmount').value = ''; $('xNotes').value = ''; $('xPre').value = 'yes';
+      $('xErr').hidden = true;
+    }
+    $('xform').onsubmit = async ev => {
+      ev.preventDefault();
+      const amount = Math.round(parseFloat($('xAmount').value) * 100) / 100;
+      const item = $('xItem').value.trim();
+      const fail = msg => { $('xErr').textContent = msg; $('xErr').hidden = false; };
+      if (!item) return fail('Say what was bought.');
+      if (!(amount > 0)) return fail('Enter how much was spent.');
+      if (amount > 100000) return fail('That amount looks too large.');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test($('xDate').value)) return fail('Pick the date of the purchase.');
+      if ($('xDate').value > today()) return fail('The date can’t be in the future.');
+      $('xSave').disabled = true;
+      try {
+        await addDoc(collection(db, EXPENSES), {
+          person: $('xWho').value, date: $('xDate').value, item: item.slice(0, 120), amount,
+          category: $('xCat').value, preApproved: $('xPre').value, notes: $('xNotes').value.trim().slice(0, 1000),
+          status: 'pending', createdAt: serverTimestamp(), updatedAt: serverTimestamp(), statusChangedAt: serverTimestamp()
+        });
+        try { localStorage.setItem(LAST_PERSON_KEY, $('xWho').value); } catch (e) {}
+        toast(`Logged ${money(amount)} for ${$('xWho').value}.`);
+        resetForm();
+      } catch (e) { fail(e.code === 'permission-denied' ? 'The Firebase rules don’t allow expenses yet.' : 'Couldn’t save: ' + (e.code || e.message)); }
+      finally { $('xSave').disabled = false; }
+    };
+
+    // ---- List ----
+    function renderTabs() {
+      const count = s => s === 'all' ? expenses.length : expenses.filter(x => x.status === s).length;
+      const labels = { all: 'All', pending: 'Pending review', approved: 'Approved, awaiting', reimbursed: 'Reimbursed', denied: 'Denied' };
+      $('tabs').replaceChildren(...Object.keys(labels).map(k => {
+        const b = el('button', { class: 'tab', type: 'button', 'aria-pressed': String(filter === k) }, labels[k], el('span', { class: 'n', text: String(count(k)) }));
+        b.onclick = () => { filter = k; render(); };
+        return b;
+      }));
+    }
+    function renderList() {
+      const shown = expenses.filter(x => filter === 'all' || x.status === filter);
+      if (!shown.length) { $('xlist').replaceChildren(el('div', { class: 'empty', text: expenses.length ? 'Nothing with this status.' : 'No purchases logged yet.' })); return; }
+      $('xlist').replaceChildren(...shown.map(x => {
+        const sel = el('select', { 'aria-label': 'Status' }, ...Object.entries(STATUS).map(([v, t]) => el('option', { value: v, text: t })));
+        sel.value = x.status;
+        sel.onchange = async () => {
+          const to = sel.value;
+          try {
+            await updateDoc(doc(db, EXPENSES, x.id), { status: to, statusChangedAt: serverTimestamp(), updatedAt: serverTimestamp() });
+            toast(`Marked ${STATUS[to].toLowerCase()}.`);
+          } catch (e) { sel.value = x.status; showError(e); }
+        };
+        const del = el('button', { class: 'linkbtn', type: 'button', text: 'Delete' });
+        del.onclick = async () => {
+          if (!confirm(`Delete "${x.item}" (${money(x.amount)})?`)) return;
+          try { await deleteDoc(doc(db, EXPENSES, x.id)); toast('Deleted.'); } catch (e) { showError(e); }
+        };
+        const changed = x.statusChangedAt && x.statusChangedAt.toDate ? x.statusChangedAt.toDate() : null;
+        const needsOk = x.preApproved === 'no' && Number(x.amount) > 15;
+        return el('div', { class: 'xrow' },
+          el('div', {}, el('div', { class: 'item', text: x.item }),
+            el('div', { class: 'meta' }, `${x.person} · ${fmtDate(x.date)} · ${x.category}`,
+              needsOk ? el('span', { class: 'flag', text: '· over $15, not okayed first', title: 'Per the contract, purchases over $15 need team approval first to qualify for reimbursement.' }) : null)),
+          el('div', { class: 'amt', text: money(x.amount) }),
+          x.notes ? el('div', { class: 'notes', text: x.notes }) : null,
+          el('div', { class: 'ctl' },
+            el('span', { class: 'badge st-' + x.status, text: STATUS[x.status] || x.status }),
+            sel,
+            changed && x.status !== 'pending' ? el('span', { class: 'when', text: `since ${changed.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` }) : null,
+            del));
+      }));
+    }
+    function renderTotals() {
+      const t = Object.fromEntries(PEOPLE.map(p => [p, { approved: 0, pending: 0, reimbursed: 0 }]));
+      expenses.forEach(x => { if (t[x.person] && t[x.person][x.status] != null) t[x.person][x.status] += Number(x.amount) || 0; });
+      const sum = k => PEOPLE.reduce((s, p) => s + t[p][k], 0);
+      $('totals').replaceChildren(
+        ...PEOPLE.map(p => el('tr', {}, el('td', { text: p }), el('td', { text: money(t[p].approved) }), el('td', { text: money(t[p].pending) }), el('td', { text: money(t[p].reimbursed) }))),
+        el('tr', { class: 'total' }, el('td', { text: 'Team' }), el('td', { text: money(sum('approved')) }), el('td', { text: money(sum('pending')) }), el('td', { text: money(sum('reimbursed')) })));
+    }
+    function render() { renderTabs(); renderList(); renderTotals(); }
+
+    onAuthStateChanged(auth, user => {
+      $('loginView').hidden = !!user; $('pageView').hidden = !user; $('navRight').hidden = !user;
+      if (stop) { stop(); stop = null; }
+      expenses = [];
+      if (user) {
+        $('who').textContent = user.email;
+        resetForm(); render();
+        stop = onSnapshot(query(collection(db, EXPENSES), orderBy('date', 'desc')), snap => {
+          expenses = snap.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }));
+          $('err').hidden = true; render();
+        }, showError);
+      } else { $('email').focus(); }
+    });
+
+    // ---- Auth ----
+    $('loginForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      $('loginError').textContent = '';
+      $('loginBtn').disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+        $('password').value = '';
+      } catch (e) {
+        $('loginError').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(e.code)
+          ? 'Incorrect email or password.'
+          : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again in a few minutes.' : 'Sign-in failed: ' + e.code;
+      } finally {
+        $('loginBtn').disabled = false;
+      }
+    });
+    $('signOut').addEventListener('click', () => signOut(auth));
+  </script>
+</body>
+</html>

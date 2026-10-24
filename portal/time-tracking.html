@@ -185,6 +185,24 @@
     .entry .desc { grid-column: 2 / -1; font-size: 0.92rem; white-space: pre-wrap; overflow-wrap: anywhere; }
     .entry .desc.none { color: #9A6A00; font-style: italic; }
     .entry .actions { grid-column: 2 / -1; display: flex; gap: 12px; }
+    .card-head .head-act { margin-left: auto; }
+    .entry.added { border-left: 4px solid #7C5CDB; padding-left: 12px; background: #F6F3FE; }
+    .entry.edited { border-left: 4px solid #B7791F; padding-left: 12px; background: #FDF8EE; }
+    .entry.added, .entry.edited { border-top-color: transparent; border-radius: 0 10px 10px 0; margin: 4px 0; }
+    .tag { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; vertical-align: 2px; cursor: help; }
+    .tag.added { background: #ECE6FC; color: #5B3FC2; }
+    .tag.edited { background: #FBEED3; color: #8A5A12; }
+    .tform { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 4px 0 18px; padding: 18px; border: 1px solid var(--silver-line); border-radius: 12px; background: var(--bg); }
+    .tform.in-row { grid-column: 2 / -1; margin: 8px 0 0; }
+    .tform label { display: block; font-weight: 600; font-size: 0.82rem; margin-bottom: 5px; }
+    .tform input, .tform select { width: 100%; font: inherit; font-size: 0.92rem; color: var(--ink); background: #FFF; border: 1px solid var(--silver-line); border-radius: 10px; padding: 9px 10px; }
+    .tform input:focus, .tform select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .tform .wide { grid-column: 1 / -1; }
+    .tform textarea { min-height: 70px; }
+    .tform .row { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
+    .tform .hint { margin-right: auto; font-size: 0.8rem; color: var(--ink-soft); }
+    .tform .ferr { grid-column: 1 / -1; color: var(--danger); font-size: 0.85rem; }
+    @media (max-width: 600px) { .tform { grid-template-columns: 1fr 1fr; } }
     .linkbtn { font: inherit; font-size: 0.8rem; background: none; border: none; padding: 0; color: var(--accent); cursor: pointer; }
     .linkbtn.danger { color: var(--danger); }
     .linkbtn:hover { text-decoration: underline; }
@@ -276,7 +294,9 @@
         </section>
 
         <section class="card">
-          <div class="card-head"><span class="num">02</span><h2>This week's log</h2></div>
+          <div class="card-head"><span class="num">02</span><h2>This week's log</h2>
+            <button class="btn btn-ghost btn-small head-act" type="button" id="addTimeBtn">+ Add time</button></div>
+          <div id="addTimeSlot"></div>
           <div class="log" id="log"></div>
         </section>
       </div>
@@ -313,6 +333,8 @@
       appId: '1:477147439593:web:43ceb566517778c8fdeb78'
     };
     // One doc per stretch of work: { person, session, start, end (null while working), paused, description, updatedAt }.
+    // Hand-entered sessions have source: 'added'; stretches whose times were changed have edited: true plus
+    // originalStart / originalEnd (the times before the first edit).
     // Pausing ends the current stretch with paused: true; resuming starts a new stretch with the same session ID.
     // A session's description lives on its last stretch.
     const ENTRIES = 'timeEntries';
@@ -330,7 +352,8 @@
     let openEntries = [];   // stretches still running (any start date)
     let pausedEntries = []; // stretches that ended with a pause (any start date)
     let pendingId = null;   // session just checked out, waiting for "what you did"
-    let editingId = null;
+    let editingId = null;   // session whose description is being edited
+    let timeEditId = null;  // session whose times are being edited
     let stopWatching = [];
 
     function el(tag, attrs = {}, ...children) {
@@ -529,6 +552,104 @@
       $('weekLabel').textContent = `Week of ${fmtDay(w0)} – ${fmtDay(w1)}. Totals update live while someone is checked in; breaks don't count.`;
     }
 
+    // ---- Added and edited times ----
+    const pad = n => String(n).padStart(2, '0');
+    const dateVal = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const timeVal = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    // Start and end from date + time fields; an end earlier than the start means it ran past midnight.
+    function readTimes(date, start, end) {
+      if (!date || !start || !end) return { error: 'Fill in the date, start and end time.' };
+      const a = new Date(`${date}T${start}`), b = new Date(`${date}T${end}`);
+      if (isNaN(a) || isNaN(b)) return { error: 'That date or time isn’t valid.' };
+      if (+b === +a) return { error: 'The start and end time are the same.' };
+      if (b <= a) b.setDate(b.getDate() + 1);
+      if (b - a > 24 * 3600e3) return { error: 'A session can’t be longer than 24 hours.' };
+      if (b > new Date()) return { error: 'The end time can’t be in the future.' };
+      return { a, b };
+    }
+    function field(label, input, cls) { return el('div', cls ? { class: cls } : {}, el('label', { text: label }), input); }
+
+    function addTimeForm() {
+      const person = el('select', {}, ...PEOPLE.map(p => el('option', { value: p, text: p })));
+      person.value = selected || PEOPLE[0];
+      const now = new Date();
+      const date = el('input', { type: 'date', value: dateVal(now), max: dateVal(now) });
+      const start = el('input', { type: 'time', required: '' });
+      const end = el('input', { type: 'time', required: '' });
+      const what = el('textarea', { maxlength: '2000', placeholder: 'What you did' });
+      const ferr = el('div', { class: 'ferr', role: 'alert' }); ferr.hidden = true;
+      const save = el('button', { class: 'btn btn-primary btn-small', type: 'submit', text: 'Add time' });
+      const cancel = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Cancel' });
+      const form = el('form', { class: 'tform' },
+        field('Who', person), field('Date', date), field('Start', start), field('End', end),
+        field('What you did', what, 'wide'), ferr,
+        el('div', { class: 'row' }, el('span', { class: 'hint', text: 'Shows as “Added” in the log.' }), cancel, save));
+      cancel.onclick = () => $('addTimeSlot').replaceChildren();
+      form.onsubmit = async ev => {
+        ev.preventDefault();
+        const t = readTimes(date.value, start.value, end.value);
+        if (t.error) { ferr.textContent = t.error; ferr.hidden = false; return; }
+        if (!what.value.trim()) { ferr.textContent = 'Write a few words about what was done.'; ferr.hidden = false; what.focus(); return; }
+        save.disabled = true;
+        try {
+          const ref = doc(collection(db, ENTRIES));
+          await setDoc(ref, { person: person.value, session: ref.id, start: Timestamp.fromDate(t.a), end: Timestamp.fromDate(t.b),
+            paused: false, source: 'added', description: what.value.trim().slice(0, 2000), updatedAt: serverTimestamp() });
+          toast(`Added ${hm(t.b - t.a)} for ${person.value}.`);
+          $('addTimeSlot').replaceChildren();
+        } catch (e) { save.disabled = false; ferr.textContent = e.code === 'permission-denied' ? 'The Firebase rules don’t allow added time yet.' : 'Couldn’t save: ' + (e.code || e.message); ferr.hidden = false; }
+      };
+      return form;
+    }
+    $('addTimeBtn').onclick = () => {
+      if ($('addTimeSlot').firstChild) { $('addTimeSlot').replaceChildren(); return; }
+      $('addTimeSlot').replaceChildren(addTimeForm());
+      $('addTimeSlot').querySelector('input[type=time]').focus();
+    };
+
+    // Changes a finished session's start (its first stretch) and end (its last stretch). The original
+    // times are kept on each changed stretch, and the session is labelled "Edited".
+    function editTimeForm(se) {
+      const first = se.first, last = se.last;
+      const a0 = new Date(ms(first.start)), b0 = new Date(ms(last.end));
+      const date = el('input', { type: 'date', value: dateVal(a0), max: dateVal(new Date()) });
+      const start = el('input', { type: 'time', value: timeVal(a0) });
+      const end = el('input', { type: 'time', value: timeVal(b0) });
+      const ferr = el('div', { class: 'ferr', role: 'alert' }); ferr.hidden = true;
+      const save = el('button', { class: 'btn btn-primary btn-small', type: 'submit', text: 'Save times' });
+      const cancel = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Cancel' });
+      const multi = se.parts.length > 1;
+      const form = el('form', { class: 'tform in-row' },
+        field('Date', date), field('Start', start), field('End', end), el('div'), ferr,
+        el('div', { class: 'row' }, el('span', { class: 'hint', text: multi ? 'Breaks stay as they are. Shows as “Edited”.' : 'Shows as “Edited” in the log.' }), cancel, save));
+      cancel.onclick = () => { timeEditId = null; render(); };
+      form.onsubmit = async ev => {
+        ev.preventDefault();
+        const t = readTimes(date.value, start.value, end.value);
+        if (t.error) { ferr.textContent = t.error; ferr.hidden = false; return; }
+        if (multi && (t.a >= new Date(ms(first.end)) || t.b <= new Date(ms(last.start)))) {
+          ferr.textContent = `This session has breaks, so it has to start before ${fmtTime(new Date(ms(first.end)))} and end after ${fmtTime(new Date(ms(last.start)))}.`;
+          ferr.hidden = false; return;
+        }
+        const changes = new Map();
+        const mark = (e, patch) => {
+          const cur = changes.get(e.id) || { edited: true, originalStart: e.originalStart || e.start, originalEnd: e.originalEnd || e.end, updatedAt: serverTimestamp() };
+          changes.set(e.id, Object.assign(cur, patch));
+        };
+        if (+t.a !== ms(first.start)) mark(first, { start: Timestamp.fromDate(t.a) });
+        if (+t.b !== ms(last.end)) mark(last, { end: Timestamp.fromDate(t.b) });
+        if (!changes.size) { timeEditId = null; render(); return; }
+        save.disabled = true;
+        try {
+          const batch = writeBatch(db);
+          changes.forEach((patch, id) => batch.update(doc(db, ENTRIES, id), patch));
+          await batch.commit();
+          toast('Times updated.'); timeEditId = null; render();
+        } catch (e) { save.disabled = false; ferr.textContent = e.code === 'permission-denied' ? 'The Firebase rules don’t allow editing times yet.' : 'Couldn’t save: ' + (e.code || e.message); ferr.hidden = false; }
+      };
+      return form;
+    }
+
     // ---- Log ----
     function renderLog() {
       const sessions = new Map();
@@ -546,8 +667,16 @@
       $('log').replaceChildren(...list.map(se => {
         const a = new Date(ms(se.first.start)), total = se.parts.reduce((t, e) => t + lenOf(e), 0), breaks = se.parts.length - 1;
         const endTxt = se.state === 'working' ? 'now' : se.state === 'paused' ? 'on a break' : fmtTime(new Date(ms(se.last.end)));
-        const row = el('div', { class: 'entry' },
-          el('div', { class: 'who', text: se.person }),
+        const added = se.parts.some(p => p.source === 'added');
+        const edited = !added && se.parts.some(p => p.edited);
+        let tag = null;
+        if (added) tag = el('span', { class: 'tag added', text: 'Added', title: 'Entered by hand, not clocked in' + (se.parts.some(p => p.edited) ? ' (times edited since)' : '') });
+        else if (edited) {
+          const o1 = se.first.originalStart || se.first.start, o2 = se.last.originalEnd || se.last.end;
+          tag = el('span', { class: 'tag edited', text: 'Edited', title: `Originally clocked ${fmtTime(new Date(ms(o1)))} – ${fmtTime(new Date(ms(o2)))}` });
+        }
+        const row = el('div', { class: 'entry' + (added ? ' added' : edited ? ' edited' : '') },
+          el('div', { class: 'who' }, se.person, tag),
           el('div', { class: 'when', text: `${fmtDay(a)} · ${fmtTime(a)} – ${endTxt}` + (breaks ? ` · ${breaks} break${breaks > 1 ? 's' : ''}` : '') }),
           el('div', { class: 'dur', text: hm(total) }));
         if (editingId === se.sid) {
@@ -569,9 +698,11 @@
           else row.append(el('div', { class: 'desc', text: se.state === 'working' ? 'Checked in now' : 'On a break' }));
           const acts = el('div', { class: 'actions' });
           if (se.state === 'done') {
-            const ed = el('button', { class: 'linkbtn', type: 'button', text: se.description ? 'Edit' : 'Add what you did' });
-            ed.onclick = () => { editingId = se.sid; render(); };
-            acts.append(ed);
+            const ed = el('button', { class: 'linkbtn', type: 'button', text: se.description ? 'Edit description' : 'Add what you did' });
+            ed.onclick = () => { editingId = se.sid; timeEditId = null; render(); };
+            const et = el('button', { class: 'linkbtn', type: 'button', text: 'Edit time' });
+            et.onclick = () => { timeEditId = se.sid; editingId = null; render(); };
+            acts.append(ed, et);
           }
           const del = el('button', { class: 'linkbtn danger', type: 'button', text: 'Delete' });
           del.onclick = async () => {
@@ -583,6 +714,7 @@
           };
           acts.append(del);
           row.append(acts);
+          if (timeEditId === se.sid && se.state === 'done') row.append(editTimeForm(se));
         }
         return row;
       }));
@@ -590,8 +722,8 @@
 
     function render() {
       renderPeople(); renderClock(); renderMetrics();
-      const typing = document.activeElement && document.activeElement.closest('#log textarea, #log');
-      if (!(editingId && typing)) renderLog();
+      const typing = document.activeElement && document.activeElement.closest('#log');
+      if (!((editingId || timeEditId) && typing)) renderLog();
     }
     // Keep the running timer and live totals ticking.
     setInterval(() => { if (!$('ttView').hidden) { renderClock(); renderMetrics(); } }, 1000);
@@ -629,7 +761,7 @@
       $('ttView').hidden = !user;
       $('navRight').hidden = !user;
       stopWatching.forEach(stop => stop()); stopWatching = [];
-      weekEntries = []; openEntries = []; pausedEntries = []; pendingId = null; editingId = null;
+      weekEntries = []; openEntries = []; pausedEntries = []; pendingId = null; editingId = null; timeEditId = null;
       if (user) {
         $('who').textContent = user.email;
         try { const p = localStorage.getItem(LAST_PERSON_KEY); if (PEOPLE.includes(p)) selected = p; } catch (e) {}

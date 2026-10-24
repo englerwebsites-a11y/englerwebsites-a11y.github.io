@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Engler — Owners Contract</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --bg-soft: #F0F3F8;
+      --tab: #16233B;
+      --tab-deep: #0D1729;
+      --ink: #16233B;
+      --ink-soft: #5F6776;
+      --silver: #9BA3B0;
+      --silver-line: #DDE2EA;
+      --accent: #2F6BFF;
+      --accent-soft: #E9F0FF;
+      --danger: #D64545;
+      --ok: #1F9D6B;
+      --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+      --font-display: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(22,35,59,0.96);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+    }
+    nav {
+      max-width: 1240px; margin: 0 auto; padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo {
+      font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;
+      letter-spacing: -0.02em; color: #FFF; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo .mark { width: 33px; height: 33px; border-radius: 8px; image-rendering: pixelated; }
+    .logo small { font-family: var(--font-mono); font-weight: 400; font-size: 0.72rem; opacity: 0.6; letter-spacing: 0.08em; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo-sub { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; color: #FFF; opacity: 0.6; text-decoration: none; padding: 4px 6px; margin: -4px -6px; border-radius: 6px; transition: opacity .15s, background .15s; }
+    .logo-sub:hover, .logo-sub:focus-visible { opacity: 1; background: rgba(255,255,255,0.08); }
+    .logo-sub:focus-visible { outline: 2px solid #7CA6FF; outline-offset: 2px; }
+    .nav-right { display: flex; align-items: center; gap: 14px; color: #FFF; font-family: var(--font-mono); font-size: 0.78rem; }
+    .nav-right .who { opacity: 0.7; }
+
+    .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; letter-spacing: -0.03em; line-height: 1.15; margin: 8px 0 10px; }
+    h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+    .btn {
+      font: inherit; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      padding: 12px 20px; border-radius: 999px; border: 1px solid transparent; transition: all 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    }
+    .btn-primary { background: var(--tab); color: #FFF; }
+    .btn-primary:hover { background: var(--tab-deep); }
+    .btn-ghost { background: #FFF; color: var(--ink); border-color: var(--silver-line); }
+    .btn-ghost:hover { border-color: var(--silver); }
+    .btn-danger { background: #FFF; color: var(--danger); border-color: #F1CFCF; }
+    .btn-danger:hover { border-color: var(--danger); }
+    .btn-small { padding: 7px 14px; font-size: 0.8rem; }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    header .btn-ghost { background: transparent; color: #FFF; border-color: rgba(255,255,255,0.3); }
+    header .btn-ghost:hover { border-color: #FFF; }
+
+    input[type="email"], input[type="password"], input[type="search"] {
+      width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink);
+      background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px;
+      padding: 11px 14px; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    input:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* ---- Sign in ---- */
+    .login-wrap {
+      min-height: calc(100vh - 66px); display: grid; place-items: center; padding: 40px 16px;
+      background: radial-gradient(circle at top right, rgba(47,107,255,0.16), transparent 35%);
+    }
+    .login {
+      width: 100%; max-width: 400px; background: #FFF; border: 1px solid var(--silver-line);
+      border-radius: 16px; box-shadow: var(--shadow-sm); padding: 32px;
+    }
+    .login p { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 22px; }
+    .login label { display: block; font-weight: 600; font-size: 0.88rem; margin: 14px 0 6px; }
+    .login .btn { width: 100%; margin-top: 22px; }
+    .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 12px; min-height: 1.2em; }
+
+
+    section.card { background: #FFF; border: 1px solid var(--silver-line); border-radius: 16px; box-shadow: var(--shadow-sm); padding: 28px; }
+    .card-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--silver-line); }
+    .card-head .num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+    .card-head .head-act { margin-left: auto; }
+    .page { max-width: 1240px; margin: 0 auto; padding: 32px 32px 80px; }
+    .page-head { margin-bottom: 24px; }
+    .page-head p { color: var(--ink-soft); font-size: 0.95rem; }
+    .err { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #FDF3F3; border: 1px solid #F1CFCF; color: #A33A3A; font-size: 0.88rem; }
+
+    .doc { max-width: 820px; margin: 0 auto; }
+    .doc-title { text-align: center; margin-bottom: 28px; }
+    .doc-title h1 { font-size: 2.1rem; }
+    .doc-title p { color: var(--ink-soft); font-size: 0.9rem; }
+    .doc section.card + section.card { margin-top: 20px; }
+    .clause { padding: 14px 0; border-top: 1px solid var(--silver-line); }
+    .clause:first-of-type { border-top: none; padding-top: 0; }
+    .clause h3 { font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin-bottom: 6px; }
+    .clause p { color: var(--ink); font-size: 0.97rem; line-height: 1.65; }
+    .clause p + p { margin-top: 10px; }
+    .clause ul { margin: 4px 0 0 1.2em; font-size: 0.97rem; line-height: 1.7; }
+    .clause li::marker { color: var(--accent); }
+    .clause strong { font-weight: 700; }
+    .clause .red { color: #D02B2B; font-weight: 700; text-decoration: underline; }
+    .signed { text-align: center; }
+    .signed .names { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 40px; margin-top: 8px; }
+    .signed .name { font-family: 'Brush Script MT', 'Segoe Script', cursive; font-size: 1.6rem; color: var(--ink); }
+    .loading { text-align: center; color: var(--ink-soft); padding: 40px 0; }
+    .doc-note { text-align: center; margin-top: 22px; font-size: 0.8rem; color: var(--ink-soft); }
+    @media print {
+      header, .doc-note, .toast { display: none !important; }
+      body { background: #FFF; }
+      section.card { box-shadow: none; break-inside: avoid; }
+    }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+      background: var(--tab-deep); color: #FFF; padding: 12px 20px; border-radius: 999px;
+      font-size: 0.88rem; box-shadow: 0 12px 30px rgba(0,0,0,0.2); transition: transform 0.3s ease; z-index: 50;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      nav, .page { padding-left: 16px; padding-right: 16px; }
+      .nav-right .who { display: none; }
+      section.card { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="../home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+        <a class="logo-sub" href="../portal.html" title="Back to the Team Portal">PORTAL</a>
+      </div>
+      <div class="nav-right" id="navRight" hidden>
+        <span class="who" id="who"></span>
+        <button class="btn btn-ghost btn-small" id="signOut">Sign out</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Sign in -->
+  <div class="login-wrap" id="loginView" hidden>
+    <form class="login" id="loginForm">
+      <div class="eyebrow">Team only</div>
+      <h1>Owners Contract</h1>
+      <p>Sign in with the Engler admin account to view the owners contract.</p>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="username" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required />
+      <button class="btn btn-primary" type="submit" id="loginBtn">Sign in</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+
+  <main class="page" id="pageView" hidden>
+    <div class="doc">
+      <div class="doc-title">
+        <div class="eyebrow">Team only · Confidential</div>
+        <h1 id="docTitle">Owners Contract</h1>
+        <p id="docSub"></p>
+      </div>
+      <div id="docBody"><div class="loading">Loading the contract…</div></div>
+      <p class="doc-note">The contract is kept in the team's private database and only loads after you sign in. Changes need a unanimous vote, so it can't be edited from here.</p>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, doc, getDoc }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    // Must match the config in client-form.html.
+    const FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyCrmEk6X74MWQH6olX2N5Q5Zd7NJGY_SDk',
+      authDomain: 'engler-questionnaire.firebaseapp.com',
+      projectId: 'engler-questionnaire',
+      storageBucket: 'engler-questionnaire.firebasestorage.app',
+      messagingSenderId: '477147439593',
+      appId: '1:477147439593:web:43ceb566517778c8fdeb78'
+    };
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    setPersistence(auth, browserSessionPersistence);
+
+    const $ = id => document.getElementById(id);
+    function el(tag, attrs = {}, ...children) {
+      const node = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') node.className = v;
+        else if (k === 'text') node.textContent = v;
+        else node.setAttribute(k, v);
+      }
+      for (const c of children) if (c != null) node.append(c);
+      return node;
+    }
+    function toast(msg) {
+      $('toast').textContent = msg; $('toast').classList.add('show');
+      clearTimeout(toast.t); toast.t = setTimeout(() => $('toast').classList.remove('show'), 2600);
+    }
+
+    // The contract lives in teamDocs/contract (readable only by the admin account), not in this
+    // public page's code. Its content field is JSON: { title, sections: [{ heading, clauses: [{ title, paragraphs?, list? }] }], signedBy: [] }.
+    // In text, **word** is bold and !!word!! is red and underlined, as in the original.
+    function richText(text) {
+      const frag = document.createDocumentFragment();
+      text.split(/(\*\*[^*]+\*\*|!![^!]+!!)/).forEach(part => {
+        if (!part) return;
+        if (part.startsWith('**')) frag.append(el('strong', { text: part.slice(2, -2) }));
+        else if (part.startsWith('!!')) frag.append(el('span', { class: 'red', text: part.slice(2, -2) }));
+        else frag.append(part);
+      });
+      return frag;
+    }
+    function renderContract(c) {
+      $('docTitle').textContent = c.title || 'Owners Contract';
+      const body = (c.sections || []).map((sec, i) => el('section', { class: 'card' },
+        el('div', { class: 'card-head' }, el('span', { class: 'num', text: String(i + 1).padStart(2, '0') }), el('h2', { text: sec.heading })),
+        ...(sec.clauses || []).map(cl => el('div', { class: 'clause' },
+          cl.title ? el('h3', { text: cl.title }) : null,
+          ...(cl.paragraphs || []).map(p => el('p', {}, richText(p))),
+          cl.list ? el('ul', {}, ...cl.list.map(li => el('li', {}, richText(li)))) : null))));
+      if ((c.signedBy || []).length) body.push(el('section', { class: 'card signed' },
+        el('div', { class: 'eyebrow', text: 'Signed by' }),
+        el('div', { class: 'names' }, ...c.signedBy.map(n => el('span', { class: 'name', text: n })))));
+      $('docBody').replaceChildren(...body);
+    }
+    async function loadContract() {
+      try {
+        const snap = await getDoc(doc(db, 'teamDocs', 'contract'));
+        if (!snap.exists()) { $('docBody').replaceChildren(el('div', { class: 'loading', text: 'The contract hasn’t been added yet.' })); return; }
+        const d = snap.data();
+        renderContract(JSON.parse(d.content));
+        const when = d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toLocaleDateString(undefined, { dateStyle: 'long' }) : '';
+        $('docSub').textContent = when ? `Last updated ${when}` : '';
+      } catch (e) {
+        console.error(e);
+        $('docBody').replaceChildren(el('div', { class: 'err', text: e.code === 'permission-denied'
+          ? 'This account isn’t allowed to read the contract.' : 'Couldn’t load the contract: ' + (e.code || e.message) }));
+      }
+    }
+    onAuthStateChanged(auth, user => {
+      $('loginView').hidden = !!user; $('pageView').hidden = !user; $('navRight').hidden = !user;
+      if (user) { $('who').textContent = user.email; loadContract(); }
+      else { $('docBody').replaceChildren(el('div', { class: 'loading', text: 'Loading the contract…' })); $('email').focus(); }
+    });
+
+    // ---- Auth ----
+    $('loginForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      $('loginError').textContent = '';
+      $('loginBtn').disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+        $('password').value = '';
+      } catch (e) {
+        $('loginError').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(e.code)
+          ? 'Incorrect email or password.'
+          : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again in a few minutes.' : 'Sign-in failed: ' + e.code;
+      } finally {
+        $('loginBtn').disabled = false;
+      }
+    });
+    $('signOut').addEventListener('click', () => signOut(auth));
+  </script>
+</body>
+</html>
