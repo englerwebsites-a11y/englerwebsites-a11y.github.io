@@ -147,8 +147,22 @@
     .seg button[aria-pressed="true"].not-started { background: #FFF; color: var(--ink); box-shadow: 0 1px 4px rgba(13,23,41,0.12); }
     .seg button[aria-pressed="true"].in-progress { background: #F5C451; color: #4A3200; }
     .seg button[aria-pressed="true"].completed { background: var(--ok); color: #FFF; }
+    .ck-table td:first-child { min-width: 220px; }
     .ck-table input[type="date"], .ck-table select { font: inherit; font-size: 0.85rem; color: var(--ink); background: #FFF; border: 1px solid var(--silver-line); border-radius: 8px; padding: 6px 8px; max-width: 150px; }
     .ck-table input:disabled, .ck-table select:disabled { opacity: 0.45; }
+    .head-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .tdesc { margin-top: 4px; font-size: 0.86rem; color: var(--ink-soft); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .tacts { margin-top: 4px; display: flex; gap: 12px; }
+    .linkbtn { font: inherit; font-size: 0.78rem; background: none; border: none; padding: 0; color: var(--accent); cursor: pointer; }
+    .linkbtn.danger { color: var(--danger); }
+    .linkbtn:hover { text-decoration: underline; }
+    .tform { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; padding: 14px; border: 1px solid var(--silver-line); border-radius: 12px; background: var(--bg); }
+    td .tform { margin: 0; }
+    .tform input, .tform textarea { width: 100%; font: inherit; font-size: 0.92rem; color: var(--ink); background: #FFF; border: 1px solid var(--silver-line); border-radius: 10px; padding: 9px 11px; }
+    .tform textarea { min-height: 64px; resize: vertical; }
+    .tform input:focus, .tform textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .tform .row { display: flex; gap: 8px; justify-content: flex-end; }
+    .notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); border-left: 3px solid var(--accent); font-size: 0.88rem; }
     .placeholder { border: 1.5px dashed var(--silver-line); border-radius: 16px; padding: 60px 24px; text-align: center; color: var(--ink-soft); }
     .empty { color: var(--ink-soft); font-size: 0.9rem; padding: 8px 0; }
     .src { margin-top: 14px; font-size: 0.8rem; color: var(--ink-soft); }
@@ -159,7 +173,8 @@
       .ck-table thead { display: none; }
       .ck-table tr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; padding: 12px 0; border-top: 1px solid var(--silver-line); }
       .ck-table td { border: none; padding: 0; background: none !important; }
-      .ck-table td:first-child, .ck-table td:nth-child(2) { grid-column: 1 / -1; }
+      .ck-table td:first-child, .ck-table td:nth-child(2) { grid-column: 1 / -1; min-width: 0; }
+      .head-right { align-items: flex-start; }
       .ck-table tr.st-completed, .ck-table tr.st-in-progress { padding-left: 10px; border-left: 3px solid; }
       .ck-table tr.st-completed { border-left-color: var(--ok); }
       .ck-table tr.st-in-progress { border-left-color: #F5C451; }
@@ -312,13 +327,37 @@
     const requirements = sub => itemsFor(sub).filter(i => i.type !== 'discount' && (i.name || '').trim());
     // Stable key for a requirement, so its progress follows it even if the list is reordered.
     const keyOf = i => (i.type + ':' + i.name.trim().toLowerCase()).replace(/[.~*\/\[\]]/g, '_').slice(0, 140);
-    const progressOf = (sub, k) => (checklists[sub.id] && checklists[sub.id][k]) || { status: 'not-started', date: '', by: '' };
-    function counts(sub) {
-      const reqs = requirements(sub);
-      const c = { total: reqs.length, done: 0, prog: 0 };
-      reqs.forEach(r => { const s = progressOf(sub, keyOf(r)).status; if (s === 'completed') c.done++; else if (s === 'in-progress') c.prog++; });
-      return c;
+    const BLANK = { status: 'not-started', date: '', by: '' };
+    // checklists/<id>.items holds either just progress per inventory item (the list follows the Invoice
+    // Inventory), or, once someone renames, describes, adds or deletes a task, the order's own task list:
+    // { <key>: { name, type, description, order, status, date, by, deleted? } }. Deleted inventory items
+    // stay as { deleted: true } so they don't come back as "new".
+    const saved = sub => checklists[sub.id] || {};
+    const isCustom = sub => Object.values(saved(sub)).some(v => v && (v.name || v.deleted));
+    function tasks(sub) {
+      const s = saved(sub);
+      if (!isCustom(sub)) return requirements(sub).map((r, i) => {
+        const key = keyOf(r); return Object.assign({ key, name: r.name, type: r.type, description: '', order: i }, BLANK, s[key] || {});
+      });
+      return Object.entries(s).filter(([, v]) => v && v.name && !v.deleted)
+        .map(([key, v]) => Object.assign({ key, type: 'task', description: '' }, BLANK, v))
+        .sort((x, y) => (x.order ?? 0) - (y.order ?? 0));
     }
+    // Inventory items added after the checklist became its own list.
+    const missing = sub => isCustom(sub) ? requirements(sub).filter(r => !saved(sub)[keyOf(r)]) : [];
+    function counts(sub) {
+      const list = tasks(sub);
+      return { total: list.length, done: list.filter(t => t.status === 'completed').length, prog: list.filter(t => t.status === 'in-progress').length };
+    }
+    // The order's checklist as its own task list (keeps progress), ready to edit.
+    function ownList(sub) {
+      if (isCustom(sub)) return Object.assign({}, saved(sub));
+      const all = {};
+      tasks(sub).forEach(t => { all[t.key] = { name: t.name, type: t.type, description: '', order: t.order, status: t.status, date: t.date || '', by: t.by || '' }; });
+      return all;
+    }
+    const nextOrder = all => Object.values(all).reduce((m, v) => Math.max(m, v.order ?? 0), -1) + 1;
+    const newKey = () => 'task:' + Math.random().toString(36).slice(2, 10);
     const pad = n => String(n).padStart(2, '0');
     const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
     function fmtDate(sub) {
@@ -326,14 +365,34 @@
       return d ? d.toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Pending…';
     }
 
-    async function save(sub, key, patch) {
-      const next = Object.assign({}, progressOf(sub, key), patch);
-      const all = Object.assign({}, checklists[sub.id] || {}, { [key]: next });
+    async function write(sub, all) {
       checklists[sub.id] = all;          // show it straight away
       render();
-      try {
-        await setDoc(doc(db, 'checklists', sub.id), { items: all, updatedAt: serverTimestamp() });
-      } catch (e) { showError(e); }
+      try { await setDoc(doc(db, 'checklists', sub.id), { items: all, updatedAt: serverTimestamp() }); }
+      catch (e) { showError(e); }
+    }
+    // Status, date and who: keeps the list following the inventory unless it's already its own list.
+    function save(sub, key, patch) {
+      const all = Object.assign({}, saved(sub));
+      const cur = isCustom(sub) ? all[key] : Object.assign({}, BLANK, all[key] || {});
+      all[key] = Object.assign({}, cur, patch);
+      return write(sub, all);
+    }
+    function editTask(sub, key, patch) { const all = ownList(sub); all[key] = Object.assign({}, all[key], patch); return write(sub, all); }
+    function addTask(sub, name, description) {
+      const all = ownList(sub);
+      all[newKey()] = { name, type: 'task', description, order: nextOrder(all), status: 'not-started', date: '', by: '' };
+      return write(sub, all);
+    }
+    function deleteTask(sub, key) {
+      const all = ownList(sub);
+      if (key.startsWith('task:')) delete all[key]; else all[key] = { deleted: true };
+      return write(sub, all);
+    }
+    function addMissing(sub) {
+      const all = ownList(sub); let o = nextOrder(all);
+      missing(sub).forEach(r => { all[keyOf(r)] = { name: r.name, type: r.type, description: '', order: o++, status: 'not-started', date: '', by: '' }; });
+      return write(sub, all);
     }
 
     // ---- Orders list ----
@@ -347,67 +406,118 @@
           el('span', { class: 'oname', text: s.companyName || 'Untitled' }),
           el('span', { class: 'ometa' }, el('span', { text: orderNo(s) }), el('span', { text: `${c.done} of ${c.total} done` })),
           el('div', { class: 'bar' }, el('span', { style: `width:${pct}%` })));
-        b.onclick = () => { selectedId = s.id; render(); if (window.innerWidth <= 900) $('detail').scrollIntoView({ behavior: 'smooth' }); };
+        b.onclick = () => { selectedId = s.id; editingKey = null; adding = false; render(); if (window.innerWidth <= 900) $('detail').scrollIntoView({ behavior: 'smooth' }); };
         return b;
       }));
     }
     $('search').addEventListener('input', renderOrders);
 
     // ---- Checklist ----
+    let editingKey = null;   // task being renamed / described
+    let adding = false;      // "+ Add task" form open
+
+    function taskForm(initial, onSave, onCancel, saveLabel) {
+      const name = el('input', { type: 'text', class: 'tf-name', maxlength: '160', placeholder: 'Task name', value: initial.name || '' });
+      const desc = el('textarea', { class: 'tf-desc', maxlength: '1000', placeholder: 'Description (optional): details, links, notes for the team' });
+      desc.value = initial.description || '';
+      const save = el('button', { class: 'btn btn-primary btn-small', type: 'submit', text: saveLabel });
+      const cancel = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Cancel' });
+      const form = el('form', { class: 'tform' }, name, desc, el('div', { class: 'row' }, cancel, save));
+      cancel.onclick = onCancel;
+      form.onsubmit = ev => {
+        ev.preventDefault();
+        const n = name.value.trim();
+        if (!n) { name.focus(); toast('Give the task a name.'); return; }
+        onSave(n.slice(0, 160), desc.value.trim().slice(0, 1000));
+      };
+      setTimeout(() => name.focus(), 0);
+      return form;
+    }
+
     function renderDetail() {
       const sub = submissions.find(s => s.id === selectedId);
       if (!sub) { $('detail').replaceChildren(el('div', { class: 'placeholder', text: 'Select an order to see its checklist.' })); return; }
-      const reqs = requirements(sub), c = counts(sub);
+      const list = tasks(sub), c = counts(sub), extra = missing(sub);
+      const addBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: '+ Add task' });
+      addBtn.onclick = () => { adding = true; editingKey = null; renderDetail(); };
       const head = el('div', { class: 'detail-head' },
         el('div', {}, el('div', { class: 'eyebrow', text: 'Order ' + orderNo(sub) }), el('h2', { text: sub.companyName || 'Untitled' }),
           el('div', { class: 'meta', text: `Submitted ${fmtDate(sub)}` })),
-        el('div', { class: 'summary' },
-          el('span', { class: 's-done', text: `${c.done} completed` }),
-          el('span', { class: 's-prog', text: `${c.prog} in progress` }),
-          el('span', { text: `${c.total - c.done - c.prog} not started` })));
-      if (!reqs.length) {
-        $('detail').replaceChildren(head, el('div', { class: 'empty', text: 'This order has no requirements yet. Add them in its Invoice Inventory on the Appraisals page.' }));
-        return;
+        el('div', { class: 'head-right' },
+          el('div', { class: 'summary' },
+            el('span', { class: 's-done', text: `${c.done} completed` }),
+            el('span', { class: 's-prog', text: `${c.prog} in progress` }),
+            el('span', { text: `${c.total - c.done - c.prog} not started` })),
+          addBtn));
+      const parts = [head];
+      if (extra.length) {
+        const b = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: `Add ${extra.length === 1 ? 'it' : 'them'}` });
+        b.onclick = () => { addMissing(sub); toast(`Added ${extra.length} item${extra.length > 1 ? 's' : ''} from the inventory.`); };
+        parts.push(el('div', { class: 'notice' },
+          el('span', { text: `The Invoice Inventory has ${extra.length} item${extra.length > 1 ? 's' : ''} not on this checklist: ${extra.map(r => r.name).join(', ')}.` }), b));
       }
-      const rows = reqs.map(r => {
-        const key = keyOf(r), p = progressOf(sub, key);
+      if (adding) parts.push(taskForm({}, (n, d) => { adding = false; addTask(sub, n, d); toast('Task added.'); },
+        () => { adding = false; renderDetail(); }, 'Add task'));
+      if (!list.length && !adding) {
+        parts.push(el('div', { class: 'empty', text: 'No tasks yet. Use “+ Add task”, or add items to this order’s Invoice Inventory on the Appraisals page.' }));
+        $('detail').replaceChildren(...parts); return;
+      }
+      const rows = list.map(t => {
+        const key = t.key;
         const seg = el('div', { class: 'seg', role: 'group', 'aria-label': 'Status' }, ...STATUSES.map(([v, label]) => {
-          const b = el('button', { type: 'button', class: v, 'aria-pressed': String(p.status === v), text: label });
+          const b = el('button', { type: 'button', class: v, 'aria-pressed': String(t.status === v), text: label });
           b.onclick = () => {
-            if (p.status === v) return;
+            if (t.status === v) return;
             const patch = { status: v };
             if (v === 'completed') {
-              patch.date = p.date || today();
-              if (!p.by) { try { const lp = localStorage.getItem(LAST_PERSON_KEY); if (PEOPLE.includes(lp)) patch.by = lp; } catch (e) {} }
+              patch.date = t.date || today();
+              if (!t.by) { try { const lp = localStorage.getItem(LAST_PERSON_KEY); if (PEOPLE.includes(lp)) patch.by = lp; } catch (e) {} }
             } else { patch.date = ''; }
             save(sub, key, patch);
-            if (v === 'completed') toast(`Marked “${r.name}” completed.`);
+            if (v === 'completed') toast(`Marked “${t.name}” completed.`);
           };
           return b;
         }));
-        const done = p.status === 'completed';
-        const date = el('input', { type: 'date', value: p.date || '', max: today(), 'aria-label': 'Date completed' });
+        const done = t.status === 'completed';
+        const date = el('input', { type: 'date', value: t.date || '', max: today(), 'aria-label': 'Date completed' });
         if (!done) date.disabled = true;
         date.onchange = () => save(sub, key, { date: date.value });
         const by = el('select', { 'aria-label': 'Completed by' }, el('option', { value: '', text: '—' }), ...PEOPLE.map(n => el('option', { value: n, text: n })));
-        by.value = p.by || '';
+        by.value = t.by || '';
         if (!done) by.disabled = true;
         by.onchange = () => { save(sub, key, { by: by.value }); try { if (by.value) localStorage.setItem(LAST_PERSON_KEY, by.value); } catch (e) {} };
-        return el('tr', { class: 'st-' + p.status },
-          el('td', {}, el('span', { class: 'req', text: r.name }), el('span', { class: 'type', text: TYPES[r.type] || r.type })),
-          el('td', {}, seg), el('td', {}, date), el('td', {}, by));
+
+        let first;
+        if (editingKey === key) {
+          first = el('td', {}, taskForm(t, (n, d) => { editingKey = null; editTask(sub, key, { name: n, description: d }); toast('Task updated.'); },
+            () => { editingKey = null; renderDetail(); }, 'Save'));
+        } else {
+          const edit = el('button', { class: 'linkbtn', type: 'button', text: 'Edit' });
+          edit.onclick = () => { editingKey = key; adding = false; renderDetail(); };
+          const del = el('button', { class: 'linkbtn danger', type: 'button', text: 'Delete' });
+          del.onclick = () => { if (confirm(`Delete the task “${t.name}”?`)) { deleteTask(sub, key); toast('Task deleted.'); } };
+          first = el('td', {},
+            el('span', { class: 'req', text: t.name }), el('span', { class: 'type', text: TYPES[t.type] || 'Task' }),
+            t.description ? el('div', { class: 'tdesc', text: t.description }) : null,
+            el('div', { class: 'tacts' }, edit, del));
+        }
+        return el('tr', { class: 'st-' + t.status }, first, el('td', {}, seg), el('td', {}, date), el('td', {}, by));
       });
-      $('detail').replaceChildren(head,
+      parts.push(
         el('table', { class: 'ck-table' },
-          el('thead', {}, el('tr', {}, el('th', { text: 'Requirement' }), el('th', { text: 'Status' }), el('th', { text: 'Date completed' }), el('th', { text: 'By' }))),
+          el('thead', {}, el('tr', {}, el('th', { text: 'Task' }), el('th', { text: 'Status' }), el('th', { text: 'Date completed' }), el('th', { text: 'By' }))),
           el('tbody', {}, ...rows)),
-        el('p', { class: 'src', text: 'Requirements come from this order’s Invoice Inventory on the Appraisals page. Changes save automatically for the whole team.' }));
+        el('p', { class: 'src', text: isCustom(sub)
+          ? 'This checklist has been edited, so it’s now its own list. New Invoice Inventory items are offered above instead of added automatically.'
+          : 'Tasks come from this order’s Invoice Inventory on the Appraisals page until you rename, describe, add or delete one. Changes save automatically for the whole team.' }));
+      $('detail').replaceChildren(...parts);
     }
 
     function render() {
       renderOrders();
       const a = document.activeElement;
-      if (!(a && $('detail').contains(a) && (a.tagName === 'SELECT' || a.tagName === 'INPUT'))) renderDetail();
+      const busy = a && $('detail').contains(a) && ['SELECT', 'INPUT', 'TEXTAREA'].includes(a.tagName);
+      if (!busy && !editingKey && !adding) renderDetail();
     }
 
     function startListening() {
