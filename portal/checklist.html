@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Engler — Invoice Checklist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F7F8FB;
+      --bg-soft: #F0F3F8;
+      --tab: #16233B;
+      --tab-deep: #0D1729;
+      --ink: #16233B;
+      --ink-soft: #5F6776;
+      --silver: #9BA3B0;
+      --silver-line: #DDE2EA;
+      --accent: #2F6BFF;
+      --accent-soft: #E9F0FF;
+      --danger: #D64545;
+      --ok: #1F9D6B;
+      --shadow-sm: 0 12px 30px rgba(13, 23, 41, 0.06);
+      --font-display: 'Archivo', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+
+    header {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(22,35,59,0.96);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(4,10,20,0.16);
+    }
+    nav {
+      max-width: 1240px; margin: 0 auto; padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .logo {
+      font-family: var(--font-display); font-weight: 800; font-size: 1.15rem;
+      letter-spacing: -0.02em; color: #FFF; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo .mark { width: 33px; height: 33px; border-radius: 8px; image-rendering: pixelated; }
+    .logo small { font-family: var(--font-mono); font-weight: 400; font-size: 0.72rem; opacity: 0.6; letter-spacing: 0.08em; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo-sub { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; color: #FFF; opacity: 0.6; text-decoration: none; padding: 4px 6px; margin: -4px -6px; border-radius: 6px; transition: opacity .15s, background .15s; }
+    .logo-sub:hover, .logo-sub:focus-visible { opacity: 1; background: rgba(255,255,255,0.08); }
+    .logo-sub:focus-visible { outline: 2px solid #7CA6FF; outline-offset: 2px; }
+    .nav-right { display: flex; align-items: center; gap: 14px; color: #FFF; font-family: var(--font-mono); font-size: 0.78rem; }
+    .nav-right .who { opacity: 0.7; }
+
+    .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+    h1 { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; letter-spacing: -0.03em; line-height: 1.15; margin: 8px 0 10px; }
+    h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; letter-spacing: -0.02em; }
+
+    .btn {
+      font: inherit; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      padding: 12px 20px; border-radius: 999px; border: 1px solid transparent; transition: all 0.15s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    }
+    .btn-primary { background: var(--tab); color: #FFF; }
+    .btn-primary:hover { background: var(--tab-deep); }
+    .btn-ghost { background: #FFF; color: var(--ink); border-color: var(--silver-line); }
+    .btn-ghost:hover { border-color: var(--silver); }
+    .btn-danger { background: #FFF; color: var(--danger); border-color: #F1CFCF; }
+    .btn-danger:hover { border-color: var(--danger); }
+    .btn-small { padding: 7px 14px; font-size: 0.8rem; }
+    .btn:disabled { opacity: 0.6; cursor: wait; }
+    header .btn-ghost { background: transparent; color: #FFF; border-color: rgba(255,255,255,0.3); }
+    header .btn-ghost:hover { border-color: #FFF; }
+
+    input[type="email"], input[type="password"], input[type="search"] {
+      width: 100%; font: inherit; font-size: 0.95rem; color: var(--ink);
+      background: var(--bg); border: 1px solid var(--silver-line); border-radius: 10px;
+      padding: 11px 14px; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    input:focus { outline: none; background: #FFF; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    /* ---- Sign in ---- */
+    .login-wrap {
+      min-height: calc(100vh - 66px); display: grid; place-items: center; padding: 40px 16px;
+      background: radial-gradient(circle at top right, rgba(47,107,255,0.16), transparent 35%);
+    }
+    .login {
+      width: 100%; max-width: 400px; background: #FFF; border: 1px solid var(--silver-line);
+      border-radius: 16px; box-shadow: var(--shadow-sm); padding: 32px;
+    }
+    .login p { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 22px; }
+    .login label { display: block; font-weight: 600; font-size: 0.88rem; margin: 14px 0 6px; }
+    .login .btn { width: 100%; margin-top: 22px; }
+    .login-error { color: var(--danger); font-size: 0.85rem; margin-top: 12px; min-height: 1.2em; }
+
+
+    section.card { background: #FFF; border: 1px solid var(--silver-line); border-radius: 16px; box-shadow: var(--shadow-sm); padding: 28px; }
+    .card-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--silver-line); }
+    .card-head .num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); }
+    .card-head .head-act { margin-left: auto; }
+    .page { max-width: 1240px; margin: 0 auto; padding: 32px 32px 80px; }
+    .page-head { margin-bottom: 24px; }
+    .page-head p { color: var(--ink-soft); font-size: 0.95rem; }
+    .err { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #FDF3F3; border: 1px solid #F1CFCF; color: #A33A3A; font-size: 0.88rem; }
+
+    .ck-grid { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+    .orders { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 110px); }
+    .olist { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
+    .order { text-align: left; font: inherit; cursor: pointer; width: 100%; background: #FFF; border: 1px solid var(--silver-line); border-radius: 12px; padding: 12px 14px; transition: border-color .15s, background .15s; }
+    .order:hover { border-color: var(--silver); }
+    .order.active { border-color: var(--accent); background: var(--accent-soft); }
+    .order .oname { font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .order .ometa { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); display: flex; justify-content: space-between; gap: 8px; }
+    .bar { height: 6px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; margin-top: 8px; }
+    .bar > span { display: block; height: 100%; background: var(--ok); border-radius: 999px; }
+    .detail-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 18px; }
+    .detail-head h2 { font-size: 1.5rem; }
+    .detail-head .meta { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); }
+    .summary { display: flex; gap: 8px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.78rem; }
+    .summary span { padding: 4px 10px; border-radius: 999px; background: var(--bg-soft); }
+    .summary .s-done { background: #E2F5EC; color: #17724F; }
+    .summary .s-prog { background: #FBEED3; color: #8A5A12; }
+    .ck-table { width: 100%; border-collapse: collapse; }
+    .ck-table th { text-align: left; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 500; padding: 0 10px 10px 0; }
+    .ck-table td { padding: 12px 10px 12px 0; border-top: 1px solid var(--silver-line); vertical-align: middle; }
+    .ck-table td:last-child, .ck-table th:last-child { padding-right: 0; }
+    .req { font-weight: 600; overflow-wrap: anywhere; }
+    .type { display: inline-block; margin-left: 8px; font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); border: 1px solid var(--silver-line); border-radius: 999px; padding: 1px 7px; vertical-align: 2px; }
+    tr.st-completed .req { color: var(--ink-soft); text-decoration: line-through; text-decoration-color: var(--silver); }
+    tr.st-completed td { background: #F6FBF8; }
+    tr.st-in-progress td { background: #FFFBF2; }
+    .seg { display: inline-flex; border: 1px solid var(--silver-line); border-radius: 999px; padding: 3px; background: var(--bg); gap: 2px; }
+    .seg button { font: inherit; font-size: 0.76rem; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--ink-soft); padding: 6px 10px; border-radius: 999px; white-space: nowrap; }
+    .seg button[aria-pressed="true"].not-started { background: #FFF; color: var(--ink); box-shadow: 0 1px 4px rgba(13,23,41,0.12); }
+    .seg button[aria-pressed="true"].in-progress { background: #F5C451; color: #4A3200; }
+    .seg button[aria-pressed="true"].completed { background: var(--ok); color: #FFF; }
+    .ck-table input[type="date"], .ck-table select { font: inherit; font-size: 0.85rem; color: var(--ink); background: #FFF; border: 1px solid var(--silver-line); border-radius: 8px; padding: 6px 8px; max-width: 150px; }
+    .ck-table input:disabled, .ck-table select:disabled { opacity: 0.45; }
+    .placeholder { border: 1.5px dashed var(--silver-line); border-radius: 16px; padding: 60px 24px; text-align: center; color: var(--ink-soft); }
+    .empty { color: var(--ink-soft); font-size: 0.9rem; padding: 8px 0; }
+    .src { margin-top: 14px; font-size: 0.8rem; color: var(--ink-soft); }
+    @media (max-width: 900px) {
+      .ck-grid { grid-template-columns: 1fr; }
+      .orders { position: static; max-height: none; }
+      .olist { max-height: 300px; }
+      .ck-table thead { display: none; }
+      .ck-table tr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; padding: 12px 0; border-top: 1px solid var(--silver-line); }
+      .ck-table td { border: none; padding: 0; background: none !important; }
+      .ck-table td:first-child, .ck-table td:nth-child(2) { grid-column: 1 / -1; }
+      .ck-table tr.st-completed, .ck-table tr.st-in-progress { padding-left: 10px; border-left: 3px solid; }
+      .ck-table tr.st-completed { border-left-color: var(--ok); }
+      .ck-table tr.st-in-progress { border-left-color: #F5C451; }
+    }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+      background: var(--tab-deep); color: #FFF; padding: 12px 20px; border-radius: 999px;
+      font-size: 0.88rem; box-shadow: 0 12px 30px rgba(0,0,0,0.2); transition: transform 0.3s ease; z-index: 50;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 600px) {
+      nav, .page { padding-left: 16px; padding-right: 16px; }
+      .nav-right .who { display: none; }
+      section.card { padding: 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+<script>if (location.protocol !== 'file:' && location.pathname.endsWith('.html')) history.replaceState(null, '', location.pathname.slice(0, -5) + location.search + location.hash);</script>
+  <header>
+    <nav>
+      <div class="brand">
+        <a class="logo" href="../home.html"><img class="mark" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAACKADAAQAAAABAAAACAAAAACVhHtSAAAAp0lEQVQYGWNkQID/CCaYxQgimaCC/0Ny+xj+///PEJbUD6aB4mANLCAGSJLpKyODoU0Kw4c3r4D0FbAiRkbG/yBjgBr/wyXff/jKICjAzWDi5siwZnIR2AKQCf8V1H3/84s7/Wfl0QbTYF1AzcxAJQ1XT+5gOH7+JcO//78Z2FjYGCRlZBj2H73HcPX8TrAJIAKk4T/QgWAaZCJIDCQB9gqIAQRYvQkAXB5PkvP3l5AAAAAASUVORK5CYII=" alt="Engler logo">ENGLER</a>
+        <a class="logo-sub" href="../portal.html" title="Back to the Team Portal">PORTAL</a>
+      </div>
+      <div class="nav-right" id="navRight" hidden>
+        <span class="who" id="who"></span>
+        <button class="btn btn-ghost btn-small" id="signOut">Sign out</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Sign in -->
+  <div class="login-wrap" id="loginView" hidden>
+    <form class="login" id="loginForm">
+      <div class="eyebrow">Team only</div>
+      <h1>Invoice Checklist</h1>
+      <p>Sign in with the Engler admin account to track each order’s requirements.</p>
+      <label for="email">Email</label>
+      <input type="email" id="email" autocomplete="username" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required />
+      <button class="btn btn-primary" type="submit" id="loginBtn">Sign in</button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
+
+  <main class="page" id="pageView" hidden>
+    <div class="page-head">
+      <div class="eyebrow">Team only</div>
+      <h1>Invoice Checklist</h1>
+      <p>Everything each client asked for, and how far along it is.</p>
+    </div>
+    <div class="ck-grid">
+      <aside class="orders">
+        <input type="search" id="search" placeholder="Search order number or company…" />
+        <div class="olist" id="olist"></div>
+      </aside>
+      <section class="card" id="detail">
+        <div class="placeholder">Select an order to see its checklist.</div>
+      </section>
+    </div>
+    <div class="err" id="err" hidden role="alert"></div>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="../appraisal.js"></script>
+  <script src="../order-number.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, setPersistence, browserSessionPersistence, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, collection, query, orderBy, onSnapshot, doc, setDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+    // Must match the config in client-form.html.
+    const FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyCrmEk6X74MWQH6olX2N5Q5Zd7NJGY_SDk',
+      authDomain: 'engler-questionnaire.firebaseapp.com',
+      projectId: 'engler-questionnaire',
+      storageBucket: 'engler-questionnaire.firebasestorage.app',
+      messagingSenderId: '477147439593',
+      appId: '1:477147439593:web:43ceb566517778c8fdeb78'
+    };
+    const app = initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    setPersistence(auth, browserSessionPersistence);
+
+    const $ = id => document.getElementById(id);
+    function el(tag, attrs = {}, ...children) {
+      const node = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') node.className = v;
+        else if (k === 'text') node.textContent = v;
+        else node.setAttribute(k, v);
+      }
+      for (const c of children) if (c != null) node.append(c);
+      return node;
+    }
+    function toast(msg) {
+      $('toast').textContent = msg; $('toast').classList.add('show');
+      clearTimeout(toast.t); toast.t = setTimeout(() => $('toast').classList.remove('show'), 2200);
+    }
+    function showError(e) {
+      console.error(e);
+      $('err').textContent = e && e.code === 'permission-denied'
+        ? "The checklist isn't allowed by the Firebase rules yet. Ask Claude to publish the checklists rule."
+        : 'Something went wrong: ' + (e && (e.code || e.message) || e);
+      $('err').hidden = false;
+    }
+
+    // Requirements come from each order's Invoice Inventory (portal/appraisals.html): its saved
+    // item list in questionnaireFees, or the client's answers if it hasn't been edited. Discounts
+    // aren't work, so they're left out. Progress is kept in checklists/<submission ID>:
+    // { items: { <requirement key>: { status, date (YYYY-MM-DD), by } }, updatedAt }.
+    const PEOPLE = ['Zay', 'Gabe', 'Joel'];
+    const STATUSES = [['not-started', 'Not started'], ['in-progress', 'In progress'], ['completed', 'Completed']];
+    const LAST_PERSON_KEY = 'engler-time-person';
+    let submissions = [], fees = {}, items = {}, checklists = {};
+    let selectedId = null;
+    let stopWatching = [];
+
+    const appraise = sub => window.Appraisal.appraise(sub.answers);
+    const feesFor = id => fees[id] || [];
+    const TYPES = { page: 'Page', feature: 'Feature', fee: 'Fee', discount: 'Discount' };
+    // Prices are stored as positive numbers; discounts are subtracted.
+    const signedPrice = i => (i.type === 'discount' ? -1 : 1) * (Number(i.price) || 0);
+    // Fees and discounts added before they became item types; shown in the list until it's next saved.
+    const feeAsItem = f => ({ type: f.kind === 'discount' ? 'discount' : 'fee', name: f.reason, price: Number(f.amount) || 0 });
+
+    // The invoice inventory starts from the client's answers (each listed page, each feature)
+    // and can be edited and saved, including fees and discounts.
+    const cleanName = x => x.replace(/^[\s\-*\d.)]+/, '').trim();
+    function defaultItems(sub) {
+      const a = sub.answers || {};
+      const ap = appraise(sub);
+      const listed = (a['Anticipated Pages'] || '').split(/[,;\n•]+/).map(cleanName).filter(Boolean);
+      const count = parseInt(a['Estimated Page Count'], 10) || 0;
+      const pages = listed.slice();
+      for (let n = listed.length + 1; n <= count; n++) pages.push(`Additional page ${n - listed.length}`);
+      return [
+        ...pages.map(name => ({ type: 'page', name: name.slice(0, 120), price: ap.pricePerPage })),
+        ...ap.features.map(name => ({ type: 'feature', name, price: ap.pricePerFeature })),
+        ...(ap.other ? [{ type: 'feature', name: ap.other.slice(0, 120), price: 0 }] : [])
+      ];
+    }
+    const itemsFor = sub => items[sub.id] || [...defaultItems(sub), ...feesFor(sub.id).map(feeAsItem)];
+    const orderNo = sub => window.OrderNumber.orderNumber(sub.id);
+    const requirements = sub => itemsFor(sub).filter(i => i.type !== 'discount' && (i.name || '').trim());
+    // Stable key for a requirement, so its progress follows it even if the list is reordered.
+    const keyOf = i => (i.type + ':' + i.name.trim().toLowerCase()).replace(/[.~*\/\[\]]/g, '_').slice(0, 140);
+    const progressOf = (sub, k) => (checklists[sub.id] && checklists[sub.id][k]) || { status: 'not-started', date: '', by: '' };
+    function counts(sub) {
+      const reqs = requirements(sub);
+      const c = { total: reqs.length, done: 0, prog: 0 };
+      reqs.forEach(r => { const s = progressOf(sub, keyOf(r)).status; if (s === 'completed') c.done++; else if (s === 'in-progress') c.prog++; });
+      return c;
+    }
+    const pad = n => String(n).padStart(2, '0');
+    const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+    function fmtDate(sub) {
+      const d = sub.submittedAt?.toDate?.();
+      return d ? d.toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'Pending…';
+    }
+
+    async function save(sub, key, patch) {
+      const next = Object.assign({}, progressOf(sub, key), patch);
+      const all = Object.assign({}, checklists[sub.id] || {}, { [key]: next });
+      checklists[sub.id] = all;          // show it straight away
+      render();
+      try {
+        await setDoc(doc(db, 'checklists', sub.id), { items: all, updatedAt: serverTimestamp() });
+      } catch (e) { showError(e); }
+    }
+
+    // ---- Orders list ----
+    function renderOrders() {
+      const q = $('search').value.trim().toLowerCase();
+      const shown = submissions.filter(s => !q || orderNo(s).toLowerCase().includes(q) || (s.companyName || '').toLowerCase().includes(q));
+      if (!shown.length) { $('olist').replaceChildren(el('div', { class: 'empty', text: submissions.length ? 'No matches.' : 'No order forms yet.' })); return; }
+      $('olist').replaceChildren(...shown.map(s => {
+        const c = counts(s), pct = c.total ? Math.round(c.done / c.total * 100) : 0;
+        const b = el('button', { class: 'order' + (s.id === selectedId ? ' active' : ''), type: 'button' },
+          el('span', { class: 'oname', text: s.companyName || 'Untitled' }),
+          el('span', { class: 'ometa' }, el('span', { text: orderNo(s) }), el('span', { text: `${c.done} of ${c.total} done` })),
+          el('div', { class: 'bar' }, el('span', { style: `width:${pct}%` })));
+        b.onclick = () => { selectedId = s.id; render(); if (window.innerWidth <= 900) $('detail').scrollIntoView({ behavior: 'smooth' }); };
+        return b;
+      }));
+    }
+    $('search').addEventListener('input', renderOrders);
+
+    // ---- Checklist ----
+    function renderDetail() {
+      const sub = submissions.find(s => s.id === selectedId);
+      if (!sub) { $('detail').replaceChildren(el('div', { class: 'placeholder', text: 'Select an order to see its checklist.' })); return; }
+      const reqs = requirements(sub), c = counts(sub);
+      const head = el('div', { class: 'detail-head' },
+        el('div', {}, el('div', { class: 'eyebrow', text: 'Order ' + orderNo(sub) }), el('h2', { text: sub.companyName || 'Untitled' }),
+          el('div', { class: 'meta', text: `Submitted ${fmtDate(sub)}` })),
+        el('div', { class: 'summary' },
+          el('span', { class: 's-done', text: `${c.done} completed` }),
+          el('span', { class: 's-prog', text: `${c.prog} in progress` }),
+          el('span', { text: `${c.total - c.done - c.prog} not started` })));
+      if (!reqs.length) {
+        $('detail').replaceChildren(head, el('div', { class: 'empty', text: 'This order has no requirements yet. Add them in its Invoice Inventory on the Appraisals page.' }));
+        return;
+      }
+      const rows = reqs.map(r => {
+        const key = keyOf(r), p = progressOf(sub, key);
+        const seg = el('div', { class: 'seg', role: 'group', 'aria-label': 'Status' }, ...STATUSES.map(([v, label]) => {
+          const b = el('button', { type: 'button', class: v, 'aria-pressed': String(p.status === v), text: label });
+          b.onclick = () => {
+            if (p.status === v) return;
+            const patch = { status: v };
+            if (v === 'completed') {
+              patch.date = p.date || today();
+              if (!p.by) { try { const lp = localStorage.getItem(LAST_PERSON_KEY); if (PEOPLE.includes(lp)) patch.by = lp; } catch (e) {} }
+            } else { patch.date = ''; }
+            save(sub, key, patch);
+            if (v === 'completed') toast(`Marked “${r.name}” completed.`);
+          };
+          return b;
+        }));
+        const done = p.status === 'completed';
+        const date = el('input', { type: 'date', value: p.date || '', max: today(), 'aria-label': 'Date completed' });
+        if (!done) date.disabled = true;
+        date.onchange = () => save(sub, key, { date: date.value });
+        const by = el('select', { 'aria-label': 'Completed by' }, el('option', { value: '', text: '—' }), ...PEOPLE.map(n => el('option', { value: n, text: n })));
+        by.value = p.by || '';
+        if (!done) by.disabled = true;
+        by.onchange = () => { save(sub, key, { by: by.value }); try { if (by.value) localStorage.setItem(LAST_PERSON_KEY, by.value); } catch (e) {} };
+        return el('tr', { class: 'st-' + p.status },
+          el('td', {}, el('span', { class: 'req', text: r.name }), el('span', { class: 'type', text: TYPES[r.type] || r.type })),
+          el('td', {}, seg), el('td', {}, date), el('td', {}, by));
+      });
+      $('detail').replaceChildren(head,
+        el('table', { class: 'ck-table' },
+          el('thead', {}, el('tr', {}, el('th', { text: 'Requirement' }), el('th', { text: 'Status' }), el('th', { text: 'Date completed' }), el('th', { text: 'By' }))),
+          el('tbody', {}, ...rows)),
+        el('p', { class: 'src', text: 'Requirements come from this order’s Invoice Inventory on the Appraisals page. Changes save automatically for the whole team.' }));
+    }
+
+    function render() {
+      renderOrders();
+      const a = document.activeElement;
+      if (!(a && $('detail').contains(a) && (a.tagName === 'SELECT' || a.tagName === 'INPUT'))) renderDetail();
+    }
+
+    function startListening() {
+      const fail = e => showError(e);
+      stopWatching.push(onSnapshot(query(collection(db, 'questionnaireSubmissions'), orderBy('submittedAt', 'desc')), snap => {
+        submissions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (selectedId && !submissions.some(s => s.id === selectedId)) selectedId = null;
+        render();
+      }, fail));
+      stopWatching.push(onSnapshot(collection(db, 'questionnaireFees'), snap => {
+        fees = Object.fromEntries(snap.docs.map(d => [d.id, d.data().fees || []]));
+        items = Object.fromEntries(snap.docs.filter(d => Array.isArray(d.data().items)).map(d => [d.id, d.data().items]));
+        render();
+      }, fail));
+      stopWatching.push(onSnapshot(collection(db, 'checklists'), snap => {
+        checklists = Object.fromEntries(snap.docs.map(d => [d.id, d.data().items || {}]));
+        render();
+      }, fail));
+    }
+
+    onAuthStateChanged(auth, user => {
+      $('loginView').hidden = !!user; $('pageView').hidden = !user; $('navRight').hidden = !user;
+      stopWatching.forEach(s => s()); stopWatching = [];
+      submissions = []; fees = {}; items = {}; checklists = {}; selectedId = null;
+      if (user) { $('who').textContent = user.email; render(); startListening(); }
+      else { $('email').focus(); }
+    });
+    // ---- Auth ----
+    $('loginForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      $('loginError').textContent = '';
+      $('loginBtn').disabled = true;
+      try {
+        await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+        $('password').value = '';
+      } catch (e) {
+        $('loginError').textContent = ['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-email'].includes(e.code)
+          ? 'Incorrect email or password.'
+          : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again in a few minutes.' : 'Sign-in failed: ' + e.code;
+      } finally {
+        $('loginBtn').disabled = false;
+      }
+    });
+    $('signOut').addEventListener('click', () => signOut(auth));
+  </script>
+</body>
+</html>
