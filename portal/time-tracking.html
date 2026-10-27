@@ -177,6 +177,11 @@
     .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-left: 6px; vertical-align: 2px; }
 
     .log { display: flex; flex-direction: column; }
+    .history summary { cursor: pointer; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+    .history summary::marker { color: var(--accent); }
+    .history-weeks { margin-top: 20px; }
+    .history-week + .history-week { margin-top: 24px; }
+    .history-week h3 { margin-bottom: 8px; font-family: var(--font-mono); font-size: 0.8rem; font-weight: 500; color: var(--ink-soft); }
     .entry { display: grid; grid-template-columns: 90px 1fr auto; gap: 4px 16px; padding: 14px 0; border-top: 1px solid var(--silver-line); }
     .entry:first-child { border-top: none; padding-top: 0; }
     .entry .who { font-family: var(--font-display); font-weight: 700; }
@@ -299,6 +304,12 @@
           <div id="addTimeSlot"></div>
           <div class="log" id="log"></div>
         </section>
+        <section class="card">
+          <details class="history">
+            <summary>Previous weeks</summary>
+            <div class="history-weeks" id="historyLog"></div>
+          </details>
+        </section>
       </div>
 
       <aside class="metrics">
@@ -349,6 +360,7 @@
     const $ = id => document.getElementById(id);
     let selected = null;
     let weekEntries = [];   // sessions that started this week
+    let pastEntries = [];   // sessions that started before this week
     let openEntries = [];   // stretches still running (any start date)
     let pausedEntries = []; // stretches that ended with a pause (any start date)
     let pendingId = null;   // session just checked out, waiting for "what you did"
@@ -398,6 +410,7 @@
     const openFor = p => openEntries.find(e => e.person === p);
     function allEntries() {
       const byId = new Map(weekEntries.map(e => [e.id, e]));
+      pastEntries.forEach(e => byId.set(e.id, e));
       openEntries.forEach(e => byId.set(e.id, e));
       pausedEntries.forEach(e => byId.set(e.id, e));
       return [...byId.values()];
@@ -651,78 +664,105 @@
     }
 
     // ---- Log ----
-    function renderLog() {
+    function sessionsFrom(entries) {
       const sessions = new Map();
-      allEntries().filter(e => e.start).forEach(e => {
+      entries.filter(e => e.start).forEach(e => {
         const sid = sessionOf(e); if (!sessions.has(sid)) sessions.set(sid, []); sessions.get(sid).push(e);
       });
-      const list = [...sessions.entries()].map(([sid, parts]) => {
+      return [...sessions.entries()].map(([sid, parts]) => {
         parts.sort((a, b) => ms(a.start) - ms(b.start));
         const last = parts[parts.length - 1];
         return { sid, parts, first: parts[0], last, person: parts[0].person,
           state: !last.end ? 'working' : last.paused ? 'paused' : 'done',
           description: (parts.slice().reverse().find(p => p.description) || {}).description || '' };
       }).sort((a, b) => ms(b.first.start) - ms(a.first.start));
-      if (!list.length) { $('log').replaceChildren(el('div', { class: 'empty', text: 'No time logged this week yet.' })); return; }
-      $('log').replaceChildren(...list.map(se => {
-        const a = new Date(ms(se.first.start)), total = se.parts.reduce((t, e) => t + lenOf(e), 0), breaks = se.parts.length - 1;
-        const endTxt = se.state === 'working' ? 'now' : se.state === 'paused' ? 'on a break' : fmtTime(new Date(ms(se.last.end)));
-        const added = se.parts.some(p => p.source === 'added');
-        const edited = !added && se.parts.some(p => p.edited);
-        let tag = null;
-        if (added) tag = el('span', { class: 'tag added', text: 'Added', title: 'Entered by hand, not clocked in' + (se.parts.some(p => p.edited) ? ' (times edited since)' : '') });
-        else if (edited) {
-          const o1 = se.first.originalStart || se.first.start, o2 = se.last.originalEnd || se.last.end;
-          tag = el('span', { class: 'tag edited', text: 'Edited', title: `Originally clocked ${fmtTime(new Date(ms(o1)))} – ${fmtTime(new Date(ms(o2)))}` });
+    }
+
+    function renderSessionList(list, target, emptyText) {
+      if (!list.length) { target.replaceChildren(el('div', { class: 'empty', text: emptyText })); return; }
+      target.replaceChildren(...list.map(renderSessionRow));
+    }
+
+    function renderSessionRow(se) {
+      const a = new Date(ms(se.first.start)), total = se.parts.reduce((t, e) => t + lenOf(e), 0), breaks = se.parts.length - 1;
+      const endTxt = se.state === 'working' ? 'now' : se.state === 'paused' ? 'on a break' : fmtTime(new Date(ms(se.last.end)));
+      const added = se.parts.some(p => p.source === 'added');
+      const edited = !added && se.parts.some(p => p.edited);
+      let tag = null;
+      if (added) tag = el('span', { class: 'tag added', text: 'Added', title: 'Entered by hand, not clocked in' + (se.parts.some(p => p.edited) ? ' (times edited since)' : '') });
+      else if (edited) {
+        const o1 = se.first.originalStart || se.first.start, o2 = se.last.originalEnd || se.last.end;
+        tag = el('span', { class: 'tag edited', text: 'Edited', title: `Originally clocked ${fmtTime(new Date(ms(o1)))} – ${fmtTime(new Date(ms(o2)))}` });
+      }
+      const row = el('div', { class: 'entry' + (added ? ' added' : edited ? ' edited' : '') },
+        el('div', { class: 'who' }, se.person, tag),
+        el('div', { class: 'when', text: `${fmtDay(a)} · ${fmtTime(a)} – ${endTxt}` + (breaks ? ` · ${breaks} break${breaks > 1 ? 's' : ''}` : '') }),
+        el('div', { class: 'dur', text: hm(total) }));
+      if (editingId === se.sid) {
+        const ta = el('textarea', { maxlength: '2000' }); ta.value = se.description;
+        const save = el('button', { class: 'btn btn-primary btn-small', type: 'button', text: 'Save' });
+        const cancel = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Cancel' });
+        save.onclick = async () => {
+          try {
+            const batch = writeBatch(db);
+            se.parts.forEach(p => batch.update(doc(db, ENTRIES, p.id), { description: p === se.last ? ta.value.trim().slice(0, 2000) : '', updatedAt: serverTimestamp() }));
+            await batch.commit(); toast('Saved.'); editingId = null; render();
+          } catch (err) { showError(err); }
+        };
+        cancel.onclick = () => { editingId = null; render(); };
+        row.append(el('div', { class: 'edit' }, ta, el('div', { class: 'what' }, el('div', { class: 'row' }, cancel, save))));
+        setTimeout(() => ta.focus(), 0);
+      } else {
+        if (se.state === 'done') row.append(el('div', { class: 'desc' + (se.description ? '' : ' none'), text: se.description || 'No description yet' }));
+        else row.append(el('div', { class: 'desc', text: se.state === 'working' ? 'Checked in now' : 'On a break' }));
+        const acts = el('div', { class: 'actions' });
+        if (se.state === 'done') {
+          const ed = el('button', { class: 'linkbtn', type: 'button', text: se.description ? 'Edit description' : 'Add what you did' });
+          ed.onclick = () => { editingId = se.sid; timeEditId = null; render(); };
+          const et = el('button', { class: 'linkbtn', type: 'button', text: 'Edit time' });
+          et.onclick = () => { timeEditId = se.sid; editingId = null; render(); };
+          acts.append(ed, et);
         }
-        const row = el('div', { class: 'entry' + (added ? ' added' : edited ? ' edited' : '') },
-          el('div', { class: 'who' }, se.person, tag),
-          el('div', { class: 'when', text: `${fmtDay(a)} · ${fmtTime(a)} – ${endTxt}` + (breaks ? ` · ${breaks} break${breaks > 1 ? 's' : ''}` : '') }),
-          el('div', { class: 'dur', text: hm(total) }));
-        if (editingId === se.sid) {
-          const ta = el('textarea', { maxlength: '2000' }); ta.value = se.description;
-          const save = el('button', { class: 'btn btn-primary btn-small', type: 'button', text: 'Save' });
-          const cancel = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Cancel' });
-          save.onclick = async () => {
-            try {
-              const batch = writeBatch(db);
-              se.parts.forEach(p => batch.update(doc(db, ENTRIES, p.id), { description: p === se.last ? ta.value.trim().slice(0, 2000) : '', updatedAt: serverTimestamp() }));
-              await batch.commit(); toast('Saved.'); editingId = null; render();
-            } catch (err) { showError(err); }
-          };
-          cancel.onclick = () => { editingId = null; render(); };
-          row.append(el('div', { class: 'edit' }, ta, el('div', { class: 'what' }, el('div', { class: 'row' }, cancel, save))));
-          setTimeout(() => ta.focus(), 0);
-        } else {
-          if (se.state === 'done') row.append(el('div', { class: 'desc' + (se.description ? '' : ' none'), text: se.description || 'No description yet' }));
-          else row.append(el('div', { class: 'desc', text: se.state === 'working' ? 'Checked in now' : 'On a break' }));
-          const acts = el('div', { class: 'actions' });
-          if (se.state === 'done') {
-            const ed = el('button', { class: 'linkbtn', type: 'button', text: se.description ? 'Edit description' : 'Add what you did' });
-            ed.onclick = () => { editingId = se.sid; timeEditId = null; render(); };
-            const et = el('button', { class: 'linkbtn', type: 'button', text: 'Edit time' });
-            et.onclick = () => { timeEditId = se.sid; editingId = null; render(); };
-            acts.append(ed, et);
-          }
-          const del = el('button', { class: 'linkbtn danger', type: 'button', text: 'Delete' });
-          del.onclick = async () => {
-            if (!confirm(`Delete ${se.person}'s ${hm(total)} session from ${fmtDay(a)}?`)) return;
-            try {
-              const batch = writeBatch(db); se.parts.forEach(p => batch.delete(doc(db, ENTRIES, p.id))); await batch.commit();
-              toast('Deleted.'); if (se.parts.some(p => p.id === pendingId)) { pendingId = null; $('whatForm').hidden = true; }
-            } catch (err) { showError(err); }
-          };
-          acts.append(del);
-          row.append(acts);
-          if (timeEditId === se.sid && se.state === 'done') row.append(editTimeForm(se));
-        }
-        return row;
-      }));
+        const del = el('button', { class: 'linkbtn danger', type: 'button', text: 'Delete' });
+        del.onclick = async () => {
+          if (!confirm(`Delete ${se.person}'s ${hm(total)} session from ${fmtDay(a)}?`)) return;
+          try {
+            const batch = writeBatch(db); se.parts.forEach(p => batch.delete(doc(db, ENTRIES, p.id))); await batch.commit();
+            toast('Deleted.'); if (se.parts.some(p => p.id === pendingId)) { pendingId = null; $('whatForm').hidden = true; }
+          } catch (err) { showError(err); }
+        };
+        acts.append(del);
+        row.append(acts);
+        if (timeEditId === se.sid && se.state === 'done') row.append(editTimeForm(se));
+      }
+      return row;
+    }
+
+    function renderLog() {
+      const week0 = +startOfWeek();
+      const sessions = sessionsFrom(allEntries());
+      renderSessionList(sessions.filter(se => ms(se.first.start) >= week0), $('log'), 'No time logged this week yet.');
+
+      const byWeek = new Map();
+      sessions.filter(se => ms(se.first.start) < week0).forEach(se => {
+        const week = +startOfWeek(new Date(ms(se.first.start)));
+        if (!byWeek.has(week)) byWeek.set(week, []);
+        byWeek.get(week).push(se);
+      });
+      const weeks = [...byWeek.entries()].sort((a, b) => b[0] - a[0]).map(([start, entries]) => {
+        const from = new Date(start), through = new Date(start);
+        through.setDate(through.getDate() + 6);
+        return el('section', { class: 'history-week' },
+          el('h3', { text: `Week of ${fmtDay(from)} – ${fmtDay(through)}` }),
+          el('div', { class: 'log' }, ...entries.map(se => renderSessionRow(se))));
+      });
+      $('historyLog').replaceChildren(...(weeks.length ? weeks : [el('div', { class: 'empty', text: 'No previous time logged yet.' })]));
     }
 
     function render() {
       renderPeople(); renderClock(); renderMetrics();
-      const typing = document.activeElement && document.activeElement.closest('#log');
+      const active = document.activeElement;
+      const typing = active && active.matches('textarea, input, select') && active.closest('#log, #historyLog');
       if (!((editingId || timeEditId) && typing)) renderLog();
     }
     // Keep the running timer and live totals ticking.
@@ -732,6 +772,8 @@
       const fail = e => showError(e);
       stopWatching.push(onSnapshot(query(collection(db, ENTRIES), where('start', '>=', Timestamp.fromDate(startOfWeek())), orderBy('start', 'desc')),
         snap => { weekEntries = snap.docs.map(d => ({ id: d.id, ...data(d) })); render(); }, fail));
+      stopWatching.push(onSnapshot(query(collection(db, ENTRIES), where('start', '<', Timestamp.fromDate(startOfWeek())), orderBy('start', 'desc')),
+        snap => { pastEntries = snap.docs.map(d => ({ id: d.id, ...data(d) })); render(); }, fail));
       stopWatching.push(onSnapshot(query(collection(db, ENTRIES), where('end', '==', null)),
         snap => { openEntries = snap.docs.map(d => ({ id: d.id, ...data(d) })); render(); }, fail));
       stopWatching.push(onSnapshot(query(collection(db, ENTRIES), where('paused', '==', true)),
@@ -761,7 +803,7 @@
       $('ttView').hidden = !user;
       $('navRight').hidden = !user;
       stopWatching.forEach(stop => stop()); stopWatching = [];
-      weekEntries = []; openEntries = []; pausedEntries = []; pendingId = null; editingId = null; timeEditId = null;
+      weekEntries = []; pastEntries = []; openEntries = []; pausedEntries = []; pendingId = null; editingId = null; timeEditId = null;
       if (user) {
         $('who').textContent = user.email;
         try { const p = localStorage.getItem(LAST_PERSON_KEY); if (PEOPLE.includes(p)) selected = p; } catch (e) {}
