@@ -166,7 +166,18 @@
     .tmenu button:hover, .tmenu button:focus-visible { background: var(--bg-soft); outline: none; }
     .tmenu button.danger { color: var(--danger); }
     tr.dragging td { background: var(--accent-soft) !important; }
-    tr.dragging .kebab { cursor: grabbing; background: #FFF; color: var(--accent); }
+    .dragging .kebab { cursor: grabbing; background: #FFF; color: var(--accent); }
+    .notes { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--silver-line); }
+    .notes-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .notes-head h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; }
+    .note { display: flex; align-items: flex-start; gap: 12px; padding: 12px 10px; border-top: 1px solid var(--silver-line); }
+    .note .nbody { flex: 1; min-width: 0; }
+    .note .ntext { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .note .nmeta { margin-top: 4px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
+    .note > .tform { flex: 1; margin: 0; }
+    .note.dragging { background: var(--accent-soft); }
+    .tform .row label { margin-right: auto; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--ink-soft); }
+    .tform select { font: inherit; font-size: 0.85rem; color: var(--ink); background: #FFF; border: 1px solid var(--silver-line); border-radius: 8px; padding: 6px 8px; }
     body.is-dragging { cursor: grabbing; user-select: none; -webkit-user-select: none; }
     .tform { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; padding: 14px; border: 1px solid var(--silver-line); border-radius: 12px; background: var(--bg); }
     td .tform { margin: 0; }
@@ -308,7 +319,7 @@
     const PEOPLE = ['Zay', 'Gabe', 'Joel'];
     const STATUSES = [['not-started', 'Not started'], ['in-progress', 'In progress'], ['completed', 'Completed']];
     const LAST_PERSON_KEY = 'engler-time-person';
-    let submissions = [], fees = {}, items = {}, checklists = {};
+    let submissions = [], fees = {}, items = {}, checklists = {}, notes = {};
     let selectedId = null;
     let stopWatching = [];
 
@@ -382,8 +393,21 @@
     async function write(sub, all) {
       checklists[sub.id] = all;          // show it straight away
       render();
-      try { await setDoc(doc(db, 'checklists', sub.id), { items: all, updatedAt: serverTimestamp() }); }
+      try { await setDoc(doc(db, 'checklists', sub.id), { items: all, updatedAt: serverTimestamp() }, { mergeFields: ['items', 'updatedAt'] }); }
       catch (e) { showError(e); }
+    }
+    // Notes live beside the tasks in checklists/<id>.notes: [{ id, text, by, date (YYYY-MM-DD) }], in the
+    // order shown. Things to fix, change or bring up with the client that aren't tasks.
+    const notesFor = sub => notes[sub.id] || [];
+    async function writeNotes(sub, list) {
+      notes[sub.id] = list;
+      render();
+      try { await setDoc(doc(db, 'checklists', sub.id), { notes: list, updatedAt: serverTimestamp() }, { mergeFields: ['notes', 'updatedAt'] }); }
+      catch (e) { showError(e); }
+    }
+    function fmtDay(ymd) {
+      const [y, m, d] = (ymd || '').split('-').map(Number);
+      return y ? new Date(y, m - 1, d).toLocaleDateString(undefined, { dateStyle: 'medium' }) : '';
     }
     // Status, date and who: keeps the list following the inventory unless it's already its own list.
     function save(sub, key, patch) {
@@ -428,7 +452,7 @@
           el('span', { class: 'oname', text: s.companyName || 'Untitled' }),
           el('span', { class: 'ometa' }, el('span', { text: orderNo(s) }), el('span', { text: `${c.done} of ${c.total} done` })),
           el('div', { class: 'bar' }, el('span', { style: `width:${pct}%` })));
-        b.onclick = () => { selectedId = s.id; editingKey = null; adding = false; render(); if (window.innerWidth <= 900) $('detail').scrollIntoView({ behavior: 'smooth' }); };
+        b.onclick = () => { selectedId = s.id; editingKey = null; adding = false; noteEdit = null; render(); if (window.innerWidth <= 900) $('detail').scrollIntoView({ behavior: 'smooth' }); };
         return b;
       }));
     }
@@ -437,7 +461,8 @@
     // ---- Checklist ----
     let editingKey = null;   // task being renamed / described
     let adding = false;      // "+ Add task" form open
-    let dragging = false;    // a task is being dragged to a new place
+    let dragging = false;    // a task or note is being dragged to a new place
+    let noteEdit = null;     // note being written: its id, or 'new'
 
     function closeMenus() {
       document.querySelectorAll('.tmenu').forEach(m => { m.hidden = true; });
@@ -489,6 +514,76 @@
       }
     }
 
+    // The ⋮ button for a task or note row: click for Edit / Delete, hold to drag the row.
+    function rowMenu(row, label, onEdit, onDelete, onDrop) {
+      const edit = el('button', { type: 'button', role: 'menuitem', text: 'Edit' });
+      edit.onclick = () => { closeMenus(); onEdit(); };
+      const del = el('button', { class: 'danger', type: 'button', role: 'menuitem', text: 'Delete' });
+      del.onclick = () => { closeMenus(); onDelete(); };
+      const menu = el('div', { class: 'tmenu', role: 'menu', hidden: '' }, edit, del);
+      const kebab = el('button', { class: 'kebab', type: 'button', 'aria-label': `Options for “${label}”`, 'aria-haspopup': 'menu', 'aria-expanded': 'false', title: 'Click for options · hold to move' });
+      kebab.innerHTML = '<svg width="4" height="16" viewBox="0 0 4 16" aria-hidden="true" fill="currentColor"><circle cx="2" cy="2" r="1.6"/><circle cx="2" cy="8" r="1.6"/><circle cx="2" cy="14" r="1.6"/></svg>';
+      kebab.onclick = () => {
+        if (kebab.justDragged) return;
+        const open = menu.hidden;
+        closeMenus();
+        if (open) { menu.hidden = false; kebab.setAttribute('aria-expanded', 'true'); }
+      };
+      dragHandle(kebab, row, onDrop);
+      return el('div', { class: 'tmenu-wrap' }, kebab, menu);
+    }
+
+    function noteForm(initial, onSave, onCancel, saveLabel) {
+      const text = el('textarea', { maxlength: '2000', placeholder: 'Something to fix, change or talk to the client about…' });
+      text.value = initial.text || '';
+      let last = '';
+      try { last = localStorage.getItem(LAST_PERSON_KEY) || ''; } catch (e) {}
+      const by = el('select', {}, el('option', { value: '', text: '—' }), ...PEOPLE.map(n => el('option', { value: n, text: n })));
+      by.value = initial.by || (PEOPLE.includes(last) ? last : '');
+      const save = el('button', { class: 'btn btn-primary btn-small', type: 'submit', text: saveLabel });
+      const cancel = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: 'Cancel' });
+      const form = el('form', { class: 'tform' }, text, el('div', { class: 'row' }, el('label', {}, 'By', by), cancel, save));
+      cancel.onclick = onCancel;
+      form.onsubmit = ev => {
+        ev.preventDefault();
+        const t = text.value.trim();
+        if (!t) { text.focus(); toast('Write the note first.'); return; }
+        try { if (by.value) localStorage.setItem(LAST_PERSON_KEY, by.value); } catch (e) {}
+        onSave(t.slice(0, 2000), by.value);
+      };
+      setTimeout(() => text.focus(), 0);
+      return form;
+    }
+
+    function renderNotes(sub) {
+      const list = notesFor(sub);
+      const addBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: '+ Add note' });
+      addBtn.onclick = () => { noteEdit = 'new'; editingKey = null; adding = false; renderDetail(); };
+      const parts = [el('div', { class: 'notes-head' }, el('h3', { text: 'Notes' }), addBtn)];
+      if (noteEdit === 'new') parts.push(noteForm({}, (text, by) => {
+        noteEdit = null; writeNotes(sub, [...list, { id: Math.random().toString(36).slice(2, 10), text, by, date: today() }]); toast('Note added.');
+      }, () => { noteEdit = null; renderDetail(); }, 'Add note'));
+      if (!list.length && noteEdit !== 'new') parts.push(el('div', { class: 'empty', text: 'Things to fix, change or talk to the client about that aren’t tasks.' }));
+      const rows = list.map(n => {
+        const row = el('div', { class: 'note', 'data-key': n.id, 'data-group': 'note' });
+        if (noteEdit === n.id) {
+          row.append(noteForm(n, (text, by) => {
+            noteEdit = null; writeNotes(sub, list.map(x => x.id === n.id ? Object.assign({}, x, { text, by }) : x)); toast('Note updated.');
+          }, () => { noteEdit = null; renderDetail(); }, 'Save'));
+          return row;
+        }
+        const meta = [n.by, fmtDay(n.date)].filter(Boolean).join(' · ');
+        row.append(
+          el('div', { class: 'nbody' }, el('div', { class: 'ntext', text: n.text }), meta ? el('div', { class: 'nmeta', text: meta }) : null),
+          rowMenu(row, n.text.slice(0, 40),
+            () => { noteEdit = n.id; editingKey = null; adding = false; renderDetail(); },
+            () => { if (confirm('Delete this note?')) { writeNotes(sub, list.filter(x => x.id !== n.id)); toast('Note deleted.'); } },
+            keys => writeNotes(sub, keys.map(k => list.find(x => x.id === k)).filter(Boolean))));
+        return row;
+      });
+      return el('div', { class: 'notes' }, ...parts, el('div', { class: 'nlist' }, ...rows));
+    }
+
     function taskForm(initial, onSave, onCancel, saveLabel) {
       const name = el('input', { type: 'text', class: 'tf-name', maxlength: '160', placeholder: 'Task name', value: initial.name || '' });
       const desc = el('textarea', { class: 'tf-desc', maxlength: '1000', placeholder: 'Description (optional): details, links, notes for the team' });
@@ -514,7 +609,7 @@
       const isDone = t => t.status === 'completed';
       const list = tasks(sub).sort((x, y) => isDone(x) - isDone(y)), c = counts(sub), extra = missing(sub);
       const addBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: '+ Add task' });
-      addBtn.onclick = () => { adding = true; editingKey = null; renderDetail(); };
+      addBtn.onclick = () => { adding = true; editingKey = null; noteEdit = null; renderDetail(); };
       const head = el('div', { class: 'detail-head' },
         el('div', {}, el('div', { class: 'eyebrow', text: 'Order ' + orderNo(sub) }), el('h2', { text: sub.companyName || 'Untitled' }),
           el('div', { class: 'meta', text: `Submitted ${fmtDate(sub)}` })),
@@ -534,7 +629,7 @@
       if (adding) parts.push(taskForm({}, (n, d) => { adding = false; addTask(sub, n, d); toast('Task added.'); },
         () => { adding = false; renderDetail(); }, 'Add task'));
       if (!list.length && !adding) {
-        parts.push(el('div', { class: 'empty', text: 'No tasks yet. Use “+ Add task”, or add items to this order’s Invoice Inventory on the Appraisals page.' }));
+        parts.push(el('div', { class: 'empty', text: 'No tasks yet. Use “+ Add task”, or add items to this order’s Invoice Inventory on the Appraisals page.' }), renderNotes(sub));
         $('detail').replaceChildren(...parts); return;
       }
       const rows = list.map(t => {
@@ -569,21 +664,10 @@
           first = el('td', {}, taskForm(t, (n, d) => { editingKey = null; editTask(sub, key, { name: n, description: d }); toast('Task updated.'); },
             () => { editingKey = null; renderDetail(); }, 'Save'));
         } else {
-          const edit = el('button', { type: 'button', role: 'menuitem', text: 'Edit' });
-          edit.onclick = () => { closeMenus(); editingKey = key; adding = false; renderDetail(); };
-          const del = el('button', { class: 'danger', type: 'button', role: 'menuitem', text: 'Delete' });
-          del.onclick = () => { closeMenus(); if (confirm(`Delete the task “${t.name}”?`)) { deleteTask(sub, key); toast('Task deleted.'); } };
-          const menu = el('div', { class: 'tmenu', role: 'menu', hidden: '' }, edit, del);
-          const kebab = el('button', { class: 'kebab', type: 'button', 'aria-label': `Options for “${t.name}”`, 'aria-haspopup': 'menu', 'aria-expanded': 'false', title: 'Click for options · hold to move' });
-          kebab.innerHTML = '<svg width="4" height="16" viewBox="0 0 4 16" aria-hidden="true" fill="currentColor"><circle cx="2" cy="2" r="1.6"/><circle cx="2" cy="8" r="1.6"/><circle cx="2" cy="14" r="1.6"/></svg>';
-          kebab.onclick = () => {
-            if (kebab.justDragged) return;
-            const open = menu.hidden;
-            closeMenus();
-            if (open) { menu.hidden = false; kebab.setAttribute('aria-expanded', 'true'); }
-          };
-          dragHandle(kebab, tr, keys => reorder(sub, keys));
-          act.append(el('div', { class: 'tmenu-wrap' }, kebab, menu));
+          act.append(rowMenu(tr, t.name,
+            () => { editingKey = key; adding = false; noteEdit = null; renderDetail(); },
+            () => { if (confirm(`Delete the task “${t.name}”?`)) { deleteTask(sub, key); toast('Task deleted.'); } },
+            keys => reorder(sub, keys)));
           first = el('td', {},
             el('span', { class: 'req', text: t.name }), el('span', { class: 'type', text: TYPES[t.type] || 'Task' }),
             t.description ? el('div', { class: 'tdesc', text: t.description }) : null);
@@ -597,7 +681,8 @@
           el('tbody', {}, ...rows)),
         el('p', { class: 'src', text: isCustom(sub)
           ? 'This checklist has been edited, so it’s now its own list. New Invoice Inventory items are offered above instead of added automatically.'
-          : 'Tasks come from this order’s Invoice Inventory on the Appraisals page until you rename, describe, add, delete or move one. Click ⋮ to edit or delete a task; hold it to drag the task to a new place. Changes save automatically for the whole team.' }));
+          : 'Tasks come from this order’s Invoice Inventory on the Appraisals page until you rename, describe, add, delete or move one. Click ⋮ to edit or delete a task; hold it to drag the task to a new place. Changes save automatically for the whole team.' }),
+        renderNotes(sub));
       $('detail').replaceChildren(...parts);
     }
 
@@ -605,7 +690,7 @@
       renderOrders();
       const a = document.activeElement;
       const busy = a && $('detail').contains(a) && ['SELECT', 'INPUT', 'TEXTAREA'].includes(a.tagName);
-      if (!busy && !editingKey && !adding && !dragging) renderDetail();
+      if (!busy && !editingKey && !adding && !dragging && !noteEdit) renderDetail();
     }
 
     function startListening() {
@@ -622,6 +707,7 @@
       }, fail));
       stopWatching.push(onSnapshot(collection(db, 'checklists'), snap => {
         checklists = Object.fromEntries(snap.docs.map(d => [d.id, d.data().items || {}]));
+        notes = Object.fromEntries(snap.docs.map(d => [d.id, Array.isArray(d.data().notes) ? d.data().notes : []]));
         render();
       }, fail));
     }
@@ -629,7 +715,7 @@
     onAuthStateChanged(auth, user => {
       $('loginView').hidden = !!user; $('pageView').hidden = !user; $('navRight').hidden = !user;
       stopWatching.forEach(s => s()); stopWatching = [];
-      submissions = []; fees = {}; items = {}; checklists = {}; selectedId = null;
+      submissions = []; fees = {}; items = {}; checklists = {}; notes = {}; selectedId = null;
       if (user) { $('who').textContent = user.email; render(); startListening(); }
       else { $('email').focus(); }
     });
