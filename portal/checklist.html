@@ -457,8 +457,12 @@
         closeMenus(); tr.classList.add('dragging'); document.body.classList.add('is-dragging');
         if (navigator.vibrate) navigator.vibrate(10);
       }
+      // Moving the row in the DOM drops pointer capture, so follow the pointer on the window instead.
       function end() {
         clearTimeout(timer); timer = null;
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', end);
+        window.removeEventListener('pointercancel', end);
         if (!active) return;
         active = dragging = false; tr.classList.remove('dragging'); document.body.classList.remove('is-dragging');
         handle.justDragged = true; setTimeout(() => { handle.justDragged = false; }, 0);
@@ -468,10 +472,13 @@
       handle.addEventListener('contextmenu', ev => ev.preventDefault());
       handle.addEventListener('pointerdown', ev => {
         if (ev.button !== 0) return;
-        startY = ev.clientY; handle.setPointerCapture(ev.pointerId);
+        startY = ev.clientY;
         timer = setTimeout(begin, 250);
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', end);
+        window.addEventListener('pointercancel', end);
       });
-      handle.addEventListener('pointermove', ev => {
+      function move(ev) {
         if (!active) { if (timer && Math.abs(ev.clientY - startY) > 6) begin(); else return; }
         ev.preventDefault();
         const others = groupRows().filter(r => r !== tr);
@@ -479,9 +486,7 @@
         if (above) { above.before(tr); return; }
         const below = others.reverse().find(r => (tr.compareDocumentPosition(r) & Node.DOCUMENT_POSITION_FOLLOWING) && ev.clientY > mid(r));
         if (below) below.after(tr);
-      });
-      handle.addEventListener('pointerup', end);
-      handle.addEventListener('pointercancel', end);
+      }
     }
 
     function taskForm(initial, onSave, onCancel, saveLabel) {
