@@ -152,10 +152,22 @@
     .ck-table input:disabled, .ck-table select:disabled { opacity: 0.45; }
     .head-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
     .tdesc { margin-top: 4px; font-size: 0.86rem; color: var(--ink-soft); white-space: pre-wrap; overflow-wrap: anywhere; }
-    .tacts { margin-top: 4px; display: flex; gap: 12px; }
-    .linkbtn { font: inherit; font-size: 0.78rem; background: none; border: none; padding: 0; color: var(--accent); cursor: pointer; }
-    .linkbtn.danger { color: var(--danger); }
-    .linkbtn:hover { text-decoration: underline; }
+    .ck-table td.tact { width: 40px; text-align: right; }
+    .tmenu-wrap { position: relative; display: inline-block; }
+    .kebab {
+      width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: var(--ink-soft);
+      cursor: grab; display: grid; place-items: center; touch-action: none;
+      user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    }
+    .kebab:hover, .kebab[aria-expanded="true"] { background: var(--bg-soft); color: var(--ink); }
+    .kebab:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .tmenu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 10; min-width: 140px; padding: 4px; background: #FFF; border: 1px solid var(--silver-line); border-radius: 10px; box-shadow: 0 12px 30px rgba(13,23,41,0.14); text-align: left; }
+    .tmenu button { display: block; width: 100%; text-align: left; font: inherit; font-size: 0.86rem; color: var(--ink); background: none; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+    .tmenu button:hover, .tmenu button:focus-visible { background: var(--bg-soft); outline: none; }
+    .tmenu button.danger { color: var(--danger); }
+    tr.dragging td { background: var(--accent-soft) !important; }
+    tr.dragging .kebab { cursor: grabbing; background: #FFF; color: var(--accent); }
+    body.is-dragging { cursor: grabbing; user-select: none; -webkit-user-select: none; }
     .tform { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; padding: 14px; border: 1px solid var(--silver-line); border-radius: 12px; background: var(--bg); }
     td .tform { margin: 0; }
     .tform input, .tform textarea { width: 100%; font: inherit; font-size: 0.92rem; color: var(--ink); background: #FFF; border: 1px solid var(--silver-line); border-radius: 10px; padding: 9px 11px; }
@@ -171,7 +183,9 @@
       .orders { position: static; max-height: none; }
       .olist { max-height: 300px; }
       .ck-table thead { display: none; }
-      .ck-table tr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; padding: 12px 0; border-top: 1px solid var(--silver-line); }
+      .ck-table tr { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; padding: 12px 0; border-top: 1px solid var(--silver-line); }
+      .ck-table td:first-child { padding-right: 44px; }
+      .ck-table td.tact { position: absolute; top: 8px; right: 0; width: auto; }
       .ck-table td { border: none; padding: 0; background: none !important; }
       .ck-table td:first-child, .ck-table td:nth-child(2) { grid-column: 1 / -1; min-width: 0; }
       .head-right { align-items: flex-start; }
@@ -389,6 +403,14 @@
       if (key.startsWith('task:')) delete all[key]; else all[key] = { deleted: true };
       return write(sub, all);
     }
+    // keys: one group (open or completed tasks) in its new order. The group reuses its own order
+    // slots, so the open and completed tasks keep their places relative to each other.
+    function reorder(sub, keys) {
+      const all = ownList(sub);
+      const slots = keys.map(k => all[k].order ?? 0).sort((a, b) => a - b);
+      keys.forEach((k, i) => { all[k] = Object.assign({}, all[k], { order: slots[i] }); });
+      return write(sub, all);
+    }
     function addMissing(sub) {
       const all = ownList(sub); let o = nextOrder(all);
       missing(sub).forEach(r => { all[keyOf(r)] = { name: r.name, type: r.type, description: '', order: o++, status: 'not-started', date: '', by: '' }; });
@@ -415,6 +437,52 @@
     // ---- Checklist ----
     let editingKey = null;   // task being renamed / described
     let adding = false;      // "+ Add task" form open
+    let dragging = false;    // a task is being dragged to a new place
+
+    function closeMenus() {
+      document.querySelectorAll('.tmenu').forEach(m => { m.hidden = true; });
+      document.querySelectorAll('.kebab').forEach(b => b.setAttribute('aria-expanded', 'false'));
+    }
+    document.addEventListener('click', ev => { if (!ev.target.closest('.tmenu-wrap')) closeMenus(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeMenus(); });
+
+    // Holding the ⋮ button (or dragging it) picks the row up; it moves among the rows of its own
+    // group (open or completed) and onDrop gets that group's keys in their new order.
+    function dragHandle(handle, tr, onDrop) {
+      let timer = null, startY = 0, active = false, before = '';
+      const groupRows = () => [...tr.parentNode.children].filter(r => r.dataset.group === tr.dataset.group);
+      const mid = r => { const b = r.getBoundingClientRect(); return b.top + b.height / 2; };
+      function begin() {
+        timer = null; active = dragging = true; before = groupRows().map(r => r.dataset.key).join();
+        closeMenus(); tr.classList.add('dragging'); document.body.classList.add('is-dragging');
+        if (navigator.vibrate) navigator.vibrate(10);
+      }
+      function end() {
+        clearTimeout(timer); timer = null;
+        if (!active) return;
+        active = dragging = false; tr.classList.remove('dragging'); document.body.classList.remove('is-dragging');
+        handle.justDragged = true; setTimeout(() => { handle.justDragged = false; }, 0);
+        const keys = groupRows().map(r => r.dataset.key);
+        if (keys.join() !== before) onDrop(keys); else renderDetail();
+      }
+      handle.addEventListener('contextmenu', ev => ev.preventDefault());
+      handle.addEventListener('pointerdown', ev => {
+        if (ev.button !== 0) return;
+        startY = ev.clientY; handle.setPointerCapture(ev.pointerId);
+        timer = setTimeout(begin, 250);
+      });
+      handle.addEventListener('pointermove', ev => {
+        if (!active) { if (timer && Math.abs(ev.clientY - startY) > 6) begin(); else return; }
+        ev.preventDefault();
+        const others = groupRows().filter(r => r !== tr);
+        const above = others.find(r => (r.compareDocumentPosition(tr) & Node.DOCUMENT_POSITION_FOLLOWING) && ev.clientY < mid(r));
+        if (above) { above.before(tr); return; }
+        const below = others.reverse().find(r => (tr.compareDocumentPosition(r) & Node.DOCUMENT_POSITION_FOLLOWING) && ev.clientY > mid(r));
+        if (below) below.after(tr);
+      });
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
+    }
 
     function taskForm(initial, onSave, onCancel, saveLabel) {
       const name = el('input', { type: 'text', class: 'tf-name', maxlength: '160', placeholder: 'Task name', value: initial.name || '' });
@@ -437,7 +505,9 @@
     function renderDetail() {
       const sub = submissions.find(s => s.id === selectedId);
       if (!sub) { $('detail').replaceChildren(el('div', { class: 'placeholder', text: 'Select an order to see its checklist.' })); return; }
-      const list = tasks(sub), c = counts(sub), extra = missing(sub);
+      // Completed tasks sink to the bottom; each group keeps the checklist's order.
+      const isDone = t => t.status === 'completed';
+      const list = tasks(sub).sort((x, y) => isDone(x) - isDone(y)), c = counts(sub), extra = missing(sub);
       const addBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: '+ Add task' });
       addBtn.onclick = () => { adding = true; editingKey = null; renderDetail(); };
       const head = el('div', { class: 'detail-head' },
@@ -487,29 +557,42 @@
         if (!done) by.disabled = true;
         by.onchange = () => { save(sub, key, { by: by.value }); try { if (by.value) localStorage.setItem(LAST_PERSON_KEY, by.value); } catch (e) {} };
 
+        const tr = el('tr', { class: 'st-' + t.status, 'data-key': key, 'data-group': done ? 'done' : 'open' });
         let first;
+        const act = el('td', { class: 'tact' });
         if (editingKey === key) {
           first = el('td', {}, taskForm(t, (n, d) => { editingKey = null; editTask(sub, key, { name: n, description: d }); toast('Task updated.'); },
             () => { editingKey = null; renderDetail(); }, 'Save'));
         } else {
-          const edit = el('button', { class: 'linkbtn', type: 'button', text: 'Edit' });
-          edit.onclick = () => { editingKey = key; adding = false; renderDetail(); };
-          const del = el('button', { class: 'linkbtn danger', type: 'button', text: 'Delete' });
-          del.onclick = () => { if (confirm(`Delete the task “${t.name}”?`)) { deleteTask(sub, key); toast('Task deleted.'); } };
+          const edit = el('button', { type: 'button', role: 'menuitem', text: 'Edit' });
+          edit.onclick = () => { closeMenus(); editingKey = key; adding = false; renderDetail(); };
+          const del = el('button', { class: 'danger', type: 'button', role: 'menuitem', text: 'Delete' });
+          del.onclick = () => { closeMenus(); if (confirm(`Delete the task “${t.name}”?`)) { deleteTask(sub, key); toast('Task deleted.'); } };
+          const menu = el('div', { class: 'tmenu', role: 'menu', hidden: '' }, edit, del);
+          const kebab = el('button', { class: 'kebab', type: 'button', 'aria-label': `Options for “${t.name}”`, 'aria-haspopup': 'menu', 'aria-expanded': 'false', title: 'Click for options · hold to move' });
+          kebab.innerHTML = '<svg width="4" height="16" viewBox="0 0 4 16" aria-hidden="true" fill="currentColor"><circle cx="2" cy="2" r="1.6"/><circle cx="2" cy="8" r="1.6"/><circle cx="2" cy="14" r="1.6"/></svg>';
+          kebab.onclick = () => {
+            if (kebab.justDragged) return;
+            const open = menu.hidden;
+            closeMenus();
+            if (open) { menu.hidden = false; kebab.setAttribute('aria-expanded', 'true'); }
+          };
+          dragHandle(kebab, tr, keys => reorder(sub, keys));
+          act.append(el('div', { class: 'tmenu-wrap' }, kebab, menu));
           first = el('td', {},
             el('span', { class: 'req', text: t.name }), el('span', { class: 'type', text: TYPES[t.type] || 'Task' }),
-            t.description ? el('div', { class: 'tdesc', text: t.description }) : null,
-            el('div', { class: 'tacts' }, edit, del));
+            t.description ? el('div', { class: 'tdesc', text: t.description }) : null);
         }
-        return el('tr', { class: 'st-' + t.status }, first, el('td', {}, seg), el('td', {}, date), el('td', {}, by));
+        tr.append(first, el('td', {}, seg), el('td', {}, date), el('td', {}, by), act);
+        return tr;
       });
       parts.push(
         el('table', { class: 'ck-table' },
-          el('thead', {}, el('tr', {}, el('th', { text: 'Task' }), el('th', { text: 'Status' }), el('th', { text: 'Date completed' }), el('th', { text: 'By' }))),
+          el('thead', {}, el('tr', {}, el('th', { text: 'Task' }), el('th', { text: 'Status' }), el('th', { text: 'Date completed' }), el('th', { text: 'By' }), el('th', { 'aria-label': 'Options' }))),
           el('tbody', {}, ...rows)),
         el('p', { class: 'src', text: isCustom(sub)
           ? 'This checklist has been edited, so it’s now its own list. New Invoice Inventory items are offered above instead of added automatically.'
-          : 'Tasks come from this order’s Invoice Inventory on the Appraisals page until you rename, describe, add or delete one. Changes save automatically for the whole team.' }));
+          : 'Tasks come from this order’s Invoice Inventory on the Appraisals page until you rename, describe, add, delete or move one. Click ⋮ to edit or delete a task; hold it to drag the task to a new place. Changes save automatically for the whole team.' }));
       $('detail').replaceChildren(...parts);
     }
 
@@ -517,7 +600,7 @@
       renderOrders();
       const a = document.activeElement;
       const busy = a && $('detail').contains(a) && ['SELECT', 'INPUT', 'TEXTAREA'].includes(a.tagName);
-      if (!busy && !editingKey && !adding) renderDetail();
+      if (!busy && !editingKey && !adding && !dragging) renderDetail();
     }
 
     function startListening() {
