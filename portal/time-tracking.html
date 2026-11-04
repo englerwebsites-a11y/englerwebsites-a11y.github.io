@@ -164,6 +164,7 @@
     }
     textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
     .what .row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+    .what .nstate { margin-top: 6px; min-height: 1.2em; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); text-align: right; }
 
     .metrics { position: sticky; top: 90px; }
     .mtable { width: 100%; border-collapse: collapse; }
@@ -285,6 +286,12 @@
               <button class="btn btn-big btn-pause" type="button" id="pauseBtn" hidden>Pause</button>
               <button class="btn btn-big btn-in" type="button" id="checkBtn" disabled>Check in</button>
             </div>
+            <div class="what" id="notesBox" hidden>
+              <label for="notesText">Session notes</label>
+              <div class="sub">Jot down what you’re working on as you go. Saves automatically and fills in “What you did” when you check out.</div>
+              <textarea id="notesText" maxlength="2000" placeholder="e.g. Started the menu page for Hearth &amp; Rye."></textarea>
+              <div class="nstate" id="notesState" aria-live="polite"></div>
+            </div>
             <form class="what" id="whatForm" hidden>
               <label for="whatText">What you did</label>
               <div class="sub" id="whatSub"></div>
@@ -347,7 +354,8 @@
     // Hand-entered sessions have source: 'added'; stretches whose times were changed have edited: true plus
     // originalStart / originalEnd (the times before the first edit).
     // Pausing ends the current stretch with paused: true; resuming starts a new stretch with the same session ID.
-    // A session's description lives on its last stretch.
+    // A session's description lives on its last stretch; session notes written while checked in are that
+    // description, kept on the current stretch until check-out.
     const ENTRIES = 'timeEntries';
     const PEOPLE = ['Zay', 'Gabe', 'Joel'];
     const LAST_PERSON_KEY = 'engler-time-person';
@@ -427,6 +435,50 @@
     }
     const stateOf = p => openFor(p) ? 'working' : pausedFor(p) ? 'paused' : 'idle';
 
+    // The session's description so far (notes written while checked in).
+    const notesOf = sid => (stretches(sid).slice().reverse().find(p => p.description) || {}).description || '';
+
+    // ---- Session notes ----
+    let notesSid = null;     // session the notes box is showing
+    let notesDirty = false;  // typed but not saved yet
+    let notesSave = null;    // the waiting autosave, so it can be sent straight away
+    // Keeps the notes on the session's current stretch and clears them from earlier ones.
+    async function saveNotes(cur, text) {
+      const batch = writeBatch(db);
+      stretches(sessionOf(cur)).forEach(p => {
+        if (p.id === cur.id) batch.update(doc(db, ENTRIES, p.id), { description: text, updatedAt: serverTimestamp() });
+        else if (p.description) batch.update(doc(db, ENTRIES, p.id), { description: '', updatedAt: serverTimestamp() });
+      });
+      await batch.commit();
+    }
+    function flushNotes() {
+      clearTimeout(flushNotes.t);
+      const run = notesSave; notesSave = null;
+      return run ? run() : Promise.resolve();
+    }
+    $('notesText').addEventListener('input', () => {
+      const cur = selected && (openFor(selected) || pausedFor(selected));
+      if (!cur) return;
+      const text = $('notesText').value.trim().slice(0, 2000);
+      notesDirty = true; $('notesState').textContent = 'Saving…';
+      notesSave = async () => {
+        try { await saveNotes(cur, text); if (notesSid === sessionOf(cur)) { notesDirty = false; $('notesState').textContent = 'Saved'; } }
+        catch (e) { $('notesState').textContent = 'Not saved'; showError(e); }
+      };
+      clearTimeout(flushNotes.t); flushNotes.t = setTimeout(flushNotes, 1000);
+    });
+    $('notesText').addEventListener('blur', flushNotes);
+    function renderNotes(cur) {
+      const box = $('notesBox'), ta = $('notesText');
+      if (!cur) { if (notesSid) flushNotes(); box.hidden = true; notesSid = null; return; }
+      const sid = sessionOf(cur);
+      box.hidden = false;
+      if (sid !== notesSid) {
+        flushNotes(); notesSid = sid; notesDirty = false;
+        ta.value = notesOf(sid); $('notesState').textContent = '';
+      } else if (!notesDirty && document.activeElement !== ta) ta.value = notesOf(sid);   // picks up edits from other devices
+    }
+
     // ---- People ----
     function renderPeople() {
       $('people').replaceChildren(...PEOPLE.map(p => {
@@ -447,6 +499,7 @@
     function renderClock() {
       const btn = $('checkBtn'), pause = $('pauseBtn'), timer = $('timer'), status = $('status');
       timer.classList.remove('paused');
+      renderNotes(selected && (openFor(selected) || pausedFor(selected)));
       if (!selected) {
         btn.hidden = false; pause.hidden = true;
         status.textContent = 'Choose your name to get started.';
@@ -495,14 +548,15 @@
           toast(`Checked in, ${selected}.`);
         } else {
           const cur = open || paused, sid = sessionOf(cur);
-          const total = worked(sid), first = stretches(sid)[0] || cur;
+          await flushNotes();
+          const total = worked(sid), first = stretches(sid)[0] || cur, notes = notesDirty ? $('notesText').value.trim() : notesOf(sid);
           if (open) await updateDoc(doc(db, ENTRIES, open.id), { end: serverTimestamp(), paused: false, updatedAt: serverTimestamp() });
           else await updateDoc(doc(db, ENTRIES, paused.id), { paused: false, updatedAt: serverTimestamp() });
           pendingId = cur.id;
           const breaks = stretches(sid).length - 1;
           $('timer').textContent = hms(total);
           $('whatSub').textContent = `${hm(total)} worked, starting ${fmtTime(new Date(ms(first.start)))}` + (breaks ? ` (${breaks} break${breaks > 1 ? 's' : ''}).` : '.');
-          $('whatText').value = '';
+          $('whatText').value = notes;
           $('whatForm').hidden = false;
           $('whatText').focus();
         }
@@ -714,7 +768,7 @@
         setTimeout(() => ta.focus(), 0);
       } else {
         if (se.state === 'done') row.append(el('div', { class: 'desc' + (se.description ? '' : ' none'), text: se.description || 'No description yet' }));
-        else row.append(el('div', { class: 'desc', text: se.state === 'working' ? 'Checked in now' : 'On a break' }));
+        else row.append(el('div', { class: 'desc', text: (se.state === 'working' ? 'Checked in now' : 'On a break') + (se.description ? ' · ' + se.description : '') }));
         const acts = el('div', { class: 'actions' });
         if (se.state === 'done') {
           const ed = el('button', { class: 'linkbtn', type: 'button', text: se.description ? 'Edit description' : 'Add what you did' });
