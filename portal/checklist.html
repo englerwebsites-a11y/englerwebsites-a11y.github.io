@@ -142,6 +142,11 @@
     tr.st-completed .req { color: var(--ink-soft); text-decoration: line-through; text-decoration-color: var(--silver); }
     tr.st-completed td { background: #F6FBF8; }
     tr.st-in-progress td { background: #FFFBF2; }
+    tr.needs-client td { background: #F4F1FF; }
+    .client-ck { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 0.8rem; color: var(--ink-soft); cursor: pointer; user-select: none; }
+    .client-ck input { width: 15px; height: 15px; margin: 0; accent-color: #6A4FD8; cursor: pointer; }
+    tr.needs-client .client-ck { color: #4B35A8; font-weight: 600; }
+    .summary .s-client { background: #ECE7FF; color: #4B35A8; }
     .seg { display: inline-flex; border: 1px solid var(--silver-line); border-radius: 999px; padding: 3px; background: var(--bg); gap: 2px; }
     .seg button { font: inherit; font-size: 0.76rem; font-weight: 600; cursor: pointer; border: none; background: none; color: var(--ink-soft); padding: 6px 10px; border-radius: 999px; white-space: nowrap; }
     .seg button[aria-pressed="true"].not-started { background: #FFF; color: var(--ink); box-shadow: 0 1px 4px rgba(13,23,41,0.12); }
@@ -203,6 +208,7 @@
       .ck-table tr.st-completed, .ck-table tr.st-in-progress { padding-left: 10px; border-left: 3px solid; }
       .ck-table tr.st-completed { border-left-color: var(--ok); }
       .ck-table tr.st-in-progress { border-left-color: #F5C451; }
+      .ck-table tr.needs-client { padding-left: 10px; border-left: 3px solid #6A4FD8; }
     }
     .toast {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
@@ -315,7 +321,8 @@
     // Requirements come from each order's Invoice Inventory (portal/appraisals.html): its saved
     // item list in questionnaireFees, or the client's answers if it hasn't been edited. Discounts
     // aren't work, so they're left out. Progress is kept in checklists/<submission ID>:
-    // { items: { <requirement key>: { status, date (YYYY-MM-DD), by } }, updatedAt }.
+    // { items: { <requirement key>: { status, date (YYYY-MM-DD), by, client } }, updatedAt }.
+    // client: true marks an open task that's waiting on the client.
     const PEOPLE = ['Zay', 'Gabe', 'Joel'];
     const STATUSES = [['not-started', 'Not started'], ['in-progress', 'In progress'], ['completed', 'Completed']];
     const LAST_PERSON_KEY = 'engler-time-person';
@@ -352,7 +359,7 @@
     const requirements = sub => itemsFor(sub).filter(i => i.type !== 'discount' && (i.name || '').trim());
     // Stable key for a requirement, so its progress follows it even if the list is reordered.
     const keyOf = i => (i.type + ':' + i.name.trim().toLowerCase()).replace(/[.~*\/\[\]]/g, '_').slice(0, 140);
-    const BLANK = { status: 'not-started', date: '', by: '' };
+    const BLANK = { status: 'not-started', date: '', by: '', client: false };
     // checklists/<id>.items holds either just progress per inventory item (the list follows the Invoice
     // Inventory), or, once someone renames, describes, adds or deletes a task, the order's own task list:
     // { <key>: { name, type, description, order, status, date, by, deleted? } }. Deleted inventory items
@@ -372,13 +379,14 @@
     const missing = sub => isCustom(sub) ? requirements(sub).filter(r => !saved(sub)[keyOf(r)]) : [];
     function counts(sub) {
       const list = tasks(sub);
-      return { total: list.length, done: list.filter(t => t.status === 'completed').length, prog: list.filter(t => t.status === 'in-progress').length };
+      return { total: list.length, done: list.filter(t => t.status === 'completed').length, prog: list.filter(t => t.status === 'in-progress').length,
+        client: list.filter(t => t.client && t.status !== 'completed').length };
     }
     // The order's checklist as its own task list (keeps progress), ready to edit.
     function ownList(sub) {
       if (isCustom(sub)) return Object.assign({}, saved(sub));
       const all = {};
-      tasks(sub).forEach(t => { all[t.key] = { name: t.name, type: t.type, description: '', order: t.order, status: t.status, date: t.date || '', by: t.by || '' }; });
+      tasks(sub).forEach(t => { all[t.key] = { name: t.name, type: t.type, description: '', order: t.order, status: t.status, date: t.date || '', by: t.by || '', client: !!t.client }; });
       return all;
     }
     const nextOrder = all => Object.values(all).reduce((m, v) => Math.max(m, v.order ?? 0), -1) + 1;
@@ -427,7 +435,7 @@
       if (key.startsWith('task:')) delete all[key]; else all[key] = { deleted: true };
       return write(sub, all);
     }
-    // keys: one group (open or completed tasks) in its new order. The group reuses its own order
+    // keys: one group (open, needs-client or completed tasks) in its new order. The group reuses its own order
     // slots, so the open and completed tasks keep their places relative to each other.
     function reorder(sub, keys) {
       const all = ownList(sub);
@@ -472,7 +480,7 @@
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closeMenus(); });
 
     // Holding the ⋮ button (or dragging it) picks the row up; it moves among the rows of its own
-    // group (open or completed) and onDrop gets that group's keys in their new order.
+    // group (open, needs-client or completed) and onDrop gets that group's keys in their new order.
     function dragHandle(handle, tr, onDrop) {
       let timer = null, startY = 0, active = false, before = '';
       const groupRows = () => [...tr.parentNode.children].filter(r => r.dataset.group === tr.dataset.group);
@@ -605,9 +613,11 @@
     function renderDetail() {
       const sub = submissions.find(s => s.id === selectedId);
       if (!sub) { $('detail').replaceChildren(el('div', { class: 'placeholder', text: 'Select an order to see its checklist.' })); return; }
-      // Completed tasks sink to the bottom; each group keeps the checklist's order.
-      const isDone = t => t.status === 'completed';
-      const list = tasks(sub).sort((x, y) => isDone(x) - isDone(y)), c = counts(sub), extra = missing(sub);
+      // Tasks needing the client sink below the open ones and completed tasks to the very bottom;
+      // each group keeps the checklist's order.
+      const groupOf = t => t.status === 'completed' ? 'done' : t.client ? 'client' : 'open';
+      const RANK = { open: 0, client: 1, done: 2 };
+      const list = tasks(sub).sort((x, y) => RANK[groupOf(x)] - RANK[groupOf(y)]), c = counts(sub), extra = missing(sub);
       const addBtn = el('button', { class: 'btn btn-ghost btn-small', type: 'button', text: '+ Add task' });
       addBtn.onclick = () => { adding = true; editingKey = null; noteEdit = null; renderDetail(); };
       const head = el('div', { class: 'detail-head' },
@@ -617,6 +627,7 @@
           el('div', { class: 'summary' },
             el('span', { class: 's-done', text: `${c.done} completed` }),
             el('span', { class: 's-prog', text: `${c.prog} in progress` }),
+            c.client ? el('span', { class: 's-client', text: `${c.client} need${c.client === 1 ? 's' : ''} client` }) : null,
             el('span', { text: `${c.total - c.done - c.prog} not started` })),
           addBtn));
       const parts = [head];
@@ -657,7 +668,8 @@
         if (!done) by.disabled = true;
         by.onchange = () => { save(sub, key, { by: by.value }); try { if (by.value) localStorage.setItem(LAST_PERSON_KEY, by.value); } catch (e) {} };
 
-        const tr = el('tr', { class: 'st-' + t.status, 'data-key': key, 'data-group': done ? 'done' : 'open' });
+        const group = groupOf(t);
+        const tr = el('tr', { class: 'st-' + t.status + (group === 'client' ? ' needs-client' : ''), 'data-key': key, 'data-group': group });
         let first;
         const act = el('td', { class: 'tact' });
         if (editingKey === key) {
@@ -671,6 +683,12 @@
           first = el('td', {},
             el('span', { class: 'req', text: t.name }), el('span', { class: 'type', text: TYPES[t.type] || 'Task' }),
             t.description ? el('div', { class: 'tdesc', text: t.description }) : null);
+          if (!done) {
+            const ck = el('input', { type: 'checkbox' });
+            ck.checked = !!t.client;
+            ck.onchange = () => { save(sub, key, { client: ck.checked }); toast(ck.checked ? `“${t.name}” needs client assistance.` : `“${t.name}” no longer waiting on the client.`); };
+            first.append(el('div', {}, el('label', { class: 'client-ck' }, ck, 'Needs client assistance')));
+          }
         }
         tr.append(first, el('td', {}, seg), el('td', {}, date), el('td', {}, by), act);
         return tr;
@@ -689,7 +707,7 @@
     function render() {
       renderOrders();
       const a = document.activeElement;
-      const busy = a && $('detail').contains(a) && ['SELECT', 'INPUT', 'TEXTAREA'].includes(a.tagName);
+      const busy = a && $('detail').contains(a) && ['SELECT', 'INPUT', 'TEXTAREA'].includes(a.tagName) && a.type !== 'checkbox';
       if (!busy && !editingKey && !adding && !dragging && !noteEdit) renderDetail();
     }
 
